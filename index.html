@@ -2914,6 +2914,29 @@
         </section>
       </main>
     </template>
+
+    <template x-if="confirmDialog.open">
+      <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 py-8" @keydown.escape.window="resolveConfirm(false)">
+        <section class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-soft" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
+          <div class="mb-5 flex items-start gap-4">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full" :class="confirmDialog.tone === 'danger' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path x-show="confirmDialog.tone === 'danger'" d="M12 8v5m0 4h.01M10.3 4.6 2.8 17.5A2 2 0 0 0 4.5 20h15a2 2 0 0 0 1.7-2.5L13.7 4.6a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path x-show="confirmDialog.tone !== 'danger'" d="m9 12 2 2 4-5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </span>
+            <div class="min-w-0">
+              <h2 id="confirm-dialog-title" class="text-lg font-bold text-slate-900" x-text="confirmDialog.title"></h2>
+              <p class="mt-2 text-sm leading-6 text-slate-600" x-text="confirmDialog.message"></p>
+            </div>
+          </div>
+          <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="resolveConfirm(false)" x-text="confirmDialog.cancelText"></button>
+            <button class="rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60" :class="confirmDialog.tone === 'danger' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-500 hover:bg-emerald-600'" type="button" @click="resolveConfirm(true)" x-text="confirmDialog.confirmText"></button>
+          </div>
+        </section>
+      </div>
+    </template>
   </div>
 
   <script>
@@ -2943,6 +2966,15 @@
         subscription: null,
         authMode: 'login',
         unreadRefreshTimer: null,
+        confirmDialog: {
+          open: false,
+          title: 'Confirm action',
+          message: '',
+          confirmText: 'Confirm',
+          cancelText: 'Cancel',
+          tone: 'danger',
+          resolver: null
+        },
         permissions: {
           all_properties: false,
           property_ids: [],
@@ -4121,7 +4153,12 @@
 
         async deletePlatformPayment(payment) {
           if (!payment?.id) return;
-          if (!window.confirm('Delete this platform payment record?')) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Delete payment record',
+            message: 'Delete this platform payment record? This action cannot be undone.',
+            confirmText: 'Delete'
+          });
+          if (!confirmed) return;
 
           this.admin.error = '';
           this.admin.message = '';
@@ -4426,7 +4463,11 @@
             return;
           }
 
-          const confirmed = window.confirm(`Suspend ${row.full_name}?`);
+          const confirmed = await this.requestConfirm({
+            title: 'Suspend landlord',
+            message: `Suspend ${row.full_name}? They will not be able to continue as an active landlord until you reactivate them.`,
+            confirmText: 'Suspend'
+          });
           if (!confirmed) return;
 
           this.admin.error = '';
@@ -4448,7 +4489,11 @@
         },
 
         async deleteLandlord(row) {
-          const confirmed = window.confirm(`Archive ${row.full_name}? They will no longer appear as an active landlord, but their payment, lease, and property history will stay saved.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Archive landlord',
+            message: `Archive ${row.full_name}? They will no longer appear as an active landlord, but their payment, lease, and property history will stay saved.`,
+            confirmText: 'Archive'
+          });
           if (!confirmed) return;
 
           this.admin.error = '';
@@ -4517,6 +4562,29 @@
             suspended: 'bg-red-100 text-red-700'
           };
           return classes[status] || 'bg-slate-100 text-slate-600';
+        },
+
+        requestConfirm(options = {}) {
+          if (this.confirmDialog.resolver) this.confirmDialog.resolver(false);
+          this.confirmDialog = {
+            open: true,
+            title: options.title || 'Confirm action',
+            message: options.message || 'Are you sure you want to continue?',
+            confirmText: options.confirmText || 'Confirm',
+            cancelText: options.cancelText || 'Cancel',
+            tone: options.tone || 'danger',
+            resolver: null
+          };
+          return new Promise(resolve => {
+            this.confirmDialog.resolver = resolve;
+          });
+        },
+
+        resolveConfirm(confirmed) {
+          const resolver = this.confirmDialog.resolver;
+          this.confirmDialog.open = false;
+          this.confirmDialog.resolver = null;
+          if (resolver) resolver(Boolean(confirmed));
         },
 
         staffAccountStatus(staffRow) {
@@ -4974,7 +5042,11 @@
 
         async deleteProperty(property) {
           if (!property) return;
-          const confirmed = window.confirm(`Archive ${property.name}? It will be removed from active property lists, but units, leases, payments, and maintenance records will stay saved.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Archive property',
+            message: `Archive ${property.name}? It will be removed from active property lists, but units, leases, payments, and maintenance records will stay saved.`,
+            confirmText: 'Archive'
+          });
           if (!confirmed) return;
 
           this.propertyUnit.error = '';
@@ -5071,7 +5143,11 @@
 
         async deleteUnit(unit) {
           if (!unit) return;
-          const confirmed = window.confirm(`Archive unit ${unit.unit_number}? It will be removed from active unit lists, but linked leases, payments, and maintenance records will stay saved.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Archive unit',
+            message: `Archive unit ${unit.unit_number}? It will be removed from active unit lists, but linked leases, payments, and maintenance records will stay saved.`,
+            confirmText: 'Archive'
+          });
           if (!confirmed) return;
 
           this.propertyUnit.error = '';
@@ -5108,7 +5184,12 @@
 
         async markUnitVacant(unit) {
           if (!unit) return;
-          const confirmed = window.confirm(`Mark unit ${unit.unit_number} as vacant? The active lease will be terminated if one is linked.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Mark unit vacant',
+            message: `Mark unit ${unit.unit_number} as vacant? The active lease will be terminated if one is linked.`,
+            confirmText: 'Mark Vacant',
+            tone: 'neutral'
+          });
           if (!confirmed) return;
 
           this.propertyUnit.error = '';
@@ -6238,7 +6319,11 @@
 
         async deleteMaintenanceRequest(request) {
           if (!request) return;
-          const confirmed = window.confirm('Archive this maintenance request? Its details and work notes will stay saved.');
+          const confirmed = await this.requestConfirm({
+            title: 'Archive maintenance request',
+            message: 'Archive this maintenance request? Its details and work notes will stay saved.',
+            confirmText: 'Archive'
+          });
           if (!confirmed) return;
 
           this.maintenance.error = '';
@@ -6579,7 +6664,12 @@
 
         async rejectStaffRequest(member) {
           if (!member?.request_id) return;
-          if (!window.confirm(`Reject ${member.full_name || member.email}'s staff request?`)) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Reject staff request',
+            message: `Reject ${member.full_name || member.email}'s staff request?`,
+            confirmText: 'Reject'
+          });
+          if (!confirmed) return;
           this.staff.error = '';
           this.staff.saving = true;
 
@@ -6598,7 +6688,11 @@
         },
 
         async removeStaff(member) {
-          const confirmed = window.confirm(`Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Remove staff access',
+            message: `Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`,
+            confirmText: 'Remove'
+          });
           if (!confirmed) return;
 
           this.staff.error = '';
@@ -7029,7 +7123,11 @@
 
         async deleteTenant(tenant) {
           if (!tenant) return;
-          const confirmed = window.confirm(`Archive ${tenant.full_name}? They will be removed from active tenant lists and their active lease will be terminated, but payment and lease history will stay saved.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Archive tenant',
+            message: `Archive ${tenant.full_name}? They will be removed from active tenant lists and their active lease will be terminated, but payment and lease history will stay saved.`,
+            confirmText: 'Archive'
+          });
           if (!confirmed) return;
 
           this.tenantLease.error = '';
@@ -7054,7 +7152,11 @@
 
         async deleteLease(lease) {
           if (!lease) return;
-          const confirmed = window.confirm(`Terminate this lease for ${lease.tenant?.full_name || 'the tenant'}? Payment history, submissions, documents, and maintenance references will stay saved.`);
+          const confirmed = await this.requestConfirm({
+            title: 'Terminate lease',
+            message: `Terminate this lease for ${lease.tenant?.full_name || 'the tenant'}? Payment history, submissions, documents, and maintenance references will stay saved.`,
+            confirmText: 'Terminate'
+          });
           if (!confirmed) return;
 
           this.tenantLease.error = '';
