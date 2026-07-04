@@ -267,6 +267,7 @@
             <div class="flex items-center gap-2">
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">Staff</button>
               <button class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
             </div>
@@ -316,7 +317,6 @@
               <button class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === 'all' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry('all')">
                 <p class="text-sm font-semibold text-slate-900">All countries</p>
                 <p class="mt-2 text-xs text-slate-500" x-text="`${admin.landlords.length} landlords`"></p>
-                <p class="mt-1 text-sm font-bold text-emerald-700" x-text="formatCurrency(admin.financePayments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0))"></p>
               </button>
               <template x-for="country in adminCountryBreakdown()" :key="country.id">
                 <button class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === country.id ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry(country.id)">
@@ -325,7 +325,6 @@
                     <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600" x-show="country.code" x-text="country.code"></span>
                   </div>
                   <p class="mt-2 text-xs text-slate-500" x-text="`${country.landlords} landlords${country.currency_code ? ' - ' + country.currency_code : ''}`"></p>
-                  <p class="mt-1 text-sm font-bold text-emerald-700" x-text="formatCurrency(country.revenue)"></p>
                 </button>
               </template>
             </div>
@@ -357,6 +356,22 @@
                 <span x-show="!admin.loading">Refresh</span>
                 <span x-show="admin.loading">Loading...</span>
               </button>
+            </div>
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.landlordSearch" placeholder="Name, email, phone">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.landlordStatus">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="trial">Trial</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="pending">Pending invite</option>
+                </select>
+              </label>
             </div>
 
             <div class="overflow-x-auto">
@@ -492,11 +507,11 @@
                 <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : 'Landlord'"></span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required>
                   <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : 'Select landlord'"></option>
-                  <template x-for="row in selectedAdminLandlords().filter(item => item.accepted)" :key="row.profile_id">
+                  <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
                   </template>
-                  <template x-for="staffRow in admin.staffProfiles" :key="`finance-staff-${staffRow.id}`">
-                    <option x-show="admin.financeForm.payerType === 'staff'" :value="staffRow.id" x-text="`${staffRow.full_name || staffRow.email} - ${staffRow.email}`"></option>
+                  <template x-for="staffRow in selectedAdminStaffProfiles()" :key="`finance-staff-${staffRow.id}`">
+                    <option x-show="admin.financeForm.payerType === 'staff'" :value="staffRow.id" x-text="`${staffRow.full_name || staffRow.email} - ${staffRow.email} (${adminCountryName(adminStaffCountryId(staffRow))})`"></option>
                   </template>
                 </select>
               </label>
@@ -525,6 +540,20 @@
           </section>
 
           <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.financeSearch" placeholder="Account, email, notes">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Payment type</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.financePayerType">
+                  <option value="">All types</option>
+                  <option value="landlord">Landlord</option>
+                  <option value="staff">Staff</option>
+                </select>
+              </label>
+            </div>
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -629,6 +658,21 @@
           </template>
 
           <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.staffSearch" placeholder="Name, email, phone">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Subscription</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.staffStatus">
+                  <option value="">All statuses</option>
+                  <option value="free">Free</option>
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+              </label>
+            </div>
             <div class="overflow-x-auto">
               <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -646,10 +690,10 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
-                  <template x-if="!admin.loading && admin.staffProfiles.length === 0">
+                  <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
                     <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No staff accounts yet.</td></tr>
                   </template>
-                  <template x-for="staffRow in admin.staffProfiles" :key="staffRow.id">
+                  <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.email_verified ? 'Email verified' : 'Email pending'"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
@@ -661,7 +705,91 @@
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_subscription_expires_at ? formatDate(staffRow.staff_subscription_expires_at) : '-'"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
-                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Edit Subscription</button>
+                        <div class="flex flex-wrap gap-2">
+                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Edit Subscription</button>
+                          <button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section x-show="currentPage === 'admin-tenants'" id="super-admin-tenants" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Tenant Management</h1>
+              <p class="mt-1 text-sm text-slate-600">Review tenant accounts, landlord links, invite status, and archived records.</p>
+            </div>
+            <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+          <template x-if="admin.message">
+            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="admin.message"></div>
+          </template>
+
+          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-4">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.tenantSearch" placeholder="Tenant, email, phone, unit">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantStatus">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="archived">Archived</option>
+                  <option value="accepted">Invite accepted</option>
+                  <option value="pending">Invite pending</option>
+                </select>
+              </label>
+              <label class="block md:col-span-2">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Landlord</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantLandlordId">
+                  <option value="">All landlords</option>
+                  <template x-for="row in admin.landlords.filter(item => item.accepted)" :key="`tenant-filter-landlord-${row.profile_id}`">
+                    <option :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
+                  </template>
+                </select>
+              </label>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Tenant</th>
+                    <th class="px-4 py-3 font-semibold">Country</th>
+                    <th class="px-4 py-3 font-semibold">Landlord</th>
+                    <th class="px-4 py-3 font-semibold">Property / Unit</th>
+                    <th class="px-4 py-3 font-semibold">Invite</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Joined</th>
+                    <th class="px-4 py-3 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <template x-if="!admin.loading && selectedAdminTenants().length === 0">
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No tenants found.</td></tr>
+                  </template>
+                  <template x-for="tenantRow in selectedAdminTenants()" :key="tenantRow.id">
+                    <tr class="odd:bg-white even:bg-slate-50/60">
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="tenantRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="tenantRow.email || '-'"></p></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="tenantRow.country_name || adminCountryName(tenantRow.country_id)"></td>
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="tenantRow.landlord?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="tenantRow.landlord?.email || ''"></p></td>
+                      <td class="px-4 py-3 text-slate-700"><p x-text="tenantRow.property_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="tenantRow.unit_number ? `Unit ${tenantRow.unit_number}` : '-'"></p></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="tenantRow.invite_accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'" x-text="tenantRow.invite_accepted ? 'Accepted' : 'Pending'"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="tenantRow.archived_at ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-700'" x-text="tenantRow.archived_at ? 'Archived' : 'Active'"></span></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="formatDate(tenantRow.created_at)"></td>
+                      <td class="px-4 py-3">
+                        <button x-show="!tenantRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveAdminTenant(tenantRow)">Archive</button>
+                        <button x-show="tenantRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminTenant(tenantRow)">Unarchive</button>
                       </td>
                     </tr>
                   </template>
@@ -3060,6 +3188,18 @@
           countries: [],
           selectedCountryId: 'all',
           landlords: [],
+          tenants: [],
+          filters: {
+            landlordSearch: '',
+            landlordStatus: '',
+            financeSearch: '',
+            financePayerType: '',
+            staffSearch: '',
+            staffStatus: '',
+            tenantSearch: '',
+            tenantStatus: '',
+            tenantLandlordId: ''
+          },
           stats: {
             total: 0,
             active: 0,
@@ -3751,7 +3891,7 @@
           if (!page) return false;
 
           if (this.currentShell === 'super_admin') {
-            return ['landlord-management', 'admin-finance', 'admin-staff'].includes(page);
+            return ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-staff'].includes(page);
           }
 
           if (this.currentShell === 'tenant') {
@@ -3801,14 +3941,89 @@
           return this.admin.countries.find(country => country.id === countryId)?.currency_code || '';
         },
 
+        adminCountryLandlords() {
+          let rows = this.admin.landlords;
+          if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
+          if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
+          return rows;
+        },
+
         selectedAdminLandlords() {
-          if (this.admin.selectedCountryId === 'all') return this.admin.landlords;
-          if (this.admin.selectedCountryId === 'unassigned') return this.admin.landlords.filter(row => !row.country_id);
-          return this.admin.landlords.filter(row => row.country_id === this.admin.selectedCountryId);
+          let rows = this.adminCountryLandlords();
+
+          const search = (this.admin.filters.landlordSearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(row => [
+              row.full_name,
+              row.email,
+              row.phone,
+              row.country_name,
+              row.landlord_code
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          const status = this.admin.filters.landlordStatus || '';
+          if (status === 'pending') rows = rows.filter(row => !row.accepted);
+          if (status && status !== 'pending') rows = rows.filter(row => row.accepted && (row.subscription?.status || 'trial') === status);
+
+          return rows;
+        },
+
+        selectedAdminStaffProfiles() {
+          let rows = this.admin.staffProfiles;
+          if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !this.adminStaffCountryId(row));
+          if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => this.adminStaffCountryId(row) === this.admin.selectedCountryId);
+
+          const search = (this.admin.filters.staffSearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(row => [
+              row.full_name,
+              row.email,
+              row.phone,
+              this.adminCountryName(this.adminStaffCountryId(row))
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          const status = this.admin.filters.staffStatus || '';
+          if (status) rows = rows.filter(row => (row.staff_subscription_status || 'free') === status);
+          return rows;
+        },
+
+        selectedAdminTenants() {
+          let rows = this.admin.tenants;
+          if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
+          if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
+          if (this.admin.filters.tenantLandlordId) rows = rows.filter(row => row.landlord_id === this.admin.filters.tenantLandlordId);
+
+          const search = (this.admin.filters.tenantSearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(row => [
+              row.full_name,
+              row.email,
+              row.phone,
+              row.id_number,
+              row.landlord?.full_name,
+              row.landlord?.email,
+              row.country_name,
+              row.property_name,
+              row.unit_number
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          const status = this.admin.filters.tenantStatus || '';
+          if (status === 'active') rows = rows.filter(row => !row.archived_at);
+          if (status === 'archived') rows = rows.filter(row => row.archived_at);
+          if (status === 'accepted') rows = rows.filter(row => row.invite_accepted);
+          if (status === 'pending') rows = rows.filter(row => !row.invite_accepted);
+          return rows;
+        },
+
+        adminStaffCountryId(staffRow) {
+          return staffRow?.country_id || staffRow?.primary_country_id || null;
         },
 
         adminSelectedStats() {
-          const landlords = this.selectedAdminLandlords();
+          const landlords = this.adminCountryLandlords();
           return {
             total: landlords.length,
             active: landlords.filter(row => row.subscription?.status === 'active').length,
@@ -3828,15 +4043,31 @@
         },
 
         selectedAdminFinancePayments() {
-          if (this.admin.selectedCountryId === 'all') return this.admin.financePayments;
-          if (this.admin.selectedCountryId === 'unassigned') return this.admin.financePayments.filter(payment => !payment.country_id);
-          return this.admin.financePayments.filter(payment => payment.country_id === this.admin.selectedCountryId);
+          let rows = this.admin.financePayments;
+          if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(payment => !payment.country_id);
+          if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(payment => payment.country_id === this.admin.selectedCountryId);
+
+          const type = this.admin.filters.financePayerType || '';
+          if (type) rows = rows.filter(payment => (payment.payer_type || 'landlord') === type);
+
+          const search = (this.admin.filters.financeSearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(payment => [
+              this.adminPaymentAccountName(payment),
+              this.adminPaymentAccountEmail(payment),
+              this.adminCountryName(payment.country_id),
+              payment.notes,
+              payment.amount_paid
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          return rows;
         },
 
         adminFinanceSummary() {
           const payments = this.selectedAdminFinancePayments();
           const monthKey = new Date().toISOString().slice(0, 7);
-          const landlordIds = new Set(this.selectedAdminLandlords().filter(row => row.accepted && row.subscription?.status === 'active').map(row => row.profile_id));
+          const landlordIds = new Set(this.adminCountryLandlords().filter(row => row.accepted && row.subscription?.status === 'active').map(row => row.profile_id));
           return {
             totalRevenue: payments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0),
             thisMonth: payments
@@ -3890,7 +4121,7 @@
           this.admin.loading = true;
           this.admin.error = '';
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, staffProfilesResult, staffPermissionsResult, tenantsResult, propertiesResult, platformPaymentsResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, staffProfilesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -3923,8 +4154,12 @@
               .eq('status', 'approved'),
             supabaseClient
               .from('tenants')
-              .select('id, landlord_id')
-              .is('archived_at', null),
+              .select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at, archived_at, archived_by')
+              .order('created_at', { ascending: false }),
+            supabaseClient
+              .from('leases')
+              .select('id, unit_id, tenant_id, landlord_id, start_date, end_date, status, created_at, units(id, unit_number, property_id, properties(id, name, address, city))')
+              .order('created_at', { ascending: false }),
             supabaseClient
               .from('properties')
               .select('id, landlord_id')
@@ -3935,7 +4170,7 @@
               .order('paid_at', { ascending: false })
           ]);
 
-          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || staffProfilesResult.error || staffPermissionsResult.error || tenantsResult.error || propertiesResult.error || platformPaymentsResult.error;
+          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || staffProfilesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error;
           if (firstError) {
             this.admin.error = firstError.message;
             this.admin.loading = false;
@@ -3947,7 +4182,10 @@
           const staffPermissions = staffPermissionsResult.data || [];
           const staffCounts = this.countByKey(staffPermissions, 'landlord_id');
           const staffLandlordCounts = this.countByKey(staffPermissions, 'staff_profile_id');
-          const tenantCounts = this.countByKey(tenantsResult.data || [], 'landlord_id');
+          const tenantRows = tenantsResult.data || [];
+          const tenantLeases = tenantLeasesResult.data || [];
+          const activeTenantRows = tenantRows.filter(row => !row.archived_at);
+          const tenantCounts = this.countByKey(activeTenantRows, 'landlord_id');
           const propertyCounts = this.countByKey(propertiesResult.data || [], 'landlord_id');
           const platformPayments = platformPaymentsResult.data || [];
           const subscriptionByLandlord = new Map(subscriptions.filter(row => row.landlord_id).map(row => [row.landlord_id, row]));
@@ -3976,8 +4214,19 @@
             };
           });
 
+          const landlordById = new Map(acceptedRows.map(row => [row.profile_id, row]));
+          const countryByLandlordId = new Map(acceptedRows.map(row => [row.profile_id, row.country_id || null]));
+          const staffCountryById = new Map();
+          staffPermissions.forEach(permission => {
+            const countryId = countryByLandlordId.get(permission.landlord_id);
+            if (countryId && !staffCountryById.has(permission.staff_profile_id)) {
+              staffCountryById.set(permission.staff_profile_id, countryId);
+            }
+          });
+
           this.admin.staffProfiles = (staffProfilesResult.data || []).map(profile => ({
             ...profile,
+            primary_country_id: profile.country_id || staffCountryById.get(profile.id) || null,
             landlord_count: staffLandlordCounts.get(profile.id) || 0
           })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
@@ -4023,11 +4272,30 @@
             revenue: platformPayments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0)
           };
 
+          this.admin.tenants = tenantRows.map(tenant => {
+            const landlord = landlordById.get(tenant.landlord_id) || null;
+            const lease = tenantLeases.find(row => row.tenant_id === tenant.id && row.status === 'active')
+              || tenantLeases.find(row => row.tenant_id === tenant.id)
+              || null;
+            const unit = lease?.units || null;
+            const property = unit?.properties || null;
+            return {
+              ...tenant,
+              landlord,
+              country_id: landlord?.country_id || null,
+              country_name: landlord?.country_name || this.adminCountryName(landlord?.country_id || null),
+              property_name: property?.name || '-',
+              unit_number: unit?.unit_number || '',
+              lease_status: lease?.status || '',
+              invite_accepted: Boolean(tenant.invite_accepted || tenant.profile_id)
+            };
+          });
+
           const monthKey = new Date().toISOString().slice(0, 7);
           this.admin.financePayments = platformPayments.map(payment => ({
             ...payment,
             payer_type: payment.payer_type || 'landlord',
-            country_id: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || null,
+            country_id: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || staffCountryById.get(payment.staff_id) || null,
             landlord: payment.landlord || null,
             staff: payment.staff || null
           }));
@@ -4103,11 +4371,12 @@
           const accountId = this.admin.financeForm.accountId || this.admin.financeForm.landlordId || this.admin.financeForm.staffId || '';
           const landlord = payerType === 'landlord' ? this.admin.landlords.find(row => row.profile_id === accountId) || null : null;
           const staff = payerType === 'staff' ? this.admin.staffProfiles.find(row => row.id === accountId) || null : null;
+          const staffCountryId = this.adminStaffCountryId(staff);
           const payload = {
             payer_type: payerType,
             landlord_id: payerType === 'landlord' ? accountId : null,
             staff_id: payerType === 'staff' ? accountId : null,
-            country_id: landlord?.country_id || staff?.country_id || this.admin.financeForm.countryId || null,
+            country_id: landlord?.country_id || staffCountryId || this.admin.financeForm.countryId || null,
             amount_paid: Number(this.admin.financeForm.amount || 0),
             paid_at: this.admin.financeForm.paidAt,
             period_start: this.admin.financeForm.periodStart,
@@ -4337,6 +4606,136 @@
 
           this.admin.message = 'Staff subscription updated.';
           this.closeAdminModal();
+          await this.loadSuperAdminData();
+        },
+
+        async deleteAdminStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Archive staff account',
+            message: `Archive ${staffRow.full_name || staffRow.email}? They will no longer appear as an active staff account, but finance history will stay saved.`,
+            confirmText: 'Archive'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient
+            .from('profiles')
+            .update({
+              archived_at: new Date().toISOString(),
+              archived_by: this.profile.id
+            })
+            .eq('id', staffRow.id)
+            .eq('role', 'staff');
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Staff account archived.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async archiveAdminTenant(tenantRow) {
+          if (!tenantRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Archive tenant',
+            message: `Archive ${tenantRow.full_name || tenantRow.email}? Their payment and lease records will stay saved.`,
+            confirmText: 'Archive'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const archivedAt = new Date().toISOString();
+          const { error } = await supabaseClient
+            .from('tenants')
+            .update({
+              archived_at: archivedAt,
+              archived_by: this.profile.id
+            })
+            .eq('id', tenantRow.id);
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          if (tenantRow.profile_id) {
+            const { error: profileError } = await supabaseClient
+              .from('profiles')
+              .update({
+                archived_at: archivedAt,
+                archived_by: this.profile.id
+              })
+              .eq('id', tenantRow.profile_id)
+              .eq('role', 'tenant');
+
+            if (profileError) {
+              this.admin.error = profileError.message;
+              this.admin.saving = false;
+              return;
+            }
+          }
+
+          this.admin.message = 'Tenant archived.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async unarchiveAdminTenant(tenantRow) {
+          if (!tenantRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unarchive tenant',
+            message: `Restore ${tenantRow.full_name || tenantRow.email} to the active tenant list?`,
+            confirmText: 'Unarchive'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient
+            .from('tenants')
+            .update({
+              archived_at: null,
+              archived_by: null,
+              invite_accepted: Boolean(tenantRow.profile_id)
+            })
+            .eq('id', tenantRow.id);
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          if (tenantRow.profile_id) {
+            const { error: profileError } = await supabaseClient
+              .from('profiles')
+              .update({
+                archived_at: null,
+                archived_by: null
+              })
+              .eq('id', tenantRow.profile_id)
+              .eq('role', 'tenant');
+
+            if (profileError) {
+              this.admin.error = profileError.message;
+              this.admin.saving = false;
+              return;
+            }
+          }
+
+          this.admin.message = tenantRow.profile_id ? 'Tenant restored.' : 'Tenant row restored. Send a fresh invite if they need account access again.';
+          this.admin.saving = false;
           await this.loadSuperAdminData();
         },
 
@@ -8289,7 +8688,7 @@
             await this.loadLandlordFinanceData();
           }
 
-          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-staff') && this.currentShell === 'super_admin') {
+          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-staff') && this.currentShell === 'super_admin') {
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             await this.loadSuperAdminData();
           }
@@ -8343,6 +8742,7 @@
             'my-account': 'My Account',
             settings: 'Settings',
             'admin-finance': 'Finance',
+            'admin-tenants': 'Tenant Management',
             'admin-staff': 'Staff Management',
             'landlord-management': 'Landlord Management',
             'tenant-home': 'Home',
