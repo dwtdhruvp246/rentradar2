@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RentRadar</title>
+  <title>Musha</title>
+  <meta name="description" content="Your property, handled simply.">
+  <link rel="icon" type="image/png" href="musha-logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,7 +21,7 @@
             sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
           },
           colors: {
-            radar: {
+            musha: {
               50: '#ecfdf5',
               100: '#dcfce7',
               500: '#10b981',
@@ -37,19 +39,16 @@
   <style>
     [x-cloak] { display: none !important; }
     body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .brand-logo { object-fit: contain; }
   </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-  <div x-data="rentRadarApp()" x-init="init()" x-cloak>
+  <div x-data="mushaApp()" x-init="init()" x-cloak>
     <template x-if="booting">
       <div class="flex min-h-screen items-center justify-center bg-slate-50 px-6">
         <div class="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 text-center shadow-soft">
-          <div class="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-500 text-white">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-            </svg>
-          </div>
-          <p class="text-sm font-medium text-slate-600">Loading RentRadar...</p>
+          <img class="brand-logo mx-auto mb-4 h-24 w-auto" src="musha-logo.png" alt="Musha logo">
+          <p class="text-sm font-medium text-slate-600">Loading Musha...</p>
         </div>
       </div>
     </template>
@@ -58,12 +57,8 @@
       <main class="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
         <section class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-soft">
           <div class="mb-8">
-            <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 text-white">
-              <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-              </svg>
-            </div>
-            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authMode === 'staff-signup' ? 'Staff signup' : 'Sign in to RentRadar'"></h1>
+            <img class="brand-logo mb-5 h-32 w-auto" src="musha-logo.png" alt="Musha logo">
+            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authMode === 'staff-signup' ? 'Staff signup' : 'Sign in to Musha'"></h1>
             <p class="mt-2 text-sm leading-6 text-slate-500" x-text="authMode === 'staff-signup' ? 'Create a staff account and request access with a landlord code.' : 'Access is invite-only. Use the credentials created for your account.'"></p>
           </div>
 
@@ -153,7 +148,7 @@
             </svg>
           </div>
           <h1 class="text-xl font-bold text-slate-900">Account Suspended</h1>
-          <p class="mt-3 text-sm leading-6 text-slate-600">Your account has been suspended. Please contact RentRadar support to restore access.</p>
+          <p class="mt-3 text-sm leading-6 text-slate-600">Your account has been suspended. Please contact Musha support to restore access.</p>
           <button
             class="mt-7 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
             type="button"
@@ -168,12 +163,8 @@
       <main class="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
         <section id="invite-flow-shell" class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-soft">
           <div class="mb-8">
-            <div class="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500 text-white">
-              <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-              </svg>
-            </div>
-            <h1 class="text-2xl font-bold tracking-normal text-slate-900">Welcome to RentRadar</h1>
+            <img class="brand-logo mb-5 h-32 w-auto" src="musha-logo.png" alt="Musha logo">
+            <h1 class="text-2xl font-bold tracking-normal text-slate-900">Welcome to Musha</h1>
             <p class="mt-2 text-sm leading-6 text-slate-500">Set your password to activate your invited account.</p>
           </div>
 
@@ -257,12 +248,8 @@
         <header class="border-b border-emerald-100 bg-white">
           <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-3">
-              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-                </svg>
-              </div>
-              <span class="text-base font-bold text-slate-900">RentRadar Admin</span>
+              <img class="brand-logo h-12 w-auto max-w-[150px]" src="musha-logo.png" alt="Musha logo">
+              <span class="text-base font-bold text-slate-900">Admin</span>
             </div>
             <div class="flex items-center gap-2">
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
@@ -1004,12 +991,7 @@
         <div class="flex min-h-screen">
           <aside class="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
             <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
-              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-                </svg>
-              </div>
-              <span class="text-base font-bold text-slate-900">RentRadar</span>
+              <img class="brand-logo h-12 w-auto max-w-[160px]" src="musha-logo.png" alt="Musha logo">
             </div>
             <nav id="landlord-staff-sidebar" class="flex-1 space-y-1 p-3">
               <template x-for="item in appNavItems()" :key="item.page">
@@ -1035,12 +1017,7 @@
               <aside class="relative flex h-full w-72 flex-col border-r border-slate-200 bg-white shadow-soft">
                 <div class="flex h-16 items-center justify-between border-b border-slate-200 px-5">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-                      </svg>
-                    </div>
-                    <span class="text-base font-bold text-slate-900">RentRadar</span>
+                    <img class="brand-logo h-12 w-auto max-w-[160px]" src="musha-logo.png" alt="Musha logo">
                   </div>
                   <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="sidebarOpen = false" aria-label="Close navigation">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -2696,7 +2673,7 @@
                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">My Account</h1>
-                        <p class="mt-1 text-sm text-slate-500">Your landlord profile and RentRadar subscription details.</p>
+                        <p class="mt-1 text-sm text-slate-500">Your landlord profile and Musha subscription details.</p>
                       </div>
                       <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                     </div>
@@ -2754,13 +2731,8 @@
         <header class="sticky top-0 z-30 border-b border-slate-200 bg-white">
           <div class="flex h-16 items-center justify-between px-4">
             <div class="flex items-center gap-3">
-              <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500 text-white">
-                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M13 2 4 14h7l-1 8 10-13h-7l0-7Z" fill="currentColor"></path>
-                </svg>
-              </div>
+              <img class="brand-logo h-12 w-auto max-w-[145px]" src="musha-logo.png" alt="Musha logo">
               <div>
-                <p class="text-sm font-bold text-slate-900">RentRadar</p>
                 <p class="text-xs font-medium text-slate-500" x-text="pageTitle"></p>
               </div>
             </div>
@@ -3080,10 +3052,11 @@
     const MAINTENANCE_PHOTO_BUCKET = 'maintenance-photos';
     const MAX_IMAGE_UPLOAD_SIZE = 10 * 1024 * 1024;
     const MAX_PAYMENT_PROOF_UPLOAD_SIZE = 10 * 1024 * 1024;
-    const COMPANY_NAME = 'RentRadar';
+    const COMPANY_NAME = 'Musha';
+    const COMPANY_TAGLINE = 'Your property, handled simply.';
     const SUPPORT_EMAIL = 'dhruvp246@gmail.com';
 
-    function rentRadarApp() {
+    function mushaApp() {
       return {
         booting: true,
         authLoading: false,
@@ -3532,8 +3505,8 @@
 
         async init() {
           try {
-            this.successMessage = sessionStorage.getItem('rentradar_success') || '';
-            sessionStorage.removeItem('rentradar_success');
+            this.successMessage = sessionStorage.getItem('musha_success') || '';
+            sessionStorage.removeItem('musha_success');
 
             if (this.hasInviteHash()) {
               this.currentShell = 'invite';
@@ -3592,7 +3565,7 @@
               }
             });
           } catch (error) {
-            this.authError = error.message || 'RentRadar could not finish loading. Please refresh once or sign in again.';
+            this.authError = error.message || 'Musha could not finish loading. Please refresh once or sign in again.';
             this.currentShell = 'login';
             this.booting = false;
           }
@@ -3722,7 +3695,7 @@
                 }
               } else if (existingProfile.role !== 'tenant') {
                 await supabaseClient.auth.signOut();
-                this.invite.submitError = 'This email is already used by a non-tenant RentRadar account. Use a different tenant email.';
+                this.invite.submitError = 'This email is already used by a non-tenant Musha account. Use a different tenant email.';
                 this.invite.submitting = false;
                 return;
               }
@@ -3739,7 +3712,7 @@
               }
 
               await supabaseClient.auth.signOut();
-              sessionStorage.setItem('rentradar_success', 'Invite accepted. Please sign in with your existing tenant password.');
+              sessionStorage.setItem('musha_success', 'Invite accepted. Please sign in with your existing tenant password.');
               this.goToLogin(inviteEmail);
               return;
             }
@@ -3755,7 +3728,7 @@
             this.invite.submitError = signUpError.message.includes('Signups not allowed')
               ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
               : alreadyRegistered && tokenRow.role === 'tenant'
-                ? 'This tenant email already has a RentRadar login. Enter the existing password to accept this invite, or reset the password first.'
+                ? 'This tenant email already has a Musha login. Enter the existing password to accept this invite, or reset the password first.'
                 : signUpError.message;
             this.invite.submitting = false;
             return;
@@ -3840,7 +3813,7 @@
           }
 
           await supabaseClient.auth.signOut();
-          sessionStorage.setItem('rentradar_success', 'Account created successfully. Please sign in.');
+          sessionStorage.setItem('musha_success', 'Account created successfully. Please sign in.');
           this.goToLogin(tokenRow.email);
         },
 
@@ -3849,13 +3822,13 @@
           this.currentShell = 'login';
           this.loginForm.email = email || this.invite.form.email || '';
           this.loginForm.password = '';
-          this.successMessage = sessionStorage.getItem('rentradar_success') || this.successMessage;
-          sessionStorage.removeItem('rentradar_success');
+          this.successMessage = sessionStorage.getItem('musha_success') || this.successMessage;
+          sessionStorage.removeItem('musha_success');
           this.invite.submitting = false;
         },
 
         routeStorageKey() {
-          return `rentradar_current_page_${this.profile?.id || this.user?.id || 'guest'}`;
+          return `musha_current_page_${this.profile?.id || this.user?.id || 'guest'}`;
         },
 
         readStoredPage() {
@@ -6106,7 +6079,7 @@
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.href = url;
-          link.download = `rentradar-finance-${this.toIsoDate(new Date())}.csv`;
+          link.download = `musha-finance-${this.toIsoDate(new Date())}.csv`;
           document.body.appendChild(link);
           link.click();
           link.remove();
@@ -6471,7 +6444,7 @@
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(20);
-            doc.text('RentRadar', 20, 22);
+            doc.text('Musha', 20, 22);
             doc.setFontSize(13);
             doc.text('Payment Receipt', 20, 32);
 
@@ -8478,7 +8451,7 @@
 
           if (profileError || !profile) {
             await supabaseClient.auth.signOut();
-            this.authError = 'Your account does not exist or has been removed. Please contact your landlord or RentRadar administrator.';
+            this.authError = 'Your account does not exist or has been removed. Please contact your landlord or Musha administrator.';
             this.currentShell = 'login';
             this.booting = false;
             return;
@@ -8486,7 +8459,7 @@
 
           if (profile.archived_at) {
             await supabaseClient.auth.signOut();
-            this.authError = 'Your account has been archived. Please contact your landlord or RentRadar administrator.';
+            this.authError = 'Your account has been archived. Please contact your landlord or Musha administrator.';
             this.currentShell = 'login';
             this.booting = false;
             return;
@@ -8752,7 +8725,7 @@
             'tenant-settings': 'Settings'
           };
 
-          return titles[page] || 'RentRadar';
+          return titles[page] || 'Musha';
         },
 
         async logout() {
