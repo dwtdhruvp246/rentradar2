@@ -505,7 +505,7 @@
                   <template x-for="company in selectedAdminManagementCompanies().filter(item => item.accepted && !item.archived_at)" :key="`finance-management-${company.id}`">
                     <option x-show="admin.financeForm.payerType === 'management'" :value="company.id" x-text="`${company.company_name} - ${company.email || adminCountryName(company.country_id)}`"></option>
                   </template>
-                  <template x-for="staffRow in selectedAdminStaffProfiles()" :key="`finance-staff-${staffRow.id}`">
+                  <template x-for="staffRow in selectedAdminAcceptedStaffProfiles()" :key="`finance-staff-${staffRow.id}`">
                     <option x-show="admin.financeForm.payerType === 'staff'" :value="staffRow.id" x-text="`${staffRow.full_name || staffRow.email} - ${staffRow.email} (${adminCountryName(adminStaffCountryId(staffRow))})`"></option>
                   </template>
                 </select>
@@ -940,9 +940,9 @@
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
                     <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No staff accounts yet.</td></tr>
                   </template>
-                  <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.id">
+                  <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
-                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.email_verified ? 'Email verified' : 'Email pending'"></p></td>
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Email pending')"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
@@ -953,9 +953,10 @@
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
-                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Edit Subscription</button>
-                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
-                          <button x-show="staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminStaff(staffRow)">Unarchive</button>
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)" x-text="staffRow.accepted === false ? 'Edit Invite' : 'Edit Subscription'"></button>
+                          <button x-show="staffRow.accepted === false && staffRow.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(staffRow.invite_link)">Copy Link</button>
+                          <button x-show="staffRow.accepted !== false && !staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
+                          <button x-show="staffRow.accepted !== false && staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminStaff(staffRow)">Unarchive</button>
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteAdminStaff(staffRow)">Delete</button>
                         </div>
                       </td>
@@ -4528,6 +4529,10 @@
           return rows;
         },
 
+        selectedAdminAcceptedStaffProfiles() {
+          return this.selectedAdminStaffProfiles().filter(row => row.accepted !== false && row.id);
+        },
+
         selectedAdminManagementCompanies() {
           let rows = this.admin.managementCompanies;
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
@@ -4722,7 +4727,7 @@
           this.admin.loading = true;
           this.admin.error = '';
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, staffProfilesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -4747,6 +4752,13 @@
               .from('profiles')
               .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at, archived_at, archived_by')
               .eq('role', 'staff'),
+            supabaseClient
+              .from('invite_tokens')
+              .select('id, token, email, role, landlord_id, country_id, metadata, used, expires_at, created_at')
+              .eq('role', 'staff')
+              .is('landlord_id', null)
+              .eq('used', false)
+              .order('created_at', { ascending: false }),
             supabaseClient
               .from('staff_permissions')
               .select('id, landlord_id, staff_profile_id, status')
@@ -4787,7 +4799,7 @@
               .eq('status', 'approved')
           ]);
 
-          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || staffProfilesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
+          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
             this.admin.error = firstError.message;
             this.admin.loading = false;
@@ -4848,13 +4860,57 @@
             }
           });
 
-          this.admin.staffProfiles = (staffProfilesResult.data || [])
+          const acceptedFreelancerStaff = (staffProfilesResult.data || [])
           .filter(profile => (profile.staff_type || 'landlord') === 'freelancer')
           .map(profile => ({
             ...profile,
+            rowKey: `staff-profile-${profile.id}`,
+            accepted: true,
+            profile_id: profile.id,
+            invite_id: null,
+            invite_link: '',
             primary_country_id: profile.country_id || staffCountryById.get(profile.id) || null,
             landlord_count: staffLandlordCounts.get(profile.id) || 0
-          })).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          }));
+
+          const acceptedFreelancerEmails = new Set(acceptedFreelancerStaff.map(row => String(row.email || '').toLowerCase()).filter(Boolean));
+          const pendingFreelancerStaff = (staffInvitesResult.data || [])
+            .filter(invite => {
+              const metadata = invite.metadata || {};
+              return metadata.staff_type === 'freelancer' && !acceptedFreelancerEmails.has(String(invite.email || '').toLowerCase());
+            })
+            .map(invite => {
+              const metadata = invite.metadata || {};
+              const countryId = invite.country_id || metadata.country_id || null;
+              return {
+                rowKey: `staff-invite-${invite.id}`,
+                accepted: false,
+                id: null,
+                profile_id: null,
+                invite_id: invite.id,
+                invite_token: invite.token,
+                invite_link: this.buildInviteLink(invite.token),
+                metadata,
+                country_id: countryId,
+                primary_country_id: countryId,
+                country_name: this.adminCountryName(countryId),
+                full_name: metadata.full_name || metadata.fullName || invite.email,
+                email: invite.email,
+                phone: metadata.phone || '',
+                email_verified: false,
+                staff_type: 'freelancer',
+                staff_max_landlords: Number(metadata.staff_max_landlords ?? 2),
+                staff_subscription_status: metadata.staff_subscription_status || 'free',
+                staff_subscription_expires_at: metadata.staff_subscription_expires_at || null,
+                landlord_count: 0,
+                created_at: invite.created_at,
+                archived_at: null,
+                archived_by: null
+              };
+            });
+
+          this.admin.staffProfiles = [...pendingFreelancerStaff, ...acceptedFreelancerStaff]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           const acceptedEmails = new Set(acceptedRows.map(row => row.email.toLowerCase()));
           const pendingRows = (invitesResult.data || [])
@@ -5581,9 +5637,41 @@
         },
 
         async saveAdminStaffLimit() {
-          if (!this.admin.selectedRow?.id) return;
+          if (!this.admin.selectedRow?.id && !this.admin.selectedRow?.invite_id) return;
           this.admin.formError = '';
           this.admin.saving = true;
+
+          if (this.admin.selectedRow?.accepted === false) {
+            const metadata = {
+              ...(this.admin.selectedRow.metadata || {}),
+              staff_type: 'freelancer',
+              full_name: this.admin.selectedRow.full_name || this.admin.selectedRow.email,
+              phone: this.admin.selectedRow.phone || '',
+              country_id: this.admin.selectedRow.country_id || this.admin.selectedRow.primary_country_id || null,
+              staff_max_landlords: Number(this.admin.staffLimitForm.maxLandlords || 0),
+              staff_subscription_status: this.admin.staffLimitForm.subscriptionStatus,
+              staff_subscription_expires_at: this.admin.staffLimitForm.expiresAt || null
+            };
+
+            const { error } = await supabaseClient
+              .from('invite_tokens')
+              .update({
+                country_id: metadata.country_id,
+                metadata
+              })
+              .eq('id', this.admin.selectedRow.invite_id);
+
+            if (error) {
+              this.admin.formError = error.message;
+              this.admin.saving = false;
+              return;
+            }
+
+            this.admin.message = 'Staff invite updated.';
+            this.closeAdminModal();
+            await this.loadSuperAdminData();
+            return;
+          }
 
           const { error } = await supabaseClient
             .from('profiles')
@@ -5667,17 +5755,38 @@
         },
 
         async permanentlyDeleteAdminStaff(staffRow) {
-          if (!staffRow?.id) return;
+          if (!staffRow?.id && !staffRow?.invite_id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Permanently delete staff',
-            message: `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the staff login and access records. Finance records already saved against this staff member will remain unassigned.`,
-            confirmText: 'Delete permanently'
+            title: staffRow.accepted === false ? 'Delete staff invite' : 'Permanently delete staff',
+            message: staffRow.accepted === false
+              ? `Delete the freelancer invite for ${staffRow.full_name || staffRow.email}? The invite link will stop working.`
+              : `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the staff login and access records. Finance records already saved against this staff member will remain unassigned.`,
+            confirmText: staffRow.accepted === false ? 'Delete invite' : 'Delete permanently'
           });
           if (!confirmed) return;
 
           this.admin.error = '';
           this.admin.message = '';
           this.admin.saving = true;
+
+          if (staffRow.accepted === false) {
+            const { error } = await supabaseClient
+              .from('invite_tokens')
+              .delete()
+              .eq('id', staffRow.invite_id);
+
+            if (error) {
+              this.admin.error = error.message;
+              this.admin.saving = false;
+              return;
+            }
+
+            this.admin.message = 'Staff invite deleted.';
+            this.admin.saving = false;
+            await this.loadSuperAdminData();
+            return;
+          }
+
           const { error } = await supabaseClient.rpc('permanently_delete_staff_account', {
             p_profile_id: staffRow.id
           });
@@ -6119,6 +6228,7 @@
         },
 
         staffAccountStatus(staffRow) {
+          if (staffRow?.accepted === false) return 'Invited';
           if (staffRow?.archived_at) return 'Archived';
           if (staffRow?.staff_subscription_status === 'suspended') return 'Suspended';
           if (!Number(staffRow?.landlord_count || 0)) return 'Pending Approval';
@@ -6130,6 +6240,7 @@
           if (status === 'Active') return 'bg-emerald-100 text-emerald-700';
           if (status === 'Suspended') return 'bg-red-100 text-red-700';
           if (status === 'Archived') return 'bg-slate-100 text-slate-700';
+          if (status === 'Invited') return 'bg-yellow-100 text-amber-700';
           return 'bg-yellow-100 text-amber-700';
         },
 
