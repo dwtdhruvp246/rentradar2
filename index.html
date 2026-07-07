@@ -1396,7 +1396,7 @@
               <div class="flex items-center gap-3">
                 <span x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="subscriptionDashboardBadgeClass()" x-text="subscriptionDashboardLabel()"></span>
                 <span x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffProfileSubscriptionBadgeClass()" x-text="staffProfileSubscriptionLabel()"></span>
-                <div x-show="profile?.role === 'staff'" class="hidden items-center gap-2 lg:flex">
+                <div x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="hidden items-center gap-2 lg:flex">
                   <select class="max-w-52 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-500" x-model="staffContext.activeLandlordId" @change="switchStaffLandlord(staffContext.activeLandlordId)">
                     <template x-for="relationship in staffContext.relationships" :key="relationship.id">
                       <option :value="relationship.landlord_id" x-text="relationship.landlord?.full_name || relationship.landlord?.email || 'Landlord'"></option>
