@@ -1004,6 +1004,15 @@
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.freelancerForm.phone">
                 </label>
                 <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.countryId" required>
+                    <option value="">Select country</option>
+                    <template x-for="country in admin.countries" :key="`freelancer-country-${country.id}`">
+                      <option :value="country.id" x-text="country.name"></option>
+                    </template>
+                  </select>
+                </label>
+                <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Landlord limit</span>
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="1" step="1" x-model.number="admin.freelancerForm.maxLandlords" required>
                 </label>
@@ -1316,6 +1325,7 @@
           <aside class="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
             <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
               <img class="brand-logo h-12 w-auto max-w-[160px]" src="mushavo-logo.png" alt="Mushavo logo">
+              <span class="text-sm font-bold uppercase tracking-wide text-emerald-700" x-text="accountRoleLabel()"></span>
             </div>
             <nav id="landlord-staff-sidebar" class="flex-1 space-y-1 p-3">
               <template x-for="item in appNavItems()" :key="item.page">
@@ -1342,6 +1352,7 @@
                 <div class="flex h-16 items-center justify-between border-b border-slate-200 px-5">
                   <div class="flex items-center gap-3">
                     <img class="brand-logo h-12 w-auto max-w-[160px]" src="mushavo-logo.png" alt="Mushavo logo">
+                    <span class="text-sm font-bold uppercase tracking-wide text-emerald-700" x-text="accountRoleLabel()"></span>
                   </div>
                   <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="sidebarOpen = false" aria-label="Close navigation">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1378,13 +1389,13 @@
                   </svg>
                 </button>
                 <div>
-                  <p class="text-xs font-semibold uppercase tracking-wide text-emerald-700" x-text="accountRoleLabel()"></p>
                   <p class="text-sm font-semibold text-slate-900" x-text="pageTitle"></p>
                 </div>
               </div>
 
               <div class="flex items-center gap-3">
                 <span x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="subscriptionDashboardBadgeClass()" x-text="subscriptionDashboardLabel()"></span>
+                <span x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffProfileSubscriptionBadgeClass()" x-text="staffProfileSubscriptionLabel()"></span>
                 <div x-show="profile?.role === 'staff'" class="hidden items-center gap-2 lg:flex">
                   <select class="max-w-52 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-500" x-model="staffContext.activeLandlordId" @change="switchStaffLandlord(staffContext.activeLandlordId)">
                     <template x-for="relationship in staffContext.relationships" :key="relationship.id">
@@ -2755,6 +2766,12 @@
                     <template x-if="managementContext.message">
                       <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="managementContext.message"></div>
                     </template>
+                    <template x-if="staff.generatedInviteLink">
+                      <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        <p class="font-semibold">Staff invite link created</p>
+                        <button class="mt-2 break-all text-left text-xs font-semibold underline" type="button" @click="copyText(staff.generatedInviteLink)" x-text="staff.generatedInviteLink"></button>
+                      </div>
+                    </template>
                   </section>
 
                   <section x-show="profile?.role === 'management_leader'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
@@ -2865,7 +2882,7 @@
                                 <p class="mt-1 text-xs text-slate-500" x-text="member.email"></p>
                               </td>
                               <td class="px-4 py-3">
-                                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="member.accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-amber-700'" x-text="member.accepted ? 'Approved' : 'Pending request'"></span>
+                                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="member.accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-amber-700'" x-text="member.accepted ? 'Approved' : (member.invite_id ? 'Invited' : 'Pending request')"></span>
                               </td>
                               <td class="px-4 py-3 text-slate-700" x-text="staffPropertyScopeLabel(member)"></td>
                               <td class="px-4 py-3">
@@ -2878,10 +2895,11 @@
                               <td class="px-4 py-3 text-slate-700" x-text="formatDate(member.invited_at || member.created_at)"></td>
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
-                                  <button x-show="member.accepted" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openStaffPermissionsModal(member)">Edit</button>
-                                  <button x-show="!member.accepted" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="approveStaffRequest(member)">Approve</button>
-                                  <button x-show="!member.accepted" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectStaffRequest(member)">Reject</button>
-                                  <button x-show="member.accepted" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="removeStaff(member)">Delete</button>
+                                  <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openStaffPermissionsModal(member)">Edit</button>
+                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="approveStaffRequest(member)">Approve</button>
+                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectStaffRequest(member)">Reject</button>
+                                  <button x-show="!member.accepted && member.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(member.invite_link)">Copy Link</button>
+                                  <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="removeStaff(member)">Delete</button>
                                 </div>
                               </td>
                             </tr>
@@ -3668,6 +3686,7 @@
             fullName: '',
             email: '',
             phone: '',
+            countryId: '',
             maxLandlords: 2,
             subscriptionStatus: 'free',
             expiresAt: ''
@@ -4235,7 +4254,7 @@
           const profilePayload = {
             id: signUpData.user.id,
             landlord_id: ['staff', 'management_staff'].includes(tokenRow.role) ? tokenRow.landlord_id : null,
-            country_id: ['landlord', 'management_leader'].includes(tokenRow.role) ? (metadata.country_id || tokenRow.country_id || null) : null,
+            country_id: ['landlord', 'management_leader'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
             phone: metadata.phone || null,
             email: inviteEmail,
@@ -5054,6 +5073,7 @@
               fullName: '',
               email: '',
               phone: '',
+              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
               maxLandlords: 2,
               subscriptionStatus: 'free',
               expiresAt: ''
@@ -5305,11 +5325,19 @@
           this.admin.generatedInviteLink = '';
           this.admin.saving = true;
 
+          const countryId = this.admin.freelancerForm.countryId || this.admin.selectedCountryId;
+          if (!countryId || countryId === 'all' || countryId === 'unassigned') {
+            this.admin.formError = 'Select the country this freelancer belongs to.';
+            this.admin.saving = false;
+            return;
+          }
+
           const token = this.generateSecureToken();
           const metadata = {
             staff_type: 'freelancer',
             full_name: this.admin.freelancerForm.fullName,
             phone: this.admin.freelancerForm.phone || '',
+            country_id: countryId,
             staff_max_landlords: Number(this.admin.freelancerForm.maxLandlords || 2),
             staff_subscription_status: this.admin.freelancerForm.subscriptionStatus || 'free',
             staff_subscription_expires_at: this.admin.freelancerForm.expiresAt || null
@@ -5322,6 +5350,7 @@
               email: this.admin.freelancerForm.email,
               role: 'staff',
               landlord_id: null,
+              country_id: countryId,
               metadata,
               expires_at: this.addHoursIso(48)
             })
@@ -6125,6 +6154,20 @@
           if (label === 'Suspended' || label === 'Expired') return 'bg-red-100 text-red-700';
           if (label === 'Expiring Soon') return 'bg-yellow-100 text-amber-700';
           return 'bg-slate-100 text-slate-700';
+        },
+
+        staffProfileSubscriptionLabel() {
+          return this.staffSubscriptionLabel({
+            staff_subscription_status: this.profile?.staff_subscription_status || 'free',
+            staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null
+          });
+        },
+
+        staffProfileSubscriptionBadgeClass() {
+          return this.staffSubscriptionBadgeClass({
+            staff_subscription_status: this.profile?.staff_subscription_status || 'free',
+            staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null
+          });
         },
 
         async copyText(text) {
@@ -8087,15 +8130,16 @@
 
           const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
           const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
-          const [propertiesResult, permissionsResult, requestsResult, managementPermissionsResult, managementRequestsResult] = await Promise.all([
+          const [propertiesResult, permissionsResult, requestsResult, inviteTokensResult, managementPermissionsResult, managementRequestsResult] = await Promise.all([
             supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
             supabaseClient.from('staff_permissions').select(permissionSelect).eq('landlord_id', this.currentLandlordId()).order('accepted_at', { ascending: false }),
             supabaseClient.from('staff_landlord_requests').select('id, staff_profile_id, landlord_id, landlord_code, status, requested_at, reviewed_at, staff_profile:profiles!staff_landlord_requests_staff_profile_id_fkey(id, full_name, phone, email, staff_type, created_at)').eq('landlord_id', this.currentLandlordId()).eq('status', 'pending').order('requested_at', { ascending: false }),
+            supabaseClient.from('invite_tokens').select('id, token, email, role, metadata, created_at, expires_at').eq('landlord_id', this.currentLandlordId()).eq('role', 'staff').eq('used', false).order('created_at', { ascending: false }),
             supabaseClient.from('management_landlord_permissions').select(managementPermissionSelect).eq('landlord_id', this.currentLandlordId()).eq('status', 'approved').order('accepted_at', { ascending: false }),
             supabaseClient.from('management_landlord_requests').select('id, management_company_id, leader_profile_id, landlord_id, landlord_code, status, requested_at, reviewed_at, company:management_companies!management_landlord_requests_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_requests_leader_profile_id_fkey(id, full_name, email, phone)').eq('landlord_id', this.currentLandlordId()).eq('status', 'pending').order('requested_at', { ascending: false })
           ]);
 
-          const firstError = propertiesResult.error || permissionsResult.error || requestsResult.error || managementPermissionsResult.error || managementRequestsResult.error;
+          const firstError = propertiesResult.error || permissionsResult.error || requestsResult.error || inviteTokensResult.error || managementPermissionsResult.error || managementRequestsResult.error;
           if (firstError) {
             this.staff.error = firstError.message;
             this.staff.loading = false;
@@ -8150,7 +8194,36 @@
             };
           });
 
-          this.staff.members = [...pendingMembers, ...acceptedMembers].sort((a, b) => new Date(b.invited_at || b.created_at).getTime() - new Date(a.invited_at || a.created_at).getTime());
+          const pendingInviteMembers = (inviteTokensResult.data || []).map(invite => {
+            const metadata = invite.metadata || {};
+            return {
+              rowKey: `invite-${invite.id}`,
+              accepted: false,
+              invite_id: invite.id,
+              invite_link: this.buildInviteLink(invite.token),
+              request_id: null,
+              profile_id: null,
+              permission_id: null,
+              full_name: metadata.full_name || metadata.fullName || invite.email || 'Invited staff',
+              email: invite.email || '',
+              phone: metadata.phone || '',
+              staff_type: metadata.staff_type || 'landlord',
+              created_at: invite.created_at,
+              invited_at: invite.created_at,
+              expires_at: invite.expires_at,
+              all_properties: metadata.all_properties !== false,
+              property_ids: metadata.property_ids || [],
+              can_view_properties: metadata.can_view_properties !== false,
+              can_view_units: metadata.can_view_units !== false,
+              can_view_tenants: Boolean(metadata.can_view_tenants),
+              can_manage_maintenance: Boolean(metadata.can_manage_maintenance),
+              can_view_payments: Boolean(metadata.can_view_payments),
+              can_verify_payments: Boolean(metadata.can_verify_payments),
+              can_manage_leases: Boolean(metadata.can_manage_leases)
+            };
+          });
+
+          this.staff.members = [...pendingMembers, ...pendingInviteMembers, ...acceptedMembers].sort((a, b) => new Date(b.invited_at || b.created_at).getTime() - new Date(a.invited_at || a.created_at).getTime());
           this.staff.managementPartners = managementPermissionsResult.data || [];
           this.staff.managementRequests = managementRequestsResult.data || [];
           this.staff.loading = false;
@@ -8333,6 +8406,7 @@
             const metadata = {
               full_name: this.staff.form.fullName,
               phone: this.staff.form.phone || '',
+              staff_type: member.staff_type || (this.profile?.role === 'management_leader' ? 'management' : 'landlord'),
               ...permissions
             };
 
@@ -8457,11 +8531,13 @@
 
         async removeStaff(member) {
           const confirmed = await this.requestConfirm({
-            title: 'Remove staff access',
-            message: this.profile?.role === 'management_leader'
+            title: member.invite_id && !member.accepted ? 'Delete staff invite' : 'Remove staff access',
+            message: member.invite_id && !member.accepted
+              ? `Delete the invite for ${member.full_name || member.email}? The invite link will stop working.`
+              : this.profile?.role === 'management_leader'
               ? `Permanently delete ${member.full_name || member.email} from this management company? Their management staff login will be removed.`
               : `Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`,
-            confirmText: 'Remove'
+            confirmText: member.invite_id && !member.accepted ? 'Delete Invite' : 'Remove'
           });
           if (!confirmed) return;
 
@@ -9966,7 +10042,7 @@
               return;
             }
             this.currentShell = 'app';
-            this.currentPage = this.resolveActivePage('dashboard', previousShell, previousPage);
+            this.currentPage = previousShell === 'app' && this.isPageAllowed(previousPage) ? previousPage : 'dashboard';
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
             await this.loadUnreadCount(profile.id);
@@ -9991,7 +10067,7 @@
               return;
             }
             this.currentShell = 'app';
-            this.currentPage = this.resolveActivePage('dashboard', previousShell, previousPage);
+            this.currentPage = previousShell === 'app' && this.isPageAllowed(previousPage) ? previousPage : 'dashboard';
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
             await this.loadUnreadCount(profile.id);
