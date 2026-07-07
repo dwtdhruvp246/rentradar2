@@ -491,15 +491,19 @@
                 <span class="mb-2 block text-sm font-medium text-slate-700">Payment for</span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required>
                   <option value="landlord">Landlord</option>
+                  <option value="management">Management</option>
                   <option value="staff">Staff</option>
                 </select>
               </label>
               <label class="block">
-                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : 'Landlord'"></span>
+                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : (admin.financeForm.payerType === 'management' ? 'Management' : 'Landlord')"></span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required>
-                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : 'Select landlord'"></option>
+                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : (admin.financeForm.payerType === 'management' ? 'Select management company' : 'Select landlord')"></option>
                   <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
+                  </template>
+                  <template x-for="company in selectedAdminManagementCompanies().filter(item => item.accepted && !item.archived_at)" :key="`finance-management-${company.id}`">
+                    <option x-show="admin.financeForm.payerType === 'management'" :value="company.id" x-text="`${company.company_name} - ${company.email || adminCountryName(company.country_id)}`"></option>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="`finance-staff-${staffRow.id}`">
                     <option x-show="admin.financeForm.payerType === 'staff'" :value="staffRow.id" x-text="`${staffRow.full_name || staffRow.email} - ${staffRow.email} (${adminCountryName(adminStaffCountryId(staffRow))})`"></option>
@@ -541,6 +545,7 @@
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.financePayerType">
                   <option value="">All types</option>
                   <option value="landlord">Landlord</option>
+                  <option value="management">Management</option>
                   <option value="staff">Staff</option>
                 </select>
               </label>
@@ -566,7 +571,7 @@
                   <template x-for="payment in selectedAdminFinancePayments()" :key="payment.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3 text-slate-700" x-text="adminCountryName(payment.country_id)"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="payment.payer_type === 'staff' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'" x-text="titleCase(payment.payer_type || 'landlord')"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="paymentPayerBadgeClass(payment.payer_type)" x-text="payment.payer_type === 'management' ? 'Management' : titleCase(payment.payer_type || 'landlord')"></span></td>
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="adminPaymentAccountName(payment)"></p><p class="mt-1 text-xs text-slate-500" x-text="adminPaymentAccountEmail(payment)"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount_paid)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.paid_at)"></td>
@@ -3570,6 +3575,7 @@
             accountId: '',
             landlordId: '',
             staffId: '',
+            managementCompanyId: '',
             countryId: '',
             amount: 0,
             paidAt: '',
@@ -4486,13 +4492,21 @@
         },
 
         adminPaymentAccountName(payment) {
+          if (payment?.payer_type === 'management') return payment.management_company?.company_name || '-';
           const account = payment?.payer_type === 'staff' ? payment.staff : payment.landlord;
           return account?.full_name || '-';
         },
 
         adminPaymentAccountEmail(payment) {
+          if (payment?.payer_type === 'management') return payment.management_company?.leader?.email || '';
           const account = payment?.payer_type === 'staff' ? payment.staff : payment.landlord;
           return account?.email || '';
+        },
+
+        paymentPayerBadgeClass(type) {
+          if (type === 'staff') return 'bg-sky-100 text-sky-700';
+          if (type === 'management') return 'bg-violet-100 text-violet-700';
+          return 'bg-emerald-100 text-emerald-700';
         },
 
         selectedAdminFinancePayments() {
@@ -4558,15 +4572,25 @@
 
         selectAdminCountry(countryId) {
           this.admin.selectedCountryId = countryId || 'all';
-          if (this.admin.financeForm.accountId || this.admin.financeForm.landlordId) {
-            const selectedLandlord = this.admin.landlords.find(row => row.profile_id === (this.admin.financeForm.accountId || this.admin.financeForm.landlordId));
-            const selectedMatches = this.admin.selectedCountryId === 'all'
-              || (this.admin.selectedCountryId === 'unassigned' && !selectedLandlord?.country_id)
-              || selectedLandlord?.country_id === this.admin.selectedCountryId;
-            if (!selectedMatches && this.admin.financeForm.payerType !== 'staff') {
-              this.admin.financeForm.accountId = '';
-              this.admin.financeForm.landlordId = '';
-            }
+          const accountId = this.admin.financeForm.accountId
+            || this.admin.financeForm.landlordId
+            || this.admin.financeForm.staffId
+            || this.admin.financeForm.managementCompanyId;
+          if (!accountId || this.admin.selectedCountryId === 'all') return;
+
+          const payerType = this.admin.financeForm.payerType || 'landlord';
+          const selectedCountryId = payerType === 'staff'
+            ? this.adminStaffCountryId(this.admin.staffProfiles.find(row => row.id === accountId))
+            : payerType === 'management'
+              ? this.admin.managementCompanies.find(row => row.id === accountId)?.country_id
+              : this.admin.landlords.find(row => row.profile_id === accountId)?.country_id;
+          const selectedMatches = (this.admin.selectedCountryId === 'unassigned' && !selectedCountryId)
+            || selectedCountryId === this.admin.selectedCountryId;
+          if (!selectedMatches) {
+            this.admin.financeForm.accountId = '';
+            this.admin.financeForm.landlordId = '';
+            this.admin.financeForm.staffId = '';
+            this.admin.financeForm.managementCompanyId = '';
           }
         },
 
@@ -4617,7 +4641,7 @@
               .is('archived_at', null),
             supabaseClient
               .from('platform_payments')
-              .select('id, payer_type, landlord_id, staff_id, country_id, amount_paid, paid_at, period_start, period_end, notes, recorded_by, created_at, landlord:profiles!platform_payments_landlord_id_fkey(id, country_id, full_name, email), staff:profiles!platform_payments_staff_id_fkey(id, country_id, full_name, email)')
+              .select('id, payer_type, landlord_id, staff_id, management_company_id, country_id, amount_paid, paid_at, period_start, period_end, notes, recorded_by, created_at, landlord:profiles!platform_payments_landlord_id_fkey(id, country_id, full_name, email), staff:profiles!platform_payments_staff_id_fkey(id, country_id, full_name, email), management_company:management_companies!platform_payments_management_company_id_fkey(id, country_id, company_name, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, email))')
               .order('paid_at', { ascending: false })
             ,
             supabaseClient
@@ -4856,9 +4880,10 @@
           this.admin.financePayments = platformPayments.map(payment => ({
             ...payment,
             payer_type: payment.payer_type || 'landlord',
-            country_id: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || staffCountryById.get(payment.staff_id) || null,
+            country_id: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || staffCountryById.get(payment.staff_id) || payment.management_company?.country_id || null,
             landlord: payment.landlord || null,
-            staff: payment.staff || null
+            staff: payment.staff || null,
+            management_company: payment.management_company || null
           }));
           this.admin.financeStats = {
             totalRevenue: this.admin.stats.revenue,
@@ -4947,15 +4972,17 @@
           this.admin.saving = true;
 
           const payerType = this.admin.financeForm.payerType || 'landlord';
-          const accountId = this.admin.financeForm.accountId || this.admin.financeForm.landlordId || this.admin.financeForm.staffId || '';
+          const accountId = this.admin.financeForm.accountId || this.admin.financeForm.landlordId || this.admin.financeForm.staffId || this.admin.financeForm.managementCompanyId || '';
           const landlord = payerType === 'landlord' ? this.admin.landlords.find(row => row.profile_id === accountId) || null : null;
           const staff = payerType === 'staff' ? this.admin.staffProfiles.find(row => row.id === accountId) || null : null;
+          const managementCompany = payerType === 'management' ? this.admin.managementCompanies.find(row => row.id === accountId) || null : null;
           const staffCountryId = this.adminStaffCountryId(staff);
           const payload = {
             payer_type: payerType,
             landlord_id: payerType === 'landlord' ? accountId : null,
             staff_id: payerType === 'staff' ? accountId : null,
-            country_id: landlord?.country_id || staffCountryId || this.admin.financeForm.countryId || null,
+            management_company_id: payerType === 'management' ? accountId : null,
+            country_id: landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || null,
             amount_paid: Number(this.admin.financeForm.amount || 0),
             paid_at: this.admin.financeForm.paidAt,
             period_start: this.admin.financeForm.periodStart,
@@ -4987,10 +5014,11 @@
           this.admin.financeForm = {
             id: payment.id,
             payerType: payment.payer_type || 'landlord',
-            accountId: payment.payer_type === 'staff' ? payment.staff_id : payment.landlord_id,
+            accountId: payment.payer_type === 'staff' ? payment.staff_id : (payment.payer_type === 'management' ? payment.management_company_id : payment.landlord_id),
             landlordId: payment.landlord_id || '',
             staffId: payment.staff_id || '',
-            countryId: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || '',
+            managementCompanyId: payment.management_company_id || '',
+            countryId: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || payment.management_company?.country_id || '',
             amount: Number(payment.amount_paid || 0),
             paidAt: String(payment.paid_at || '').slice(0, 10),
             periodStart: String(payment.period_start || '').slice(0, 10),
@@ -5036,10 +5064,14 @@
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = row;
+          const country = row.country_id
+            || row.subscription?.country_id
+            || this.admin.countries.find(item => String(item.name || '').toLowerCase() === String(row.country_name || '').toLowerCase())?.id
+            || '';
           this.admin.editForm = {
             fullName: row.full_name || '',
             phone: row.phone || '',
-            countryId: row.country_id || ''
+            countryId: country
           };
           this.admin.modal = 'edit';
         },
