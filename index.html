@@ -358,6 +358,7 @@
                   <option value="trial">Trial</option>
                   <option value="suspended">Suspended</option>
                   <option value="pending">Pending invite</option>
+                  <option value="archived">Archived</option>
                 </select>
               </label>
             </div>
@@ -390,7 +391,7 @@
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3">
                         <div class="font-semibold text-slate-900" x-text="row.full_name"></div>
-                        <div class="mt-1 text-xs text-slate-500" x-text="row.accepted ? 'Accepted' : 'Pending invite'"></div>
+                        <div class="mt-1 text-xs text-slate-500" x-text="row.archived_at ? 'Archived' : (row.accepted ? 'Accepted' : 'Pending invite')"></div>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="row.country_name || adminCountryName(row.country_id)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="row.email"></td>
@@ -400,15 +401,17 @@
                       <td class="px-4 py-3 text-slate-700" x-text="row.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.created_at)"></td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(row.subscription?.status || 'trial')" x-text="titleCase(row.subscription?.status || 'trial')"></span>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(row.archived_at ? 'archived' : (row.subscription?.status || 'trial'))" x-text="row.archived_at ? 'Archived' : titleCase(row.subscription?.status || 'trial')"></span>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.subscription?.expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
-                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openEditLandlord(row)">Edit</button>
-                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openSubscriptionModal(row)">Manage Subscription</button>
-                          <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendLandlord(row)">Suspend</button>
-                          <button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteLandlord(row)">Archive</button>
+                          <button x-show="!row.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openEditLandlord(row)">Edit</button>
+                          <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openSubscriptionModal(row)">Manage Subscription</button>
+                          <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendLandlord(row)">Suspend</button>
+                          <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteLandlord(row)">Archive</button>
+                          <button x-show="row.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveLandlord(row)">Unarchive</button>
+                          <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteLandlord(row)">Delete</button>
                           <button x-show="row.invite_link && !row.accepted" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="copyText(row.invite_link)">Copy Invite</button>
                         </div>
                       </td>
@@ -822,6 +825,7 @@
                   <option value="trial">Trial</option>
                   <option value="suspended">Suspended</option>
                   <option value="pending">Pending invite</option>
+                  <option value="archived">Archived</option>
                 </select>
               </label>
             </div>
@@ -848,7 +852,7 @@
                   </template>
                   <template x-for="company in selectedAdminManagementCompanies()" :key="company.rowKey">
                     <tr class="odd:bg-white even:bg-slate-50/60">
-                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="company.company_name"></p><p class="mt-1 text-xs text-slate-500" x-text="company.accepted ? 'Accepted' : 'Pending invite'"></p></td>
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="company.company_name"></p><p class="mt-1 text-xs text-slate-500" x-text="company.archived_at ? 'Archived' : (company.accepted ? 'Accepted' : 'Pending invite')"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.country_name || adminCountryName(company.country_id)"></td>
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="company.leader_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="company.email || '-'"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.landlord_count || 0"></td>
@@ -856,12 +860,14 @@
                       <td class="px-4 py-3 text-slate-700" x-text="company.tenant_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="`${company.max_landlords || 0} landlords / ${company.max_properties || 0} properties / ${company.max_staff || 0} staff`"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(company.subscription_status || 'trial')" x-text="company.accepted ? titleCase(company.subscription_status || 'trial') : 'Pending'"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(company.archived_at ? 'archived' : (company.subscription_status || 'trial'))" x-text="company.archived_at ? 'Archived' : (company.accepted ? titleCase(company.subscription_status || 'trial') : 'Pending')"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(company.subscription_expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
-                          <button x-show="company.accepted" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLimit(company)">Manage</button>
-                          <button x-show="company.accepted" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveManagementCompany(company)">Archive</button>
+                          <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLimit(company)">Manage</button>
+                          <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveManagementCompany(company)">Archive</button>
+                          <button x-show="company.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveManagementCompany(company)">Unarchive</button>
+                          <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteManagementCompany(company)">Delete</button>
                           <button x-show="company.invite_link && !company.accepted" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="copyText(company.invite_link)">Copy Invite</button>
                         </div>
                       </td>
@@ -902,6 +908,7 @@
                   <option value="free">Free</option>
                   <option value="active">Active</option>
                   <option value="suspended">Suspended</option>
+                  <option value="archived">Archived</option>
                 </select>
               </label>
             </div>
@@ -938,8 +945,10 @@
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
-                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Edit Subscription</button>
-                          <button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Edit Subscription</button>
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
+                          <button x-show="staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminStaff(staffRow)">Unarchive</button>
+                          <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteAdminStaff(staffRow)">Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -1022,6 +1031,7 @@
                       <td class="px-4 py-3">
                         <button x-show="!tenantRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveAdminTenant(tenantRow)">Archive</button>
                         <button x-show="tenantRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminTenant(tenantRow)">Unarchive</button>
+                        <button class="ml-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteAdminTenant(tenantRow)">Delete</button>
                       </td>
                     </tr>
                   </template>
@@ -1326,7 +1336,7 @@
                 <button
                   class="hidden max-w-44 truncate rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:block"
                   type="button"
-                  @click="navigate(profile?.role === 'landlord' ? 'my-account' : 'settings')"
+                  @click="navigate(['landlord', 'management_leader'].includes(profile?.role) ? 'my-account' : 'settings')"
                   x-text="profile?.full_name || 'Account'">
                 </button>
                 <button class="relative rounded-lg border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50" type="button" @click="navigate('notifications')" aria-label="Notifications">
@@ -3021,7 +3031,7 @@
                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">My Account</h1>
-                        <p class="mt-1 text-sm text-slate-500">Your landlord profile and Mushavo subscription details.</p>
+                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Your management company profile and Mushavo subscription details.' : 'Your landlord profile and Mushavo subscription details.'"></p>
                       </div>
                       <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                     </div>
@@ -3061,6 +3071,9 @@
                         <dl class="mt-4 space-y-3 text-sm">
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Started</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.created_at)"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Last Updated</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.updated_at)"></dd></div>
+                          <div x-show="account.subscription?.property_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Property Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.property_limit ?? '-'"></dd></div>
+                          <div x-show="account.subscription?.landlord_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Landlord Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.landlord_limit ?? '-'"></dd></div>
+                          <div x-show="account.subscription?.staff_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Staff Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.staff_limit ?? '-'"></dd></div>
                           <div class="gap-2"><dt class="text-slate-500">Notes</dt><dd class="mt-1 rounded-lg bg-slate-50 p-3 font-medium text-slate-900" x-text="account.subscription?.notes || 'No notes on file.'"></dd></div>
                         </dl>
                       </section>
@@ -4306,7 +4319,7 @@
           if (this.currentShell !== 'app') return false;
 
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
-          if (page === 'my-account') return this.profile?.role === 'landlord';
+          if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role);
           if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
           if (page === 'staff') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff);
           return this.canShowAppPage(page);
@@ -4368,8 +4381,9 @@
           }
 
           const status = this.admin.filters.landlordStatus || '';
-          if (status === 'pending') rows = rows.filter(row => !row.accepted);
-          if (status && status !== 'pending') rows = rows.filter(row => row.accepted && (row.subscription?.status || 'trial') === status);
+          if (status === 'pending') rows = rows.filter(row => !row.accepted && !row.archived_at);
+          if (status === 'archived') rows = rows.filter(row => row.archived_at);
+          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && (row.subscription?.status || 'trial') === status);
 
           return rows;
         },
@@ -4390,7 +4404,8 @@
           }
 
           const status = this.admin.filters.staffStatus || '';
-          if (status) rows = rows.filter(row => (row.staff_subscription_status || 'free') === status);
+          if (status === 'archived') rows = rows.filter(row => row.archived_at);
+          if (status && status !== 'archived') rows = rows.filter(row => !row.archived_at && (row.staff_subscription_status || 'free') === status);
           return rows;
         },
 
@@ -4411,8 +4426,9 @@
           }
 
           const status = this.admin.filters.managementStatus || '';
-          if (status === 'pending') rows = rows.filter(row => !row.accepted);
-          if (status && status !== 'pending') rows = rows.filter(row => row.accepted && (row.subscription_status || 'trial') === status);
+          if (status === 'pending') rows = rows.filter(row => !row.accepted && !row.archived_at);
+          if (status === 'archived') rows = rows.filter(row => row.archived_at);
+          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && (row.subscription_status || 'trial') === status);
           return rows;
         },
 
@@ -4450,7 +4466,7 @@
         },
 
         adminSelectedStats() {
-          const landlords = this.adminCountryLandlords();
+          const landlords = this.adminCountryLandlords().filter(row => !row.archived_at);
           return {
             total: landlords.length,
             active: landlords.filter(row => row.subscription?.status === 'active').length,
@@ -4460,7 +4476,7 @@
         },
 
         adminManagementStats() {
-          const rows = this.selectedAdminManagementCompanies();
+          const rows = this.selectedAdminManagementCompanies().filter(row => !row.archived_at);
           return {
             total: rows.length,
             active: rows.filter(row => row.accepted && row.subscription_status === 'active').length,
@@ -4566,9 +4582,8 @@
               .order('name', { ascending: true }),
             supabaseClient
               .from('profiles')
-              .select('id, country_id, landlord_code, full_name, phone, email, role, created_at')
+              .select('id, country_id, landlord_code, full_name, phone, email, role, created_at, archived_at, archived_by')
               .eq('role', 'landlord')
-              .is('archived_at', null)
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('invite_tokens')
@@ -4582,9 +4597,8 @@
             ,
             supabaseClient
               .from('profiles')
-              .select('id, landlord_id, country_id, full_name, phone, email, role, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at')
-              .eq('role', 'staff')
-              .is('archived_at', null),
+              .select('id, landlord_id, country_id, full_name, phone, email, role, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at, archived_at, archived_by')
+              .eq('role', 'staff'),
             supabaseClient
               .from('staff_permissions')
               .select('id, landlord_id, staff_profile_id, status')
@@ -4608,8 +4622,7 @@
             ,
             supabaseClient
               .from('management_companies')
-              .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, notes, created_at, archived_at, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, phone, email, created_at)')
-              .is('archived_at', null)
+              .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, notes, created_at, archived_at, archived_by, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, phone, email, created_at, archived_at)')
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('invite_tokens')
@@ -4671,6 +4684,8 @@
               tenant_count: tenantCounts.get(profile.id) || 0,
               staff_count: staffCounts.get(profile.id) || 0,
               created_at: profile.created_at,
+              archived_at: profile.archived_at || null,
+              archived_by: profile.archived_by || null,
               subscription
             };
           });
@@ -4714,6 +4729,7 @@
                 tenant_count: 0,
                 staff_count: 0,
                 created_at: invite.created_at,
+                archived_at: null,
                 subscription: subscriptionByInvite.get(invite.id) || null
               };
             });
@@ -4722,11 +4738,12 @@
             return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
           });
 
+          const activeAdminLandlords = this.admin.landlords.filter(row => !row.archived_at);
           this.admin.stats = {
-            total: this.admin.landlords.length,
-            active: this.admin.landlords.filter(row => row.subscription?.status === 'active').length,
-            trial: this.admin.landlords.filter(row => row.subscription?.status === 'trial').length,
-            suspended: this.admin.landlords.filter(row => row.subscription?.status === 'suspended').length,
+            total: activeAdminLandlords.length,
+            active: activeAdminLandlords.filter(row => row.subscription?.status === 'active').length,
+            trial: activeAdminLandlords.filter(row => row.subscription?.status === 'trial').length,
+            suspended: activeAdminLandlords.filter(row => row.subscription?.status === 'suspended').length,
             tenants: Array.from(tenantCounts.values()).reduce((sum, count) => sum + count, 0),
             properties: Array.from(propertyCounts.values()).reduce((sum, count) => sum + count, 0),
             staff: Array.from(staffCounts.values()).reduce((sum, count) => sum + count, 0),
@@ -4825,6 +4842,7 @@
                 max_staff: Number(metadata.max_staff ?? 3),
                 subscription_status: metadata.subscription_status || 'trial',
                 subscription_expires_at: metadata.subscription_expires_at || metadata.expires_at || null,
+                archived_at: null,
                 landlord_count: 0,
                 property_count: 0,
                 tenant_count: 0,
@@ -5274,6 +5292,61 @@
           await this.loadSuperAdminData();
         },
 
+        async unarchiveManagementCompany(company) {
+          if (!company?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unarchive management company',
+            message: `Restore ${company.company_name}?`,
+            confirmText: 'Unarchive',
+            tone: 'success'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient.rpc('unarchive_management_company', {
+            p_management_company_id: company.id
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Management company restored.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async permanentlyDeleteManagementCompany(company) {
+          const confirmed = await this.requestConfirm({
+            title: 'Permanently delete management company',
+            message: `Permanently delete ${company.company_name || company.email}? This removes the leader account, company access, and linked management staff records. This cannot be undone.`,
+            confirmText: 'Delete permanently'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient.rpc('permanently_delete_management_company', {
+            p_management_company_id: company.id || null,
+            p_invite_id: company.invite_id || null
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Management company permanently deleted.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
         openAdminStaffLimit(staffRow) {
           this.admin.error = '';
           this.admin.message = '';
@@ -5341,6 +5414,61 @@
           }
 
           this.admin.message = 'Staff account archived.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async unarchiveAdminStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unarchive staff account',
+            message: `Restore ${staffRow.full_name || staffRow.email}?`,
+            confirmText: 'Unarchive',
+            tone: 'success'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient.rpc('unarchive_staff_account', {
+            p_profile_id: staffRow.id
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Staff account restored.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async permanentlyDeleteAdminStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Permanently delete staff',
+            message: `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the staff login and access records. Finance records already saved against this staff member will remain unassigned.`,
+            confirmText: 'Delete permanently'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient.rpc('permanently_delete_staff_account', {
+            p_profile_id: staffRow.id
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Staff account permanently deleted.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -5439,6 +5567,33 @@
           }
 
           this.admin.message = tenantRow.profile_id ? 'Tenant restored.' : 'Tenant row restored. Send a fresh invite if they need account access again.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async permanentlyDeleteAdminTenant(tenantRow) {
+          if (!tenantRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Permanently delete tenant',
+            message: `Permanently delete ${tenantRow.full_name || tenantRow.email}? This removes the tenant row and linked login. This cannot be undone.`,
+            confirmText: 'Delete permanently'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.saving = true;
+          const { error } = await supabaseClient.rpc('permanently_delete_tenant_account', {
+            p_tenant_id: tenantRow.id
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Tenant permanently deleted.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -5618,6 +5773,55 @@
           await this.loadSuperAdminData();
         },
 
+        async unarchiveLandlord(row) {
+          if (!row?.profile_id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unarchive landlord',
+            message: `Restore ${row.full_name || row.email} to the active landlord list?`,
+            confirmText: 'Unarchive',
+            tone: 'success'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient.rpc('unarchive_landlord_account', {
+            p_profile_id: row.profile_id
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Landlord restored.';
+          await this.loadSuperAdminData();
+        },
+
+        async permanentlyDeleteLandlord(row) {
+          const confirmed = await this.requestConfirm({
+            title: 'Permanently delete landlord',
+            message: `Permanently delete ${row.full_name || row.email}? This removes the account and linked operational records. This cannot be undone.`,
+            confirmText: 'Delete permanently'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient.rpc('permanently_delete_landlord_account', {
+            p_profile_id: row.profile_id || null,
+            p_invite_id: row.invite_id || null
+          });
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Landlord permanently deleted.';
+          await this.loadSuperAdminData();
+        },
+
         buildInviteLink(token) {
           const baseUrl = window.location.href.split('#')[0];
           return `${baseUrl}#invite=${encodeURIComponent(token)}`;
@@ -5665,7 +5869,8 @@
           const classes = {
             active: 'bg-emerald-100 text-emerald-700',
             trial: 'bg-yellow-100 text-amber-700',
-            suspended: 'bg-red-100 text-red-700'
+            suspended: 'bg-red-100 text-red-700',
+            archived: 'bg-slate-100 text-slate-700'
           };
           return classes[status] || 'bg-slate-100 text-slate-600';
         },
@@ -5694,6 +5899,7 @@
         },
 
         staffAccountStatus(staffRow) {
+          if (staffRow?.archived_at) return 'Archived';
           if (staffRow?.staff_subscription_status === 'suspended') return 'Suspended';
           if (!Number(staffRow?.landlord_count || 0)) return 'Pending Approval';
           return 'Active';
@@ -5703,6 +5909,7 @@
           const status = this.staffAccountStatus(staffRow);
           if (status === 'Active') return 'bg-emerald-100 text-emerald-700';
           if (status === 'Suspended') return 'bg-red-100 text-red-700';
+          if (status === 'Archived') return 'bg-slate-100 text-slate-700';
           return 'bg-yellow-100 text-amber-700';
         },
 
@@ -5760,7 +5967,7 @@
             { page: 'maintenance', label: 'Maintenance', icon: 'wrench', visible: this.canShowAppPage('maintenance') },
             { page: 'staff', label: 'Staff', icon: 'badge', visible: this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff) },
             { page: 'notifications', label: 'Notifications', icon: 'bell', visible: true },
-            { page: 'my-account', label: 'My Account', icon: 'account', visible: this.profile?.role === 'landlord' },
+            { page: 'my-account', label: 'My Account', icon: 'account', visible: ['landlord', 'management_leader'].includes(this.profile?.role) },
             { page: 'settings', label: 'Settings', icon: 'settings', visible: true }
           ];
 
@@ -7958,7 +8165,7 @@
           const confirmed = await this.requestConfirm({
             title: 'Remove staff access',
             message: this.profile?.role === 'management_leader'
-              ? `Remove ${member.full_name || member.email} from this management company? Their login will be archived for this team.`
+              ? `Permanently delete ${member.full_name || member.email} from this management company? Their management staff login will be removed.`
               : `Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`,
             confirmText: 'Remove'
           });
@@ -7968,11 +8175,9 @@
           this.staff.saving = true;
 
           if (this.profile?.role === 'management_leader') {
-            const { error } = await supabaseClient
-              .from('management_staff_permissions')
-              .update({ status: 'suspended' })
-              .eq('id', member.permission_id)
-              .eq('management_company_id', this.managementContext.company?.id);
+            const { error } = await supabaseClient.rpc('permanently_delete_management_staff_account', {
+              p_profile_id: member.profile_id
+            });
 
             if (error) {
               this.staff.error = error.message;
@@ -8990,16 +9195,46 @@
         },
 
         async loadMyAccountData() {
-          if (this.profile?.role !== 'landlord') return;
+          if (!['landlord', 'management_leader'].includes(this.profile?.role)) return;
 
           this.account.loading = true;
           this.account.error = '';
 
-          const { data, error } = await supabaseClient
-            .from('landlord_subscriptions')
-            .select('id, landlord_id, status, expires_at, notes, updated_at, created_at')
-            .eq('landlord_id', this.profile.id)
-            .maybeSingle();
+          let data = null;
+          let error = null;
+
+          if (this.profile.role === 'management_leader') {
+            const result = await supabaseClient
+              .from('management_companies')
+              .select('id, leader_profile_id, company_name, subscription_status, subscription_expires_at, max_landlords, max_properties, max_staff, notes, created_at')
+              .eq('leader_profile_id', this.profile.id)
+              .maybeSingle();
+
+            error = result.error;
+            data = result.data
+              ? {
+                id: result.data.id,
+                landlord_id: result.data.leader_profile_id,
+                status: result.data.subscription_status || 'trial',
+                expires_at: result.data.subscription_expires_at,
+                landlord_limit: result.data.max_landlords,
+                property_limit: result.data.max_properties,
+                staff_limit: result.data.max_staff,
+                notes: result.data.notes,
+                created_at: result.data.created_at,
+                updated_at: null
+              }
+              : null;
+          } else {
+            const result = await supabaseClient
+              .from('landlord_subscriptions')
+              .select('id, landlord_id, status, expires_at, property_limit, notes, updated_at, created_at')
+              .eq('landlord_id', this.profile.id)
+              .maybeSingle();
+
+            error = result.error;
+            data = result.data || null;
+          }
 
           if (error) {
             this.account.error = error.message;
