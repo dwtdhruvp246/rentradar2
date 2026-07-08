@@ -1560,13 +1560,6 @@
                     <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="submit">Add</button>
                   </form>
                 </div>
-                <div x-show="profile?.role === 'management_leader'" class="hidden items-center gap-2 lg:flex">
-                  <select class="max-w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-500" x-model="managementContext.activeLandlordId" @change="switchManagementLandlord(managementContext.activeLandlordId)">
-                    <template x-for="relationship in managementContext.relationships" :key="relationship.id">
-                      <option :value="relationship.landlord_id" x-text="relationship.landlord?.full_name || relationship.landlord?.email || 'Landlord'"></option>
-                    </template>
-                  </select>
-                </div>
                 <button
                   class="hidden max-w-44 truncate rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:block"
                   type="button"
@@ -1705,12 +1698,13 @@
                               <th class="px-4 py-3 font-semibold">Unit</th>
                               <th class="px-4 py-3 font-semibold">End Date</th>
                               <th class="px-4 py-3 font-semibold">Days</th>
+                              <th class="px-4 py-3 font-semibold">Actions</th>
                             </tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
                             <template x-if="!dashboard.loading && dashboard.leaseExpirations.length === 0">
                               <tr>
-                                <td class="px-4 py-8 text-center text-sm text-slate-500" colspan="5">No upcoming expirations.</td>
+                                <td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No upcoming expirations.</td>
                               </tr>
                             </template>
                             <template x-for="lease in dashboard.leaseExpirations" :key="lease.id">
@@ -1722,6 +1716,7 @@
                                 <td class="px-4 py-3">
                                   <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="leaseDaysBadgeClass(lease.daysRemaining)" x-text="`${lease.daysRemaining} days`"></span>
                                 </td>
+                                <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewDashboardLease(lease)">View</button></td>
                               </tr>
                             </template>
                           </tbody>
@@ -1758,6 +1753,32 @@
                       </div>
                     </section>
                   </div>
+
+                  <div x-show="dashboard.selectedLease" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6">
+                    <section class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                      <div class="mb-5 flex items-start justify-between gap-4">
+                        <div>
+                          <h2 class="text-lg font-bold text-slate-900">Lease Details</h2>
+                          <p class="mt-1 text-sm text-slate-500" x-text="dashboard.selectedLease ? `${dashboard.selectedLease.tenant || '-'} - Unit ${dashboard.selectedLease.unit || '-'}` : ''"></p>
+                        </div>
+                        <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="dashboard.selectedLease = null" aria-label="Close lease details">
+                          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                        </button>
+                      </div>
+                      <dl class="grid gap-3 text-sm sm:grid-cols-2">
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Tenant</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.tenant || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Tenant Email</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.tenantEmail || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Tenant Phone</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.tenantPhone || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Property</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.property || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Address</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.address || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Unit</dt><dd class="mt-1 font-semibold text-slate-900" x-text="dashboard.selectedLease?.unit || '-'"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Start Date</dt><dd class="mt-1 font-semibold text-slate-900" x-text="formatDate(dashboard.selectedLease?.startDate)"></dd></div>
+                        <div class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">End Date</dt><dd class="mt-1 font-semibold text-slate-900" x-text="formatDate(dashboard.selectedLease?.endDate)"></dd></div>
+                        <div x-show="canViewFinancials()" class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Monthly Rent</dt><dd class="mt-1 font-semibold text-slate-900" x-text="formatCurrency(dashboard.selectedLease?.monthlyRent)"></dd></div>
+                        <div x-show="canViewFinancials()" class="rounded-lg bg-slate-50 p-3"><dt class="text-slate-500">Deposit</dt><dd class="mt-1 font-semibold text-slate-900" x-text="`${formatCurrency(dashboard.selectedLease?.depositAmount)} - ${dashboard.selectedLease?.depositPaid ? 'Paid' : 'Unpaid'}`"></dd></div>
+                      </dl>
+                    </section>
+                  </div>
                 </div>
               </template>
 
@@ -1791,18 +1812,34 @@
                       </label>
                       <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="propertyUnit.saving">Add Property</button>
                     </form>
+
+                    <div x-show="profile?.role === 'management_leader'" class="mt-5 grid gap-3 md:grid-cols-[1fr_220px_auto]">
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Search properties</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="propertyUnit.filters.search" placeholder="Landlord, property, address">
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Sort by</span>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.filters.sort">
+                          <option value="property">Property name</option>
+                          <option value="landlord">Landlord name</option>
+                        </select>
+                      </label>
+                      <button x-show="propertyUnit.filters.landlordId" class="self-end rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="clearPropertyLandlordFilter">Show All</button>
+                    </div>
                   </section>
 
                   <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <template x-if="!propertyUnit.loading && propertyUnit.properties.length === 0">
+                    <template x-if="!propertyUnit.loading && filteredProperties().length === 0">
                       <div class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-soft md:col-span-2 xl:col-span-3">No properties yet.</div>
                     </template>
 
-                    <template x-for="property in propertyUnit.properties" :key="property.id">
+                    <template x-for="property in filteredProperties()" :key="property.id">
                       <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft transition hover:border-emerald-300 hover:shadow-md">
                         <div class="flex items-start justify-between gap-4">
                           <div>
                             <h2 class="text-base font-bold text-slate-900" x-text="property.name"></h2>
+                            <p x-show="profile?.role === 'management_leader'" class="mt-1 text-xs font-semibold uppercase tracking-wide text-emerald-700" x-text="landlordNameForId(property.landlord_id)"></p>
                             <p class="mt-2 text-sm leading-6 text-slate-600" x-text="property.address"></p>
                             <p class="text-sm text-slate-500" x-text="property.city"></p>
                           </div>
@@ -2174,6 +2211,13 @@
                         <button class="mt-3 rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="copyText(tenantLease.generatedInviteLink)">Copy link</button>
                       </div>
                     </template>
+
+                    <div class="mt-5">
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Search tenants</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="tenantLease.filters.search" placeholder="Tenant, phone, email, property, landlord">
+                      </label>
+                    </div>
                   </section>
 
                   <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
@@ -2185,6 +2229,7 @@
                             <th class="px-4 py-3 font-semibold">Phone</th>
                             <th class="px-4 py-3 font-semibold">Email</th>
                             <th class="px-4 py-3 font-semibold">ID</th>
+                            <th class="px-4 py-3 font-semibold">Landlord</th>
                             <th class="px-4 py-3 font-semibold">Linked Unit</th>
                             <th class="px-4 py-3 font-semibold">Property</th>
                             <th class="px-4 py-3 font-semibold">Invite</th>
@@ -2192,15 +2237,16 @@
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
-                          <template x-if="!tenantLease.loading && tenantLease.tenants.length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No tenants yet.</td></tr>
+                          <template x-if="!tenantLease.loading && filteredTenants().length === 0">
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No tenants yet.</td></tr>
                           </template>
-                          <template x-for="tenant in tenantLease.tenants" :key="tenant.id">
+                          <template x-for="tenant in filteredTenants()" :key="tenant.id">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3 font-semibold text-slate-900" x-text="tenant.full_name"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.phone || '-'"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.email"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.id_number || '-'"></td>
+                              <td class="px-4 py-3 text-slate-700" x-text="landlordNameForId(tenant.landlord_id)"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenantUnitLabel(tenant.id)"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenantPropertyLabelFromId(tenant.id)"></td>
                               <td class="px-4 py-3">
@@ -2921,6 +2967,13 @@
                     <template x-if="managementContext.message">
                       <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="managementContext.message"></div>
                     </template>
+
+                    <div class="mt-5">
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Search landlords</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="managementContext.filters.search" placeholder="Landlord, phone, email, property, tenant">
+                      </label>
+                    </div>
                   </section>
 
                   <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
@@ -2929,32 +2982,38 @@
                         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                           <tr>
                             <th class="px-4 py-3 font-semibold">Landlord</th>
+                            <th class="px-4 py-3 font-semibold">Phone</th>
                             <th class="px-4 py-3 font-semibold">Properties</th>
+                            <th class="px-4 py-3 font-semibold">Tenants</th>
                             <th class="px-4 py-3 font-semibold">Permissions</th>
                             <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
-                          <template x-if="!managementContext.loading && managementContext.relationships.length === 0 && managementContext.requests.length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="5">No landlord connections yet.</td></tr>
+                          <template x-if="!managementContext.loading && filteredManagementRequests().length === 0 && filteredManagementRelationships().length === 0">
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No landlord connections yet.</td></tr>
                           </template>
-                          <template x-for="request in managementContext.requests" :key="`mgmt-request-${request.id}`">
+                          <template x-for="request in filteredManagementRequests()" :key="`mgmt-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.landlord?.email || ''"></p></td>
+                              <td class="px-4 py-3 text-slate-700" x-text="request.landlord?.phone || '-'"></td>
                               <td class="px-4 py-3 text-slate-700">Pending review</td>
+                              <td class="px-4 py-3 text-slate-700">-</td>
                               <td class="px-4 py-3 text-slate-700">-</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
                               <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
                             </tr>
                           </template>
-                          <template x-for="relationship in managementContext.relationships" :key="relationship.id">
+                          <template x-for="relationship in filteredManagementRelationships()" :key="relationship.id">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="relationship.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord?.email || ''"></p></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="relationship.all_properties ? 'All properties' : `${(relationship.property_ids || []).length} selected`"></td>
+                              <td class="px-4 py-3 text-slate-700" x-text="relationship.landlord?.phone || '-'"></td>
+                              <td class="px-4 py-3 text-slate-700"><p x-text="relationship.all_properties ? `${managementLandlordProperties(relationship.landlord_id).length} properties` : `${(relationship.property_ids || []).length} selected`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordPropertyNames(relationship.landlord_id) || '-'"></p></td>
+                              <td class="px-4 py-3 text-slate-700"><p x-text="`${managementLandlordTenants(relationship.landlord_id).length} tenants`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordTenantNames(relationship.landlord_id) || '-'"></p></td>
                               <td class="px-4 py-3"><div class="flex max-w-md flex-wrap gap-1.5"><template x-for="badge in staffPermissionBadges(relationship)" :key="badge"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700" x-text="badge"></span></template></div></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
-                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlord(relationship.landlord_id)">Open</button></td>
+                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlordProperties(relationship.landlord_id)">View</button></td>
                             </tr>
                           </template>
                         </tbody>
@@ -3781,7 +3840,10 @@
           activeLandlordId: '',
           addCode: '',
           message: '',
-          error: ''
+          error: '',
+          filters: {
+            search: ''
+          }
         },
         unreadCount: 0,
         sidebarOpen: false,
@@ -3941,7 +4003,8 @@
           },
           recentPayments: [],
           leaseExpirations: [],
-          selectedPayment: null
+          selectedPayment: null,
+          selectedLease: null
         },
         propertyUnit: {
           loading: false,
@@ -3962,6 +4025,11 @@
             name: '',
             address: '',
             city: ''
+          },
+          filters: {
+            search: '',
+            sort: 'property',
+            landlordId: ''
           },
           unitForm: {
             propertyId: '',
@@ -4181,6 +4249,9 @@
           selectedLease: null,
           selectedLeasePayments: [],
           selectedLeaseDocumentFile: null,
+          filters: {
+            search: ''
+          },
           tenantForm: {
             fullName: '',
             phone: '',
@@ -6572,7 +6643,7 @@
               : Promise.resolve({ data: [], error: null }),
             supabaseClient
               .from('leases')
-              .select('id, end_date, tenants(full_name), units(unit_number, properties(name))')
+              .select('id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, status, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))')
               .eq('status', 'active')
               .gte('end_date', today)
               .order('end_date', { ascending: true })
@@ -6623,10 +6694,18 @@
           this.dashboard.leaseExpirations = (leasesResult.data || []).map(lease => ({
             id: lease.id,
             tenant: lease.tenants?.full_name || '-',
+            tenantEmail: lease.tenants?.email || '',
+            tenantPhone: lease.tenants?.phone || '',
             property: lease.units?.properties?.name || '-',
+            address: [lease.units?.properties?.address, lease.units?.properties?.city].filter(Boolean).join(', '),
             unit: lease.units?.unit_number || '-',
+            startDate: lease.start_date,
             endDate: lease.end_date,
-            daysRemaining: this.daysUntil(lease.end_date)
+            daysRemaining: this.daysUntil(lease.end_date),
+            monthlyRent: lease.monthly_rent,
+            depositAmount: lease.deposit_amount,
+            depositPaid: Boolean(lease.deposit_paid),
+            raw: lease
           }));
 
           this.dashboard.loading = false;
@@ -6647,6 +6726,10 @@
 
         viewDashboardPayment(payment) {
           this.dashboard.selectedPayment = payment;
+        },
+
+        viewDashboardLease(lease) {
+          this.dashboard.selectedLease = lease;
         },
 
         subscriptionDashboardLabel() {
@@ -6779,6 +6862,21 @@
             await this.switchManagementLandlord(landlordId);
           }
           await this.navigate('dashboard');
+        },
+
+        async openManagementLandlordProperties(landlordId) {
+          if (!landlordId) return;
+          if (landlordId !== this.currentLandlordId()) {
+            await this.switchManagementLandlord(landlordId);
+          }
+          this.propertyUnit.filters.landlordId = landlordId;
+          this.propertyUnit.filters.search = '';
+          this.propertyUnit.filters.sort = 'property';
+          this.propertyUnit.selectedPropertyId = '';
+          this.propertyUnit.selectedUnit = null;
+          this.propertyUnit.currentLease = null;
+          this.propertyUnit.detailMode = '';
+          await this.navigate('properties');
         },
 
         async requestManagementLandlordAccess() {
@@ -7157,6 +7255,50 @@
           this.propertyUnit.selectedUnit = null;
           this.propertyUnit.currentLease = null;
           this.propertyUnit.detailMode = '';
+        },
+
+        normalizedSearch(value) {
+          return String(value || '').toLowerCase().trim();
+        },
+
+        includesSearch(parts, search) {
+          const needle = this.normalizedSearch(search);
+          if (!needle) return true;
+          return parts.some(part => this.normalizedSearch(part).includes(needle));
+        },
+
+        landlordNameForId(landlordId) {
+          const relationship = this.managementContext.relationships.find(row => row.landlord_id === landlordId);
+          return relationship?.landlord?.full_name || relationship?.landlord?.email || '-';
+        },
+
+        landlordPhoneForId(landlordId) {
+          const relationship = this.managementContext.relationships.find(row => row.landlord_id === landlordId);
+          return relationship?.landlord?.phone || '';
+        },
+
+        filteredProperties() {
+          if (this.profile?.role !== 'management_leader') return this.propertyUnit.properties;
+          const search = this.propertyUnit.filters.search;
+          const landlordId = this.propertyUnit.filters.landlordId;
+          const sort = this.propertyUnit.filters.sort || 'property';
+          return [...this.propertyUnit.properties]
+            .filter(property => !landlordId || property.landlord_id === landlordId)
+            .filter(property => this.includesSearch([
+              property.name,
+              property.address,
+              property.city,
+              this.landlordNameForId(property.landlord_id)
+            ], search))
+            .sort((a, b) => {
+              const aValue = sort === 'landlord' ? this.landlordNameForId(a.landlord_id) : a.name;
+              const bValue = sort === 'landlord' ? this.landlordNameForId(b.landlord_id) : b.name;
+              return String(aValue || '').localeCompare(String(bValue || ''));
+            });
+        },
+
+        clearPropertyLandlordFilter() {
+          this.propertyUnit.filters.landlordId = '';
         },
 
         filteredUnits() {
@@ -8547,18 +8689,28 @@
 
           if (this.managementContext.company?.id) {
             const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!management_staff_permissions_staff_profile_id_fkey(id, landlord_id, full_name, phone, email, role, created_at)';
-            const [propertiesResult, staffResult, inviteTokensResult] = await Promise.all([
-              supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
+            const [propertiesResult, tenantsResult, leasesResult, staffResult, inviteTokensResult] = await Promise.all([
+              supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('name', { ascending: true }),
+              supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true }),
+              supabaseClient.from('leases').select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))').order('end_date', { ascending: true }),
               supabaseClient.from('management_staff_permissions').select(staffSelect).eq('management_company_id', this.managementContext.company.id).eq('status', 'approved').order('accepted_at', { ascending: false }),
               supabaseClient.from('invite_tokens').select('id, token, email, role, metadata, landlord_id, created_at, expires_at').eq('role', 'management_staff').eq('used', false).eq('metadata->>management_company_id', this.managementContext.company.id).order('created_at', { ascending: false })
             ]);
 
-            if (propertiesResult.error || staffResult.error || inviteTokensResult.error) {
-              this.managementContext.error = propertiesResult.error?.message || staffResult.error?.message || inviteTokensResult.error?.message;
+            if (propertiesResult.error || tenantsResult.error || leasesResult.error || staffResult.error || inviteTokensResult.error) {
+              this.managementContext.error = propertiesResult.error?.message || tenantsResult.error?.message || leasesResult.error?.message || staffResult.error?.message || inviteTokensResult.error?.message;
             } else {
               const activeRelationship = this.managementContext.relationships.find(row => row.landlord_id === this.managementContext.activeLandlordId) || null;
               const allowedPropertyIds = new Set(activeRelationship?.property_ids || []);
-              this.staff.properties = (propertiesResult.data || []).filter(property => {
+              const visibleProperties = propertiesResult.data || [];
+              this.propertyUnit.properties = visibleProperties;
+              this.tenantLease.tenants = tenantsResult.data || [];
+              this.tenantLease.leases = (leasesResult.data || []).map(lease => ({
+                ...lease,
+                tenant: lease.tenants || null,
+                unit: lease.units || null
+              }));
+              this.staff.properties = visibleProperties.filter(property => {
                 if (!activeRelationship) return false;
                 return activeRelationship.all_properties || allowedPropertyIds.has(property.id);
               });
@@ -9504,6 +9656,55 @@
         tenantPropertyLabelFromId(tenantId) {
           const lease = this.tenantActiveLease(tenantId);
           return lease ? this.leasePropertyLabel(lease) : '-';
+        },
+
+        filteredTenants() {
+          const search = this.tenantLease.filters.search;
+          return this.tenantLease.tenants.filter(tenant => this.includesSearch([
+            tenant.full_name,
+            tenant.phone,
+            tenant.email,
+            tenant.id_number,
+            this.tenantPropertyLabelFromId(tenant.id),
+            this.tenantUnitLabel(tenant.id),
+            this.landlordNameForId(tenant.landlord_id)
+          ], search));
+        },
+
+        managementLandlordProperties(landlordId) {
+          return this.propertyUnit.properties.filter(property => property.landlord_id === landlordId);
+        },
+
+        managementLandlordTenants(landlordId) {
+          return this.tenantLease.tenants.filter(tenant => tenant.landlord_id === landlordId);
+        },
+
+        managementLandlordPropertyNames(landlordId) {
+          return this.managementLandlordProperties(landlordId).map(property => property.name).filter(Boolean).join(', ');
+        },
+
+        managementLandlordTenantNames(landlordId) {
+          return this.managementLandlordTenants(landlordId).map(tenant => tenant.full_name).filter(Boolean).join(', ');
+        },
+
+        filteredManagementRelationships() {
+          const search = this.managementContext.filters.search;
+          return this.managementContext.relationships.filter(relationship => this.includesSearch([
+            relationship.landlord?.full_name,
+            relationship.landlord?.email,
+            relationship.landlord?.phone,
+            this.managementLandlordPropertyNames(relationship.landlord_id),
+            this.managementLandlordTenantNames(relationship.landlord_id)
+          ], search));
+        },
+
+        filteredManagementRequests() {
+          const search = this.managementContext.filters.search;
+          return this.managementContext.requests.filter(request => this.includesSearch([
+            request.landlord?.full_name,
+            request.landlord?.email,
+            request.landlord?.phone
+          ], search));
         },
 
         leaseUnitLabel(lease) {
@@ -10646,7 +10847,7 @@
             notes: company.notes || ''
           };
 
-          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, landlord_code)';
+          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
           const [permissionsResult, requestsResult] = await Promise.all([
             supabaseClient
               .from('management_landlord_permissions')
@@ -10656,7 +10857,7 @@
               .order('accepted_at', { ascending: true }),
             supabaseClient
               .from('management_landlord_requests')
-              .select('id, management_company_id, leader_profile_id, landlord_id, landlord_code, status, requested_at, landlord:profiles!management_landlord_requests_landlord_id_fkey(id, full_name, email, landlord_code)')
+              .select('id, management_company_id, leader_profile_id, landlord_id, landlord_code, status, requested_at, landlord:profiles!management_landlord_requests_landlord_id_fkey(id, full_name, email, phone, landlord_code)')
               .eq('management_company_id', company.id)
               .eq('status', 'pending')
               .order('requested_at', { ascending: false })
