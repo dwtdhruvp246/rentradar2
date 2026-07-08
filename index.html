@@ -8406,8 +8406,17 @@
                 if (!activeRelationship) return false;
                 return activeRelationship.all_properties || allowedPropertyIds.has(property.id);
               });
+              const unusedInviteRows = [...(inviteTokensResult.data || [])];
               const acceptedMembers = (staffResult.data || []).map(permission => {
                 const profile = permission.staff_profile || {};
+                const profileEmail = (profile.email || '').toLowerCase();
+                const matchingInviteIndex = profileEmail
+                  ? unusedInviteRows.findIndex(invite => (invite.email || '').toLowerCase() === profileEmail)
+                  : -1;
+                const fallbackInvite = matchingInviteIndex >= 0
+                  ? unusedInviteRows.splice(matchingInviteIndex, 1)[0]
+                  : (!profile.email && unusedInviteRows.length ? unusedInviteRows.shift() : null);
+                const fallbackMetadata = fallbackInvite?.metadata || {};
                 return {
                   ...permission,
                   rowKey: `management-staff-${permission.id}`,
@@ -8415,15 +8424,16 @@
                   status: permission.status || 'approved',
                   profile_id: permission.staff_profile_id,
                   permission_id: permission.id,
-                  full_name: profile.full_name,
-                  email: profile.email,
-                  phone: profile.phone || '',
-                  created_at: profile.created_at,
-                  invited_at: permission.invited_at || profile.created_at,
-                  accepted_at: permission.accepted_at || profile.created_at
+                  full_name: profile.full_name || fallbackMetadata.full_name || fallbackMetadata.fullName || fallbackInvite?.email || 'Management staff',
+                  email: profile.email || fallbackInvite?.email || '',
+                  phone: profile.phone || fallbackMetadata.phone || '',
+                  created_at: profile.created_at || fallbackInvite?.created_at,
+                  invited_at: permission.invited_at || profile.created_at || fallbackInvite?.created_at,
+                  accepted_at: permission.accepted_at || profile.created_at || fallbackInvite?.created_at
                 };
               });
-              const pendingInviteMembers = (inviteTokensResult.data || []).map(invite => {
+              const acceptedEmails = new Set(acceptedMembers.map(member => (member.email || '').toLowerCase()).filter(Boolean));
+              const pendingInviteMembers = unusedInviteRows.filter(invite => !acceptedEmails.has((invite.email || '').toLowerCase())).map(invite => {
                 const metadata = invite.metadata || {};
                 return {
                   rowKey: `management-invite-${invite.id}`,
@@ -10508,11 +10518,16 @@
             .eq('status', 'approved')
             .maybeSingle();
 
-          if (staffError || !staffPermission?.company) return false;
+          if (staffError || !staffPermission) return false;
 
-          const company = staffPermission.company;
-          if (company.subscription_status === 'suspended') return false;
-          if (company.subscription_expires_at && this.daysUntil(company.subscription_expires_at) < 0) return false;
+          const company = staffPermission.company || {
+            id: staffPermission.management_company_id,
+            company_name: 'Management company',
+            subscription_status: 'active',
+            subscription_expires_at: null
+          };
+          if (staffPermission.company?.subscription_status === 'suspended') return false;
+          if (staffPermission.company?.subscription_expires_at && this.daysUntil(staffPermission.company.subscription_expires_at) < 0) return false;
 
           this.managementContext.company = company;
           this.managementContext.requests = [];
