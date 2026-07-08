@@ -2747,51 +2747,31 @@
                 </div>
               </template>
 
-              <template x-if="currentPage === 'staff'">
+              <template x-if="currentPage === 'management-landlords'">
                 <div class="space-y-6">
                   <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
-                        <h1 class="text-xl font-bold text-slate-900">Staff</h1>
-                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Connect to landlords and manage approved portfolios.' : 'Approve staff and management requests, then control operational permissions.'"></p>
-                        <div x-show="profile?.role === 'landlord'" class="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                          <span class="font-medium text-slate-500">Landlord code</span>
-                          <span class="font-bold tracking-widest text-slate-900" x-text="profile?.landlord_code || '------'"></span>
-                          <button class="text-xs font-semibold text-emerald-700 hover:underline" type="button" @click="regenerateLandlordCode">Regenerate</button>
-                        </div>
-                        <div x-show="profile?.role === 'management_leader'" class="mt-3 flex flex-wrap items-center gap-2">
+                        <h1 class="text-xl font-bold text-slate-900">Connected Landlords</h1>
+                        <p class="mt-1 text-sm text-slate-500">Request landlord access, review approval status, and open the active landlord workspace.</p>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
                           <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" x-text="managementContext.company?.company_name || 'Management company'"></span>
                           <input class="w-36 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" inputmode="numeric" maxlength="6" placeholder="Landlord code" x-model.trim="managementContext.addCode">
                           <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="requestManagementLandlordAccess">Request Access</button>
                         </div>
                       </div>
-                      <div class="flex flex-wrap gap-2">
-                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openStaffInviteModal">Invite Staff</button>
-                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
-                      </div>
+                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                     </div>
 
-                    <template x-if="staff.error">
-                      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staff.error"></div>
-                    </template>
                     <template x-if="managementContext.error">
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="managementContext.error"></div>
                     </template>
                     <template x-if="managementContext.message">
                       <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="managementContext.message"></div>
                     </template>
-                    <template x-if="staff.generatedInviteLink">
-                      <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                        <p class="font-semibold">Staff invite link created</p>
-                        <button class="mt-2 break-all text-left text-xs font-semibold underline" type="button" @click="copyText(staff.generatedInviteLink)" x-text="staff.generatedInviteLink"></button>
-                      </div>
-                    </template>
                   </section>
 
-                  <section x-show="profile?.role === 'management_leader'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
-                    <div class="border-b border-slate-200 px-4 py-3">
-                      <h2 class="text-sm font-semibold text-slate-900">Connected Landlords</h2>
-                    </div>
+                  <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                     <div class="overflow-x-auto">
                       <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -2822,12 +2802,50 @@
                               <td class="px-4 py-3 text-slate-700" x-text="relationship.all_properties ? 'All properties' : `${(relationship.property_ids || []).length} selected`"></td>
                               <td class="px-4 py-3"><div class="flex max-w-md flex-wrap gap-1.5"><template x-for="badge in staffPermissionBadges(relationship)" :key="badge"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700" x-text="badge"></span></template></div></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
-                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchManagementLandlord(relationship.landlord_id)">Open</button></td>
+                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlord(relationship.landlord_id)">Open</button></td>
                             </tr>
                           </template>
                         </tbody>
                       </table>
                     </div>
+                  </section>
+                </div>
+              </template>
+
+              <template x-if="currentPage === 'staff'">
+                <div class="space-y-6">
+                  <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <h1 class="text-xl font-bold text-slate-900">Staff</h1>
+                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Invite management staff and control operational permissions.' : 'Approve staff and management requests, then control operational permissions.'"></p>
+                        <div x-show="profile?.role === 'landlord'" class="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+                          <span class="font-medium text-slate-500">Landlord code</span>
+                          <span class="font-bold tracking-widest text-slate-900" x-text="profile?.landlord_code || '------'"></span>
+                          <button class="text-xs font-semibold text-emerald-700 hover:underline" type="button" @click="regenerateLandlordCode">Regenerate</button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openStaffInviteModal">Invite Staff</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      </div>
+                    </div>
+
+                    <template x-if="staff.error">
+                      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staff.error"></div>
+                    </template>
+                    <template x-if="managementContext.error">
+                      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="managementContext.error"></div>
+                    </template>
+                    <template x-if="managementContext.message">
+                      <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="managementContext.message"></div>
+                    </template>
+                    <template x-if="staff.generatedInviteLink">
+                      <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        <p class="font-semibold">Staff invite link created</p>
+                        <button class="mt-2 break-all text-left text-xs font-semibold underline" type="button" @click="copyText(staff.generatedInviteLink)" x-text="staff.generatedInviteLink"></button>
+                      </div>
+                    </template>
                   </section>
 
                   <section x-show="profile?.role === 'landlord' && (staff.managementRequests.length || staff.managementPartners.length)" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
@@ -2850,9 +2868,9 @@
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.company?.company_name || 'Management company'"></p></td>
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.leader?.email || ''"></p></td>
-                              <td class="px-4 py-3 text-slate-700">All properties by default</td>
+                              <td class="px-4 py-3 text-slate-700">Choose on approval</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
-                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="approveManagementRequest(request)">Approve</button><button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectManagementRequest(request)">Reject</button></div></td>
+                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="openManagementPermissionsModal(request, 'request')">Approve</button><button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectManagementRequest(request)">Reject</button></div></td>
                             </tr>
                           </template>
                           <template x-for="partner in staff.managementPartners" :key="`management-partner-${partner.id}`">
@@ -2861,7 +2879,7 @@
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="partner.leader?.email || ''"></p></td>
                               <td class="px-4 py-3 text-slate-700" x-text="partner.all_properties ? 'All properties' : `${(partner.property_ids || []).length} selected`"></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
-                              <td class="px-4 py-3 text-slate-500">Active</td>
+                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementPermissionsModal(partner, 'edit')">Edit</button><button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="unassignManagementPartner(partner)">Unassign</button></div></td>
                             </tr>
                           </template>
                         </tbody>
@@ -2923,19 +2941,19 @@
                     </div>
                   </section>
 
-                  <div x-show="staff.modal === 'invite' || staff.modal === 'edit'" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6">
+                  <div x-show="staff.modal === 'invite' || staff.modal === 'edit' || staff.modal === 'management-permissions'" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-6">
                     <section class="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
                         <div>
-                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : 'Edit Staff Permissions'"></h2>
-                          <p class="mt-1 text-sm text-slate-500" x-text="staff.selectedMember?.email || 'Create a single-use invite that expires in 48 hours.'"></p>
+                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'Management Company Permissions' : 'Edit Staff Permissions')"></h2>
+                          <p class="mt-1 text-sm text-slate-500" x-text="staff.modal === 'management-permissions' ? managementPermissionTargetLabel() : (staff.selectedMember?.email || 'Create a single-use invite that expires in 48 hours.')"></p>
                         </div>
                         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeStaffModal" aria-label="Close modal">
                           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
                         </button>
                       </div>
 
-                      <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="staff.modal === 'invite' ? createStaffInvite() : saveStaffPermissions()">
+                      <form class="flex min-h-0 flex-1 flex-col" @submit.prevent="staff.modal === 'invite' ? createStaffInvite() : (staff.modal === 'management-permissions' ? saveManagementCompanyPermissions() : saveStaffPermissions())">
                         <div class="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
                         <div x-show="staff.modal === 'invite'" class="grid gap-4 sm:grid-cols-3">
                           <label class="block">
@@ -3018,7 +3036,7 @@
 
                         <div class="flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4">
                           <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeStaffModal">Cancel</button>
-                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : 'Save Permissions'"></button>
+                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : (staff.modal === 'management-permissions' && staff.selectedMember?.managementMode === 'request' ? 'Accept' : 'Save Permissions')"></button>
                         </div>
                       </form>
                     </section>
@@ -4454,6 +4472,7 @@
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
           if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role);
           if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
+          if (page === 'management-landlords') return this.profile?.role === 'management_leader';
           if (page === 'staff') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff);
           return this.canShowAppPage(page);
         },
@@ -6324,6 +6343,7 @@
             { page: 'payments', label: 'Payments', icon: 'card', visible: this.canShowAppPage('payments') },
             { page: 'finance', label: 'Finance', icon: 'chart', visible: this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance) },
             { page: 'maintenance', label: 'Maintenance', icon: 'wrench', visible: this.canShowAppPage('maintenance') },
+            { page: 'management-landlords', label: 'Landlords', icon: 'building', visible: this.profile?.role === 'management_leader' },
             { page: 'staff', label: 'Staff', icon: 'badge', visible: this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff) },
             { page: 'notifications', label: 'Notifications', icon: 'bell', visible: true },
             { page: 'my-account', label: 'My Account', icon: 'account', visible: ['landlord', 'management_leader'].includes(this.profile?.role) },
@@ -6597,6 +6617,14 @@
           const active = this.managementContext.relationships.find(row => row.landlord_id === landlordId);
           this.permissions = this.permissionStateFromRow(active);
           await this.refreshCurrentPage();
+        },
+
+        async openManagementLandlord(landlordId) {
+          if (!landlordId) return;
+          if (landlordId !== this.currentLandlordId()) {
+            await this.switchManagementLandlord(landlordId);
+          }
+          await this.navigate('dashboard');
         },
 
         async requestManagementLandlordAccess() {
@@ -8365,13 +8393,14 @@
 
           if (this.managementContext.company?.id) {
             const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!management_staff_permissions_staff_profile_id_fkey(id, landlord_id, full_name, phone, email, role, created_at)';
-            const [propertiesResult, staffResult] = await Promise.all([
+            const [propertiesResult, staffResult, inviteTokensResult] = await Promise.all([
               supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
-              supabaseClient.from('management_staff_permissions').select(staffSelect).eq('management_company_id', this.managementContext.company.id).eq('status', 'approved').order('accepted_at', { ascending: false })
+              supabaseClient.from('management_staff_permissions').select(staffSelect).eq('management_company_id', this.managementContext.company.id).eq('status', 'approved').order('accepted_at', { ascending: false }),
+              supabaseClient.from('invite_tokens').select('id, token, email, role, metadata, landlord_id, created_at, expires_at').eq('role', 'management_staff').eq('used', false).eq('metadata->>management_company_id', this.managementContext.company.id).order('created_at', { ascending: false })
             ]);
 
-            if (propertiesResult.error || staffResult.error) {
-              this.managementContext.error = propertiesResult.error?.message || staffResult.error?.message;
+            if (propertiesResult.error || staffResult.error || inviteTokensResult.error) {
+              this.managementContext.error = propertiesResult.error?.message || staffResult.error?.message || inviteTokensResult.error?.message;
             } else {
               const activeRelationship = this.managementContext.relationships.find(row => row.landlord_id === this.managementContext.activeLandlordId) || null;
               const allowedPropertyIds = new Set(activeRelationship?.property_ids || []);
@@ -8379,9 +8408,7 @@
                 if (!activeRelationship) return false;
                 return activeRelationship.all_properties || allowedPropertyIds.has(property.id);
               });
-              this.staff.members = (staffResult.data || [])
-              .filter(permission => permission.staff_profile?.landlord_id === this.managementContext.activeLandlordId)
-              .map(permission => {
+              const acceptedMembers = (staffResult.data || []).map(permission => {
                 const profile = permission.staff_profile || {};
                 return {
                   ...permission,
@@ -8398,6 +8425,35 @@
                   accepted_at: permission.accepted_at || profile.created_at
                 };
               });
+              const pendingInviteMembers = (inviteTokensResult.data || []).map(invite => {
+                const metadata = invite.metadata || {};
+                return {
+                  rowKey: `management-invite-${invite.id}`,
+                  accepted: false,
+                  invite_id: invite.id,
+                  invite_link: this.buildInviteLink(invite.token),
+                  request_id: null,
+                  profile_id: null,
+                  permission_id: null,
+                  full_name: metadata.full_name || metadata.fullName || invite.email || 'Invited staff',
+                  email: invite.email || '',
+                  phone: metadata.phone || '',
+                  staff_type: 'management',
+                  created_at: invite.created_at,
+                  invited_at: invite.created_at,
+                  expires_at: invite.expires_at,
+                  all_properties: metadata.all_properties === true,
+                  property_ids: metadata.property_ids || [],
+                  can_view_properties: Boolean(metadata.can_view_properties),
+                  can_view_units: Boolean(metadata.can_view_units),
+                  can_view_tenants: Boolean(metadata.can_view_tenants),
+                  can_manage_maintenance: Boolean(metadata.can_manage_maintenance),
+                  can_view_payments: Boolean(metadata.can_view_payments),
+                  can_verify_payments: Boolean(metadata.can_verify_payments),
+                  can_manage_leases: Boolean(metadata.can_manage_leases)
+                };
+              });
+              this.staff.members = [...pendingInviteMembers, ...acceptedMembers].sort((a, b) => new Date(b.invited_at || b.created_at).getTime() - new Date(a.invited_at || a.created_at).getTime());
             }
           }
           this.managementContext.loading = false;
@@ -8419,6 +8475,21 @@
           this.staff.modal = 'edit';
         },
 
+        openManagementPermissionsModal(target, mode = 'request') {
+          this.staff.error = '';
+          this.staff.generatedInviteLink = '';
+          this.staff.selectedMember = { ...target, managementMode: mode };
+          this.staff.form = mode === 'edit' ? this.staffFormFromMember(target) : this.defaultStaffForm();
+          this.staff.modal = 'management-permissions';
+        },
+
+        managementPermissionTargetLabel() {
+          const target = this.staff.selectedMember || {};
+          const company = target.company?.company_name || 'Management company';
+          const leader = target.leader?.email || target.leader?.full_name || '';
+          return leader ? `${company} - ${leader}` : company;
+        },
+
         closeStaffModal() {
           this.staff.modal = '';
           this.staff.selectedMember = null;
@@ -8436,14 +8507,15 @@
             return;
           }
 
-          if (this.profile?.role === 'management_leader' && !this.currentLandlordId()) {
-            this.staff.error = 'Connect to at least one landlord before inviting management staff.';
-            this.staff.saving = false;
-            return;
-          }
-
           const token = this.generateSecureToken();
+          const hasActiveManagementLandlord = this.profile?.role !== 'management_leader' || Boolean(this.currentLandlordId());
           const permissions = this.staffFormPayload();
+          if (this.profile?.role === 'management_leader' && !hasActiveManagementLandlord) {
+            permissions.all_properties = false;
+            permissions.property_ids = [];
+            permissions.can_view_properties = false;
+            permissions.can_view_units = false;
+          }
           const metadata = {
             full_name: this.staff.form.fullName,
             phone: this.staff.form.phone || '',
@@ -8458,7 +8530,7 @@
               token,
               email: this.staff.form.email,
               role: this.profile?.role === 'management_leader' ? 'management_staff' : 'staff',
-              landlord_id: this.currentLandlordId(),
+              landlord_id: hasActiveManagementLandlord ? this.currentLandlordId() : null,
               metadata,
               expires_at: this.addHoursIso(48)
             });
@@ -8470,6 +8542,59 @@
           }
 
           this.staff.generatedInviteLink = this.buildInviteLink(token);
+          this.closeStaffModal();
+          await this.loadStaffData();
+        },
+
+        async saveManagementCompanyPermissions() {
+          const target = this.staff.selectedMember;
+          if (!target) return;
+
+          this.staff.error = '';
+          this.staff.saving = true;
+          const permissions = this.staffFormPayload();
+          const scope = this.staffScopeFromPermissions(permissions);
+
+          if (!scope.all_properties && scope.property_ids.length === 0) {
+            this.staff.error = 'Select at least one property, or choose All properties.';
+            this.staff.saving = false;
+            return;
+          }
+
+          if (this.externalAssignmentConflict({
+            ...scope,
+            excludeManagementId: target.managementMode === 'edit' ? target.id : null
+          })) {
+            this.staff.error = 'This property is already assigned to a management company or freelancer staff member. Remove that external assignment first.';
+            this.staff.saving = false;
+            return;
+          }
+
+          if (target.managementMode === 'request') {
+            const { error } = await supabaseClient.rpc('approve_management_landlord_request_with_permissions', {
+              p_request_id: target.id,
+              p_permissions: permissions
+            });
+
+            if (error) {
+              this.staff.error = error.message;
+              this.staff.saving = false;
+              return;
+            }
+          } else {
+            const { error } = await supabaseClient
+              .from('management_landlord_permissions')
+              .update(permissions)
+              .eq('id', target.id)
+              .eq('landlord_id', this.currentLandlordId());
+
+            if (error) {
+              this.staff.error = error.message;
+              this.staff.saving = false;
+              return;
+            }
+          }
+
           this.closeStaffModal();
           await this.loadStaffData();
         },
@@ -8609,28 +8734,7 @@
         },
 
         async approveManagementRequest(request) {
-          if (!request?.id) return;
-          this.staff.error = '';
-          this.staff.saving = true;
-
-          if (this.externalAssignmentConflict({ all_properties: true, property_ids: [] })) {
-            this.staff.error = 'This landlord already has a freelancer staff member or management company assigned. Remove that external assignment first.';
-            this.staff.saving = false;
-            return;
-          }
-
-          const { error } = await supabaseClient.rpc('approve_management_landlord_request', {
-            p_request_id: request.id
-          });
-
-          if (error) {
-            this.staff.error = error.message;
-            this.staff.saving = false;
-            return;
-          }
-
-          this.staff.saving = false;
-          await this.loadStaffData();
+          this.openManagementPermissionsModal(request, 'request');
         },
 
         async rejectManagementRequest(request) {
@@ -8658,6 +8762,31 @@
           await this.loadStaffData();
         },
 
+        async unassignManagementPartner(partner) {
+          if (!partner?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unassign management company',
+            message: `Remove ${partner.company?.company_name || 'this management company'} from this landlord? They will lose access to the assigned properties and units.`,
+            confirmText: 'Unassign'
+          });
+          if (!confirmed) return;
+
+          this.staff.error = '';
+          this.staff.saving = true;
+          const { error } = await supabaseClient.rpc('unassign_management_landlord_permission', {
+            p_permission_id: partner.id
+          });
+
+          if (error) {
+            this.staff.error = error.message;
+            this.staff.saving = false;
+            return;
+          }
+
+          this.staff.saving = false;
+          await this.loadStaffData();
+        },
+
         async removeStaff(member) {
           const confirmed = await this.requestConfirm({
             title: member.invite_id && !member.accepted ? 'Delete staff invite' : 'Remove staff access',
@@ -8672,6 +8801,23 @@
 
           this.staff.error = '';
           this.staff.saving = true;
+
+          if (member.invite_id && !member.accepted) {
+            const { error } = await supabaseClient
+              .from('invite_tokens')
+              .delete()
+              .eq('id', member.invite_id);
+
+            if (error) {
+              this.staff.error = error.message;
+              this.staff.saving = false;
+              return;
+            }
+
+            this.staff.saving = false;
+            await this.loadStaffData();
+            return;
+          }
 
           if (this.profile?.role === 'management_leader') {
             const { error } = await supabaseClient.rpc('permanently_delete_management_staff_account', {
@@ -8693,17 +8839,6 @@
             const { error } = await supabaseClient.rpc('delete_staff_account', {
               p_profile_id: member.profile_id
             });
-
-            if (error) {
-              this.staff.error = error.message;
-              this.staff.saving = false;
-              return;
-            }
-          } else {
-            const { error } = await supabaseClient
-              .from('invite_tokens')
-              .delete()
-              .eq('id', member.invite_id);
 
             if (error) {
               this.staff.error = error.message;
@@ -10427,6 +10562,7 @@
             if (this.currentPage === 'payments') await this.loadPaymentsData();
             if (this.currentPage === 'finance') await this.loadLandlordFinanceData();
             if (this.currentPage === 'maintenance') await this.loadMaintenanceData();
+            if (this.currentPage === 'management-landlords') await this.loadManagementPageData();
             if (this.currentPage === 'staff') await this.loadStaffData();
             if (this.currentPage === 'notifications') await this.loadNotifications();
             if (this.currentPage === 'settings') this.loadSettingsData();
@@ -10478,6 +10614,10 @@
             await this.loadMaintenanceData();
           }
 
+          if (page === 'management-landlords' && this.currentShell === 'app') {
+            await this.loadManagementPageData();
+          }
+
           if (page === 'staff' && this.currentShell === 'app') {
             await this.loadStaffData();
           }
@@ -10518,6 +10658,7 @@
             payments: 'Payments',
             finance: 'Finance',
             maintenance: 'Maintenance',
+            'management-landlords': 'Connected Landlords',
             staff: 'Staff',
             notifications: 'Notifications',
             'my-account': 'My Account',
