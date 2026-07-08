@@ -942,7 +942,7 @@
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
-                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Email pending')"></p></td>
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Account active')"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
@@ -6244,6 +6244,7 @@
           if (staffRow?.accepted === false) return 'Invited';
           if (staffRow?.archived_at) return 'Archived';
           if (staffRow?.staff_subscription_status === 'suspended') return 'Suspended';
+          if ((staffRow?.staff_type || 'freelancer') === 'freelancer') return 'Active';
           if (!Number(staffRow?.landlord_count || 0)) return 'Pending Approval';
           return 'Active';
         },
