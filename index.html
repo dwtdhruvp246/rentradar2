@@ -10237,7 +10237,7 @@
           this.user = authUser;
           this.authError = '';
 
-          const { data: profile, error: profileError } = await this.withTimeout(
+          let { data: profile, error: profileError } = await this.withTimeout(
             supabaseClient
               .from('profiles')
               .select('*')
@@ -10248,8 +10248,18 @@
           );
 
           if (profileError || !profile) {
+            const { data: fallbackProfile, error: fallbackError } = await supabaseClient.rpc('get_current_profile');
+            if (!fallbackError && fallbackProfile) {
+              profile = Array.isArray(fallbackProfile) ? fallbackProfile[0] : fallbackProfile;
+              profileError = null;
+            }
+          }
+
+          if (profileError || !profile) {
             await supabaseClient.auth.signOut();
-            this.authError = 'Your account does not exist or has been removed. Please contact your landlord or Mushavo administrator.';
+            this.authError = profileError?.message
+              ? `Your login exists, but Mushavo could not load your profile: ${profileError.message}`
+              : 'Your account does not exist or has been removed. Please contact your landlord or Mushavo administrator.';
             this.currentShell = 'login';
             this.booting = false;
             return;
