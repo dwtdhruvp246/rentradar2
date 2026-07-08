@@ -98,8 +98,6 @@
               <span x-show="!authLoading">Sign in</span>
               <span x-show="authLoading">Signing in...</span>
             </button>
-
-            <a class="block w-full text-center text-sm font-semibold text-emerald-700 hover:underline" :href="supportMailto()">Staff access is invite-only</a>
           </form>
 
           <form x-show="authMode === 'staff-signup'" class="space-y-4" @submit.prevent="signUpStaff">
@@ -10350,7 +10348,7 @@
             );
             if (!hasManagementStaffAccess) {
               await supabaseClient.auth.signOut();
-              this.authError = 'Your management staff account is waiting for approval or has no assigned landlord yet.';
+              this.authError = 'Your management staff account could not be loaded. Please ask your management leader to resend the invite.';
               this.currentShell = 'login';
               this.booting = false;
               return;
@@ -10502,8 +10500,6 @@
         },
 
         async loadManagementStaffPermissions(staffProfileId) {
-          if (!this.profile?.landlord_id) return false;
-
           const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, company:management_companies!management_staff_permissions_management_company_id_fkey(id, leader_profile_id, country_id, company_name, subscription_status, subscription_expires_at)';
           const { data: staffPermission, error: staffError } = await supabaseClient
             .from('management_staff_permissions')
@@ -10518,6 +10514,16 @@
           if (company.subscription_status === 'suspended') return false;
           if (company.subscription_expires_at && this.daysUntil(company.subscription_expires_at) < 0) return false;
 
+          this.managementContext.company = company;
+          this.managementContext.requests = [];
+
+          if (!this.profile?.landlord_id) {
+            this.managementContext.relationships = [];
+            this.managementContext.activeLandlordId = '';
+            this.permissions = this.permissionStateFromRow({});
+            return true;
+          }
+
           const { data: landlordPermission, error: landlordError } = await supabaseClient
             .from('management_landlord_permissions')
             .select('id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, status, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, landlord_code)')
@@ -10526,11 +10532,16 @@
             .eq('status', 'approved')
             .maybeSingle();
 
-          if (landlordError || !landlordPermission) return false;
+          if (landlordError) return false;
 
-          this.managementContext.company = company;
+          if (!landlordPermission) {
+            this.managementContext.relationships = [];
+            this.managementContext.activeLandlordId = '';
+            this.permissions = this.permissionStateFromRow({});
+            return true;
+          }
+
           this.managementContext.relationships = [landlordPermission];
-          this.managementContext.requests = [];
           this.managementContext.activeLandlordId = this.profile.landlord_id;
           this.permissions = this.permissionStateFromRow(staffPermission);
           return true;
