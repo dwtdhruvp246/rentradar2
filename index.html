@@ -14,7 +14,6 @@
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
-    
     tailwind.config = {
       theme: {
         extend: {
@@ -409,12 +408,16 @@
           <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
             <div class="flex min-w-0 items-center gap-3">
               <img class="brand-logo h-24 w-auto max-w-[150px]" src="mushavo-logo.png" alt="Mushavo logo">
-              <span class="text-base font-bold text-slate-900">Admin</span>
+              <div class="min-w-0">
+                <span class="block truncate text-base font-bold text-slate-900" x-text="profile?.role === 'admin_staff' ? (profile.full_name || 'Admin Staff') : 'Admin'"></span>
+                <span class="block truncate text-xs font-semibold text-emerald-700" x-show="profile?.role === 'admin_staff'" x-text="adminCountryName(profile?.country_id)"></span>
+              </div>
             </div>
             <div class="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-team' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-team')">Staff</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">IPM</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">PMC</button>
               <button class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
@@ -459,10 +462,10 @@
                 <h2 class="text-lg font-bold text-slate-900">Countries</h2>
                 <p class="mt-1 text-sm text-slate-600">Select a country before adding landlords in that market.</p>
               </div>
-              <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminModal('country')">Add Country</button>
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminModal('country')">Add Country</button>
             </div>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <button class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === 'all' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry('all')">
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === 'all' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry('all')">
                 <p class="text-sm font-semibold text-slate-900">All countries</p>
                 <p class="mt-2 text-xs text-slate-500" x-text="`${admin.landlords.length} landlords`"></p>
               </button>
@@ -605,10 +608,10 @@
                 <h2 class="text-lg font-bold text-slate-900">Country View</h2>
                 <p class="mt-1 text-sm text-slate-600">Choose a country to separate revenue, payments, and active landlords.</p>
               </div>
-              <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminModal('country')">Add Country</button>
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminModal('country')">Add Country</button>
             </div>
             <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <button class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === 'all' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry('all')">
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg border p-4 text-left transition" type="button" :class="admin.selectedCountryId === 'all' ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white hover:bg-slate-50'" @click="selectAdminCountry('all')">
                 <p class="text-sm font-semibold text-slate-900">All countries</p>
                 <p class="mt-2 text-xs text-slate-500" x-text="`${admin.landlords.length} landlords`"></p>
                 <p class="mt-1 text-sm font-bold text-emerald-700" x-text="formatCurrency(admin.financePayments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0))"></p>
@@ -1046,6 +1049,83 @@
           </section>
         </section>
 
+        <section x-show="currentPage === 'admin-team'" id="super-admin-team" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Admin Staff</h1>
+              <p class="mt-1 text-sm text-slate-600">Add staff to help manage Mushavo accounts, then assign each staff member to one country.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openAdminModal('admin-team-add')">Add Staff</button>
+              <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+            </div>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+          <template x-if="admin.message">
+            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="admin.message"></div>
+          </template>
+
+          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.adminTeamSearch" placeholder="Name, email, phone, country">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.adminTeamStatus">
+                  <option value="">All statuses</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending invite</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Staff</th>
+                    <th class="px-4 py-3 font-semibold">Email</th>
+                    <th class="px-4 py-3 font-semibold">Phone</th>
+                    <th class="px-4 py-3 font-semibold">Country</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Joined</th>
+                    <th class="px-4 py-3 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <template x-if="!admin.loading && selectedAdminTeamStaff().length === 0">
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No admin staff yet.</td></tr>
+                  </template>
+                  <template x-for="staffRow in selectedAdminTeamStaff()" :key="staffRow.rowKey">
+                    <tr class="odd:bg-white even:bg-slate-50/60">
+                      <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted ? 'Accepted' : 'Invite pending'"></p></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="adminCountryName(staffRow.country_id)"></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(staffRow.archived_at ? 'archived' : (staffRow.accepted ? 'active' : 'trial'))" x-text="staffRow.archived_at ? 'Archived' : (staffRow.accepted ? 'Active' : 'Pending')"></span></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
+                      <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-2">
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminTeamStaffEdit(staffRow)">Edit</button>
+                          <button x-show="staffRow.accepted === false && staffRow.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(staffRow.invite_link)">Copy Link</button>
+                          <button x-show="staffRow.accepted && !staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveAdminTeamStaff(staffRow)">Archive</button>
+                          <button x-show="staffRow.accepted && staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminTeamStaff(staffRow)">Unarchive</button>
+                          <button x-show="staffRow.accepted === false" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteAdminTeamStaffInvite(staffRow)">Delete Invite</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
         <section x-show="currentPage === 'admin-staff'" id="super-admin-staff" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -1131,6 +1211,61 @@
             </div>
           </section>
         </section>
+
+        <template x-if="admin.modal === 'admin-team-add' || admin.modal === 'admin-team-edit'">
+          <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8">
+            <section class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
+              <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900" x-text="admin.modal === 'admin-team-edit' ? 'Edit Admin Staff' : 'Add Admin Staff'"></h2>
+                  <p class="mt-1 text-sm text-slate-500">Assign a country. This staff member will only see and manage accounts in that country.</p>
+                </div>
+                <button class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" type="button" @click="closeAdminModal" aria-label="Close">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+                </button>
+              </div>
+              <template x-if="admin.formError">
+                <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.formError"></div>
+              </template>
+              <template x-if="admin.generatedInviteLink">
+                <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                  <p class="font-semibold">Invite link created</p>
+                  <button class="mt-2 break-all text-left text-xs font-semibold underline" type="button" @click="copyText(admin.generatedInviteLink)" x-text="admin.generatedInviteLink"></button>
+                </div>
+              </template>
+              <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="admin.modal === 'admin-team-edit' ? saveAdminTeamStaff() : createAdminTeamStaffInvite()">
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.adminTeamForm.fullName" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" x-model.trim="admin.adminTeamForm.email" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.adminTeamForm.phone">
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.adminTeamForm.countryId" required>
+                    <option value="">Select country</option>
+                    <template x-for="country in admin.countries" :key="`admin-team-country-${country.id}`">
+                      <option :value="country.id" x-text="country.name"></option>
+                    </template>
+                  </select>
+                </label>
+                <div class="flex justify-end gap-3 pt-2 sm:col-span-2">
+                  <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
+                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving">
+                    <span x-show="!admin.saving" x-text="admin.modal === 'admin-team-edit' ? 'Save' : 'Create Invite'"></span>
+                    <span x-show="admin.saving">Saving...</span>
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        </template>
 
         <template x-if="admin.modal === 'freelancer-add' || admin.modal === 'freelancer-edit'">
           <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8">
@@ -3910,6 +4045,8 @@
             landlordStatus: '',
             financeSearch: '',
             financePayerType: '',
+            adminTeamSearch: '',
+            adminTeamStatus: '',
             staffSearch: '',
             staffStatus: '',
             tenantSearch: '',
@@ -3928,6 +4065,7 @@
             revenue: 0
           },
           financePayments: [],
+          adminTeamStaff: [],
           staffProfiles: [],
           staffRequests: [],
           financeStats: {
@@ -3948,6 +4086,12 @@
             periodStart: '',
             periodEnd: '',
             notes: ''
+          },
+          adminTeamForm: {
+            fullName: '',
+            email: '',
+            phone: '',
+            countryId: ''
           },
           freelancerForm: {
             fullName: '',
@@ -4537,7 +4681,7 @@
           const profilePayload = {
             id: signUpData.user.id,
             landlord_id: ['staff', 'management_staff'].includes(tokenRow.role) ? tokenRow.landlord_id : null,
-            country_id: ['landlord', 'management_leader'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
+            country_id: ['landlord', 'management_leader', 'admin_staff'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
             phone: metadata.phone || null,
             email: inviteEmail,
@@ -4711,7 +4855,9 @@
           if (!page) return false;
 
           if (this.currentShell === 'super_admin') {
-            return ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-staff', 'admin-management'].includes(page);
+            const pages = ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-staff', 'admin-management'];
+            if (this.profile?.role === 'super_admin') pages.push('admin-team');
+            return pages.includes(page);
           }
 
           if (this.currentShell === 'tenant') {
@@ -4755,6 +4901,17 @@
         adminCountryName(countryId) {
           if (!countryId) return 'Unassigned';
           return this.admin.countries.find(country => country.id === countryId)?.name || 'Unassigned';
+        },
+
+        enforceAdminCountryScope() {
+          if (this.profile?.role !== 'admin_staff') return true;
+          const countryId = this.profile.country_id || '';
+          if (!countryId) {
+            this.admin.error = 'No country is assigned to this admin staff account. Please ask the main admin to assign a country.';
+            return false;
+          }
+          this.admin.selectedCountryId = countryId;
+          return true;
         },
 
         adminCountryCurrency(countryId) {
@@ -4814,6 +4971,25 @@
 
         selectedAdminAcceptedStaffProfiles() {
           return this.selectedAdminStaffProfiles().filter(row => row.accepted !== false && row.id);
+        },
+
+        selectedAdminTeamStaff() {
+          let rows = this.admin.adminTeamStaff || [];
+          const search = (this.admin.filters.adminTeamSearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(row => [
+              row.full_name,
+              row.email,
+              row.phone,
+              this.adminCountryName(row.country_id)
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          const status = this.admin.filters.adminTeamStatus || '';
+          if (status === 'active') rows = rows.filter(row => row.accepted && !row.archived_at);
+          if (status === 'pending') rows = rows.filter(row => !row.accepted && !row.archived_at);
+          if (status === 'archived') rows = rows.filter(row => row.archived_at);
+          return rows;
         },
 
         selectedAdminManagementCompanies() {
@@ -4912,6 +5088,7 @@
 
         accountRoleLabel() {
           const labels = {
+            admin_staff: 'Admin Staff',
             landlord: 'Landlord',
             staff: this.profile?.staff_type === 'freelancer' ? 'IPM' : 'Landlord Staff',
             management_leader: 'PMC',
@@ -4984,10 +5161,18 @@
             if (!byId.has(countryId)) byId.set(countryId, { id: countryId, name: this.adminCountryName(countryId), code: '', currency_code: '', landlords: 0, revenue: 0 });
             byId.get(countryId).revenue += Number(payment.amount_paid || 0);
           });
-          return Array.from(byId.values()).filter(row => row.id !== 'unassigned' || row.landlords || row.revenue);
+          let values = Array.from(byId.values()).filter(row => row.id !== 'unassigned' || row.landlords || row.revenue);
+          if (this.profile?.role === 'admin_staff') {
+            values = values.filter(row => row.id === this.profile.country_id);
+          }
+          return values;
         },
 
         selectAdminCountry(countryId) {
+          if (this.profile?.role === 'admin_staff') {
+            this.enforceAdminCountryScope();
+            return;
+          }
           this.admin.selectedCountryId = countryId || 'all';
           const accountId = this.admin.financeForm.accountId
             || this.admin.financeForm.landlordId
@@ -5014,8 +5199,9 @@
         async loadSuperAdminData() {
           this.admin.loading = true;
           this.admin.error = '';
+          this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, adminTeamProfilesResult, adminTeamInvitesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -5036,6 +5222,16 @@
               .select('id, landlord_id, country_id, property_limit, status, expires_at, notes, invite_token_id, updated_by, updated_at, created_at')
               .order('created_at', { ascending: false })
             ,
+            supabaseClient
+              .from('profiles')
+              .select('id, country_id, full_name, phone, email, role, created_at, archived_at, archived_by')
+              .eq('role', 'admin_staff')
+              .order('created_at', { ascending: false }),
+            supabaseClient
+              .from('invite_tokens')
+              .select('id, token, email, role, country_id, metadata, used, expires_at, created_at')
+              .eq('role', 'admin_staff')
+              .order('created_at', { ascending: false }),
             supabaseClient
               .from('profiles')
               .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at, archived_at, archived_by')
@@ -5087,7 +5283,7 @@
               .eq('status', 'approved')
           ]);
 
-          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
+          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
             this.admin.error = firstError.message;
             this.admin.loading = false;
@@ -5095,6 +5291,7 @@
           }
 
           this.admin.countries = countriesResult.data || [];
+          this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
           const staffPermissions = staffPermissionsResult.data || [];
           const staffCounts = this.countByKey(staffPermissions, 'landlord_id');
@@ -5112,6 +5309,44 @@
           const platformPayments = platformPaymentsResult.data || [];
           const subscriptionByLandlord = new Map(subscriptions.filter(row => row.landlord_id).map(row => [row.landlord_id, row]));
           const subscriptionByInvite = new Map(subscriptions.filter(row => row.invite_token_id).map(row => [row.invite_token_id, row]));
+
+          const acceptedAdminTeamStaff = (adminTeamProfilesResult.data || []).map(profile => ({
+            ...profile,
+            rowKey: `admin-team-profile-${profile.id}`,
+            accepted: true,
+            profile_id: profile.id,
+            invite_id: null,
+            invite_link: '',
+            country_name: this.adminCountryName(profile.country_id),
+            created_at: profile.created_at
+          }));
+          const acceptedAdminTeamEmails = new Set(acceptedAdminTeamStaff.map(row => String(row.email || '').toLowerCase()).filter(Boolean));
+          const pendingAdminTeamStaff = (adminTeamInvitesResult.data || [])
+            .filter(invite => !invite.used && !acceptedAdminTeamEmails.has(String(invite.email || '').toLowerCase()))
+            .map(invite => {
+              const metadata = invite.metadata || {};
+              const countryId = invite.country_id || metadata.country_id || null;
+              return {
+                rowKey: `admin-team-invite-${invite.id}`,
+                accepted: false,
+                id: null,
+                profile_id: null,
+                invite_id: invite.id,
+                invite_token: invite.token,
+                invite_link: this.buildInviteLink(invite.token),
+                metadata,
+                country_id: countryId,
+                country_name: this.adminCountryName(countryId),
+                full_name: metadata.full_name || metadata.fullName || invite.email,
+                email: invite.email,
+                phone: metadata.phone || '',
+                created_at: invite.created_at,
+                archived_at: null,
+                archived_by: null
+              };
+            });
+          this.admin.adminTeamStaff = [...pendingAdminTeamStaff, ...acceptedAdminTeamStaff]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
           const acceptedRows = (profilesResult.data || []).map(profile => {
             const subscription = subscriptionByLandlord.get(profile.id) || null;
@@ -5409,6 +5644,15 @@
             };
           }
 
+          if (modalName === 'admin-team-add') {
+            this.admin.adminTeamForm = {
+              fullName: '',
+              email: '',
+              phone: '',
+              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : ''
+            };
+          }
+
           if (modalName === 'freelancer-add') {
             this.admin.freelancerForm = {
               fullName: '',
@@ -5426,6 +5670,187 @@
           this.admin.modal = '';
           this.admin.formError = '';
           this.admin.saving = false;
+        },
+
+        openAdminTeamStaffEdit(staffRow) {
+          if (!staffRow) return;
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.formError = '';
+          this.admin.generatedInviteLink = '';
+          this.admin.selectedRow = staffRow;
+          this.admin.adminTeamForm = {
+            fullName: staffRow.full_name || '',
+            email: staffRow.email || '',
+            phone: staffRow.phone || '',
+            countryId: staffRow.country_id || ''
+          };
+          this.admin.modal = 'admin-team-edit';
+        },
+
+        async createAdminTeamStaffInvite() {
+          this.admin.formError = '';
+          this.admin.generatedInviteLink = '';
+          this.admin.saving = true;
+
+          const countryId = this.admin.adminTeamForm.countryId || '';
+          if (!countryId) {
+            this.admin.formError = 'Select the country this admin staff member can manage.';
+            this.admin.saving = false;
+            return;
+          }
+
+          const token = this.generateSecureToken();
+          const metadata = {
+            full_name: this.admin.adminTeamForm.fullName,
+            phone: this.admin.adminTeamForm.phone || '',
+            country_id: countryId
+          };
+
+          const { data: inviteRow, error } = await supabaseClient
+            .from('invite_tokens')
+            .insert({
+              token,
+              email: this.admin.adminTeamForm.email,
+              role: 'admin_staff',
+              landlord_id: null,
+              country_id: countryId,
+              metadata,
+              expires_at: this.addHoursIso(48)
+            })
+            .select('id, token')
+            .single();
+
+          if (error) {
+            this.admin.formError = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.generatedInviteLink = this.buildInviteLink(inviteRow.token);
+          this.admin.message = 'Admin staff invite created.';
+          this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async saveAdminTeamStaff() {
+          const row = this.admin.selectedRow;
+          if (!row) return;
+          this.admin.formError = '';
+          this.admin.saving = true;
+
+          const countryId = this.admin.adminTeamForm.countryId || null;
+          const payload = {
+            full_name: this.admin.adminTeamForm.fullName,
+            email: this.admin.adminTeamForm.email,
+            phone: this.admin.adminTeamForm.phone || '',
+            country_id: countryId
+          };
+
+          if (row.accepted === false && row.invite_id) {
+            const metadata = {
+              ...(row.metadata || {}),
+              full_name: payload.full_name,
+              phone: payload.phone,
+              country_id: countryId
+            };
+            const { error } = await supabaseClient
+              .from('invite_tokens')
+              .update({
+                email: payload.email,
+                country_id: countryId,
+                metadata
+              })
+              .eq('id', row.invite_id)
+              .eq('role', 'admin_staff');
+
+            if (error) {
+              this.admin.formError = error.message;
+              this.admin.saving = false;
+              return;
+            }
+          } else if (row.id) {
+            const { error } = await supabaseClient
+              .from('profiles')
+              .update(payload)
+              .eq('id', row.id)
+              .eq('role', 'admin_staff');
+
+            if (error) {
+              this.admin.formError = error.message;
+              this.admin.saving = false;
+              return;
+            }
+          }
+
+          this.admin.message = 'Admin staff updated.';
+          this.closeAdminModal();
+          await this.loadSuperAdminData();
+        },
+
+        async archiveAdminTeamStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Archive admin staff',
+            message: `Archive ${staffRow.full_name || staffRow.email}? They will not be able to access the admin staff account.`,
+            confirmText: 'Archive'
+          });
+          if (!confirmed) return;
+
+          const { error } = await supabaseClient
+            .from('profiles')
+            .update({ archived_at: new Date().toISOString(), archived_by: this.profile.id })
+            .eq('id', staffRow.id)
+            .eq('role', 'admin_staff');
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Admin staff archived.';
+          await this.loadSuperAdminData();
+        },
+
+        async unarchiveAdminTeamStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const { error } = await supabaseClient
+            .from('profiles')
+            .update({ archived_at: null, archived_by: null })
+            .eq('id', staffRow.id)
+            .eq('role', 'admin_staff');
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Admin staff restored.';
+          await this.loadSuperAdminData();
+        },
+
+        async deleteAdminTeamStaffInvite(staffRow) {
+          if (!staffRow?.invite_id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Delete invite',
+            message: `Delete the pending invite for ${staffRow.email}?`,
+            confirmText: 'Delete'
+          });
+          if (!confirmed) return;
+
+          const { error } = await supabaseClient
+            .from('invite_tokens')
+            .delete()
+            .eq('id', staffRow.invite_id)
+            .eq('role', 'admin_staff');
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Admin staff invite deleted.';
+          await this.loadSuperAdminData();
         },
 
         openAdminFreelancerEdit(staffRow) {
@@ -10927,8 +11352,16 @@
 
           this.profile = profile;
 
-          if (profile.role === 'super_admin') {
+          if (profile.role === 'super_admin' || profile.role === 'admin_staff') {
+            if (profile.role === 'admin_staff' && !profile.country_id) {
+              await supabaseClient.auth.signOut();
+              this.authError = 'Your admin staff account does not have a country assigned yet. Please contact the Mushavo administrator.';
+              this.currentShell = 'login';
+              this.booting = false;
+              return;
+            }
             this.currentShell = 'super_admin';
+            if (profile.role === 'admin_staff') this.admin.selectedCountryId = profile.country_id;
             this.currentPage = this.resolveActivePage('landlord-management', previousShell, previousPage);
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
@@ -11333,7 +11766,7 @@
             await this.loadLandlordFinanceData();
           }
 
-          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-staff') && this.currentShell === 'super_admin') {
+          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             await this.loadSuperAdminData();
           }
@@ -11393,7 +11826,9 @@
             settings: 'Settings',
             'admin-finance': 'Finance',
             'admin-tenants': 'Tenant Management',
+            'admin-team': 'Admin Staff',
             'admin-staff': 'IPM Management',
+            'admin-management': 'Property Management Companies',
             'landlord-management': 'Landlord Management',
             'tenant-home': 'Home',
             'tenant-payments': 'Payments',
