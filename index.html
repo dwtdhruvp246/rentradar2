@@ -299,14 +299,21 @@
               <path d="M12 8v5m0 3.5h.01M10.29 3.86 2.82 17a2 2 0 0 0 1.74 3h14.88a2 2 0 0 0 1.74-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
           </div>
-          <h1 class="text-xl font-bold text-slate-900">Account Suspended</h1>
-          <p class="mt-3 text-sm leading-6 text-slate-600">Your account has been suspended. Please contact Mushavo support to restore access.</p>
-          <button
-            class="mt-7 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
-            type="button"
-            @click="logout">
-            Logout
-          </button>
+          <h1 class="text-xl font-bold text-slate-900" x-text="suspendedTitle"></h1>
+          <p class="mt-3 whitespace-pre-line text-sm leading-6 text-slate-600" x-text="suspendedMessage"></p>
+          <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <a
+              class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600"
+              :href="supportMailto()">
+              Contact Support
+            </a>
+            <button
+              class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50"
+              type="button"
+              @click="logout">
+              Logout
+            </button>
+          </div>
         </section>
       </main>
     </template>
@@ -408,7 +415,7 @@
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">Staff</button>
-              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">Management</button>
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">PMC</button>
               <button class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
             </div>
           </div>
@@ -643,14 +650,14 @@
                 <span class="mb-2 block text-sm font-medium text-slate-700">Payment for</span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required>
                   <option value="landlord">Landlord</option>
-                  <option value="management">Management</option>
+                  <option value="management">PMC</option>
                   <option value="staff">Staff</option>
                 </select>
               </label>
               <label class="block">
-                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : (admin.financeForm.payerType === 'management' ? 'Management' : 'Landlord')"></span>
+                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : (admin.financeForm.payerType === 'management' ? 'PMC' : 'Landlord')"></span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required>
-                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : (admin.financeForm.payerType === 'management' ? 'Select management company' : 'Select landlord')"></option>
+                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : (admin.financeForm.payerType === 'management' ? 'Select PMC' : 'Select landlord')"></option>
                   <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
                   </template>
@@ -697,7 +704,7 @@
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.financePayerType">
                   <option value="">All types</option>
                   <option value="landlord">Landlord</option>
-                  <option value="management">Management</option>
+                  <option value="management">PMC</option>
                   <option value="staff">Staff</option>
                 </select>
               </label>
@@ -723,7 +730,7 @@
                   <template x-for="payment in selectedAdminFinancePayments()" :key="payment.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3 text-slate-700" x-text="adminCountryName(payment.country_id)"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="paymentPayerBadgeClass(payment.payer_type)" x-text="payment.payer_type === 'management' ? 'Management' : titleCase(payment.payer_type || 'landlord')"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="paymentPayerBadgeClass(payment.payer_type)" x-text="payment.payer_type === 'management' ? 'PMC' : titleCase(payment.payer_type || 'landlord')"></span></td>
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="adminPaymentAccountName(payment)"></p><p class="mt-1 text-xs text-slate-500" x-text="adminPaymentAccountEmail(payment)"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount_paid)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.paid_at)"></td>
@@ -789,13 +796,13 @@
           </div>
         </template>
 
-        <template x-if="admin.modal === 'management-add'">
+        <template x-if="admin.modal === 'management-add' || admin.modal === 'management-edit'">
           <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8">
             <section class="w-full max-w-3xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900">Add Management Company</h2>
-                  <p class="mt-1 text-sm text-slate-500">Create an invite for the management leader. They can request landlord access after registration.</p>
+                  <h2 class="text-lg font-bold text-slate-900" x-text="admin.modal === 'management-edit' ? 'Edit Property Management Company (PMC)' : 'Add Property Management Company (PMC)'"></h2>
+                  <p class="mt-1 text-sm text-slate-500" x-text="admin.modal === 'management-edit' ? 'Update the company and leader details.' : 'Create an invite for the PMC leader. They can request landlord access after registration.'"></p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
@@ -812,7 +819,7 @@
                 </div>
               </template>
 
-              <form class="space-y-4" @submit.prevent="createManagementInvite">
+              <form class="space-y-4" @submit.prevent="admin.modal === 'management-edit' ? saveManagementProfile() : createManagementInvite()">
                 <div class="grid gap-3 sm:grid-cols-2">
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Company name</span>
@@ -868,7 +875,7 @@
                 </div>
                 <div class="flex justify-end gap-3 pt-2">
                   <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
-                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving">Create Invite</button>
+                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving" x-text="admin.modal === 'management-edit' ? 'Save Changes' : 'Create Invite'"></button>
                 </div>
               </form>
             </section>
@@ -880,7 +887,7 @@
             <section class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900">Manage Management Subscription</h2>
+                  <h2 class="text-lg font-bold text-slate-900">Manage PMC Subscription</h2>
                   <p class="mt-1 text-sm text-slate-500" x-text="admin.selectedRow?.company_name || ''"></p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
@@ -933,12 +940,12 @@
         <section x-show="currentPage === 'admin-management'" id="super-admin-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-slate-900">Management Companies</h1>
-              <p class="mt-1 text-sm text-slate-600">Invite management leaders, control limits, and track their assigned landlords.</p>
+              <h1 class="text-2xl font-bold text-slate-900">Property Management Companies</h1>
+              <p class="mt-1 text-sm text-slate-600">Invite PMC leaders, control limits, and track their assigned landlords.</p>
             </div>
             <div class="flex flex-wrap gap-2">
               <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
-              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="button" :disabled="admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned'" :class="(admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned') ? 'opacity-60' : ''" @click="openAdminModal('management-add')">Add Management</button>
+              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="button" :disabled="admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned'" :class="(admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned') ? 'opacity-60' : ''" @click="openAdminModal('management-add')">Add PMC</button>
             </div>
           </div>
 
@@ -951,7 +958,7 @@
 
           <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
-              <p class="text-sm font-medium text-slate-500">Management Accounts</p>
+              <p class="text-sm font-medium text-slate-500">PMC Accounts</p>
               <p class="mt-2 text-3xl font-bold text-slate-900" x-text="adminManagementStats().total"></p>
             </article>
             <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
@@ -1005,7 +1012,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminManagementCompanies().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No management companies yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No PMCs yet.</td></tr>
                   </template>
                   <template x-for="company in selectedAdminManagementCompanies()" :key="company.rowKey">
                     <tr class="odd:bg-white even:bg-slate-50/60">
@@ -1021,7 +1028,9 @@
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(company.subscription_expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
+                          <button x-show="!company.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementEdit(company)">Edit</button>
                           <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLimit(company)">Manage</button>
+                          <button x-show="company.accepted && !company.archived_at && company.subscription_status !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendManagementCompany(company)">Suspend</button>
                           <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveManagementCompany(company)">Archive</button>
                           <button x-show="company.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveManagementCompany(company)">Unarchive</button>
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteManagementCompany(company)">Delete</button>
@@ -1040,10 +1049,10 @@
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Staff Management</h1>
-              <p class="mt-1 text-sm text-slate-600">Review freelancer staff accounts, landlord limits, and staff subscription status.</p>
+              <p class="mt-1 text-sm text-slate-600">Review Individual Portfolio Manager (IPM) accounts, landlord limits, and subscription status.</p>
             </div>
             <div class="flex flex-wrap gap-2">
-              <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openAdminModal('freelancer-add')">Add Freelancer</button>
+              <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openAdminModal('freelancer-add')">Add IPM</button>
               <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
             </div>
           </div>
@@ -1125,8 +1134,8 @@
             <section class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900">Add Freelancer Staff</h2>
-                  <p class="mt-1 text-sm text-slate-500">Create an invite-only freelancer account that can request access to multiple landlords.</p>
+                  <h2 class="text-lg font-bold text-slate-900">Add Individual Portfolio Manager (IPM)</h2>
+                  <p class="mt-1 text-sm text-slate-500">Create an invite-only IPM account that can request access to multiple landlords.</p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
@@ -2228,7 +2237,6 @@
                             <th class="px-4 py-3 font-semibold">Name</th>
                             <th class="px-4 py-3 font-semibold">Phone</th>
                             <th class="px-4 py-3 font-semibold">Email</th>
-                            <th class="px-4 py-3 font-semibold">ID</th>
                             <th class="px-4 py-3 font-semibold">Landlord</th>
                             <th class="px-4 py-3 font-semibold">Linked Unit</th>
                             <th class="px-4 py-3 font-semibold">Property</th>
@@ -2238,14 +2246,13 @@
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!tenantLease.loading && filteredTenants().length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No tenants yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No tenants yet.</td></tr>
                           </template>
                           <template x-for="tenant in filteredTenants()" :key="tenant.id">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3 font-semibold text-slate-900" x-text="tenant.full_name"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.phone || '-'"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.email"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="tenant.id_number || '-'"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="landlordNameForId(tenant.landlord_id)"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenantUnitLabel(tenant.id)"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenantPropertyLabelFromId(tenant.id)"></td>
@@ -2953,7 +2960,7 @@
                         <h1 class="text-xl font-bold text-slate-900">Connected Landlords</h1>
                         <p class="mt-1 text-sm text-slate-500">Request landlord access, review approval status, and open the active landlord workspace.</p>
                         <div class="mt-3 flex flex-wrap items-center gap-2">
-                          <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" x-text="managementContext.company?.company_name || 'Management company'"></span>
+                          <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" x-text="managementContext.company?.company_name || 'PMC'"></span>
                           <input class="w-36 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" inputmode="numeric" maxlength="6" placeholder="Landlord code" x-model.trim="managementContext.addCode">
                           <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="requestManagementLandlordAccess">Request Access</button>
                         </div>
@@ -3029,7 +3036,7 @@
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">Staff</h1>
-                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Invite management staff and control operational permissions.' : 'Approve staff and management requests, then control operational permissions.'"></p>
+                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Invite PMC staff and control operational permissions.' : 'Approve staff and PMC requests, then control operational permissions.'"></p>
                         <div x-show="profile?.role === 'landlord'" class="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
                           <span class="font-medium text-slate-500">Landlord code</span>
                           <span class="font-bold tracking-widest text-slate-900" x-text="profile?.landlord_code || '------'"></span>
@@ -3061,7 +3068,7 @@
 
                   <section x-show="profile?.role === 'landlord' && (staff.managementRequests.length || staff.managementPartners.length)" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                     <div class="border-b border-slate-200 px-4 py-3">
-                      <h2 class="text-sm font-semibold text-slate-900">Management Companies</h2>
+                      <h2 class="text-sm font-semibold text-slate-900">Property Management Companies</h2>
                     </div>
                     <div class="overflow-x-auto">
                       <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
@@ -3077,7 +3084,7 @@
                         <tbody class="divide-y divide-slate-200">
                           <template x-for="request in staff.managementRequests" :key="`management-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
-                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.company?.company_name || 'Management company'"></p></td>
+                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.company?.company_name || 'PMC'"></p></td>
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.leader?.email || ''"></p></td>
                               <td class="px-4 py-3 text-slate-700">Choose on approval</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
@@ -3086,7 +3093,7 @@
                           </template>
                           <template x-for="partner in staff.managementPartners" :key="`management-partner-${partner.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
-                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.company?.company_name || 'Management company'"></p></td>
+                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.company?.company_name || 'PMC'"></p></td>
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="partner.leader?.email || ''"></p></td>
                               <td class="px-4 py-3 text-slate-700" x-text="partner.all_properties ? 'All properties' : `${(partner.property_ids || []).length} selected`"></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
@@ -3100,7 +3107,7 @@
 
                   <section x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                     <div class="border-b border-slate-200 px-4 py-3" x-show="profile?.role === 'management_leader'">
-                      <h2 class="text-sm font-semibold text-slate-900">Management Staff</h2>
+                      <h2 class="text-sm font-semibold text-slate-900">PMC Staff</h2>
                     </div>
                     <div class="overflow-x-auto">
                       <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
@@ -3156,7 +3163,7 @@
                     <section class="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
                         <div>
-                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'Management Company Permissions' : 'Edit Staff Permissions')"></h2>
+                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'PMC Permissions' : 'Edit Staff Permissions')"></h2>
                           <p class="mt-1 text-sm text-slate-500" x-text="staff.modal === 'management-permissions' ? managementPermissionTargetLabel() : (staff.selectedMember?.email || 'Create a single-use invite that expires in 48 hours.')"></p>
                         </div>
                         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeStaffModal" aria-label="Close modal">
@@ -3362,7 +3369,7 @@
                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">My Account</h1>
-                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Your management company profile and Mushavo subscription details.' : (profile?.staff_type === 'freelancer' ? 'Your freelancer profile, landlord access, and Mushavo subscription details.' : 'Your landlord profile and Mushavo subscription details.')"></p>
+                        <p class="mt-1 text-sm text-slate-500" x-text="profile?.role === 'management_leader' ? 'Your Property Management Company (PMC) profile and Mushavo subscription details.' : (profile?.staff_type === 'freelancer' ? 'Your Individual Portfolio Manager (IPM) profile, landlord access, and Mushavo subscription details.' : 'Your landlord profile and Mushavo subscription details.')"></p>
                       </div>
                       <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                     </div>
@@ -3393,7 +3400,7 @@
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Name</dt><dd class="font-medium text-slate-900" x-text="profile?.full_name || '-'"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Email</dt><dd class="font-medium text-slate-900" x-text="profile?.email || '-'"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Phone</dt><dd class="font-medium text-slate-900" x-text="profile?.phone || '-'"></dd></div>
-                          <div x-show="profile?.staff_type === 'freelancer'" class="flex justify-between gap-4"><dt class="text-slate-500">Account Type</dt><dd class="font-medium text-slate-900">Freelancer Staff</dd></div>
+                          <div x-show="profile?.staff_type === 'freelancer'" class="flex justify-between gap-4"><dt class="text-slate-500">Account Type</dt><dd class="font-medium text-slate-900">Individual Portfolio Manager (IPM)</dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Date Joined</dt><dd class="font-medium text-slate-900" x-text="formatDate(profile?.created_at)"></dd></div>
                         </dl>
                       </section>
@@ -3775,6 +3782,9 @@
         currentShell: 'login',
         currentPage: 'dashboard',
         pageTitle: 'Dashboard',
+        accessPaused: false,
+        suspendedTitle: 'Subscription Expired',
+        suspendedMessage: 'Your Mushavo subscription has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to renew your subscription and restore access.',
         user: null,
         profile: null,
         subscription: null,
@@ -3976,6 +3986,13 @@
             maxStaff: 3,
             subscriptionStatus: 'trial',
             expiresAt: ''
+          },
+          managementEditForm: {
+            companyName: '',
+            leaderName: '',
+            email: '',
+            phone: '',
+            countryId: ''
           },
           managementLimitForm: {
             maxLandlords: 2,
@@ -4887,9 +4904,9 @@
         accountRoleLabel() {
           const labels = {
             landlord: 'Landlord',
-            staff: this.profile?.staff_type === 'freelancer' ? 'Freelancer Staff' : 'Landlord Staff',
-            management_leader: 'Management',
-            management_staff: 'Management Staff',
+            staff: this.profile?.staff_type === 'freelancer' ? 'IPM' : 'Landlord Staff',
+            management_leader: 'PMC',
+            management_staff: 'PMC Staff',
             tenant: 'Tenant'
           };
           return labels[this.profile?.role] || this.titleCase(this.profile?.role || 'Account');
@@ -5365,7 +5382,7 @@
 
           if (modalName === 'management-add') {
             if (this.admin.selectedCountryId === 'all' || this.admin.selectedCountryId === 'unassigned') {
-              this.admin.formError = 'Select a country before adding a management company.';
+              this.admin.formError = 'Select a country before adding a Property Management Company (PMC).';
             }
             this.admin.managementAddForm = {
               companyName: '',
@@ -5398,6 +5415,28 @@
           this.admin.modal = '';
           this.admin.formError = '';
           this.admin.saving = false;
+        },
+
+        openManagementEdit(company) {
+          if (!company) return;
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.formError = '';
+          this.admin.generatedInviteLink = '';
+          this.admin.selectedRow = company;
+          this.admin.managementAddForm = {
+            companyName: company.company_name || '',
+            leaderName: company.leader_name || '',
+            email: company.email || '',
+            phone: company.phone || company.leader?.phone || '',
+            countryId: company.country_id || '',
+            maxLandlords: Number(company.max_landlords || 0),
+            maxProperties: Number(company.max_properties || 0),
+            maxStaff: Number(company.max_staff || 0),
+            subscriptionStatus: company.subscription_status || 'trial',
+            expiresAt: this.toDateInputValue(company.subscription_expires_at || '')
+          };
+          this.admin.modal = 'management-edit';
         },
 
         resetAdminFinanceForm() {
@@ -5640,7 +5679,7 @@
 
           const countryId = this.admin.freelancerForm.countryId || this.admin.selectedCountryId;
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
-            this.admin.formError = 'Select the country this freelancer belongs to.';
+            this.admin.formError = 'Select the country this IPM belongs to.';
             this.admin.saving = false;
             return;
           }
@@ -5677,7 +5716,7 @@
           }
 
           this.admin.generatedInviteLink = this.buildInviteLink(inviteRow.token);
-          this.admin.message = 'Freelancer staff invite created.';
+          this.admin.message = 'IPM invite created.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -5688,7 +5727,7 @@
 
           const countryId = this.admin.managementAddForm.countryId || this.admin.selectedCountryId;
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
-            this.admin.formError = 'Select the country this management company belongs to.';
+            this.admin.formError = 'Select the country this Property Management Company (PMC) belongs to.';
             this.admin.saving = false;
             return;
           }
@@ -5727,8 +5766,88 @@
           }
 
           this.admin.generatedInviteLink = this.buildInviteLink(inviteRow.token);
-          this.admin.message = 'Management invite created.';
+          this.admin.message = 'PMC invite created.';
           this.admin.saving = false;
+          await this.loadSuperAdminData();
+        },
+
+        async saveManagementProfile() {
+          const row = this.admin.selectedRow;
+          if (!row) return;
+          this.admin.formError = '';
+          this.admin.saving = true;
+
+          const countryId = this.admin.managementAddForm.countryId || row.country_id || null;
+          const metadata = {
+            company_name: this.admin.managementAddForm.companyName,
+            full_name: this.admin.managementAddForm.leaderName,
+            phone: this.admin.managementAddForm.phone || '',
+            country_id: countryId,
+            max_landlords: Number(this.admin.managementAddForm.maxLandlords || 0),
+            max_properties: Number(this.admin.managementAddForm.maxProperties || 0),
+            max_staff: Number(this.admin.managementAddForm.maxStaff || 0),
+            subscription_status: this.admin.managementAddForm.subscriptionStatus || 'trial',
+            subscription_expires_at: this.admin.managementAddForm.expiresAt || null
+          };
+
+          if (row.accepted && row.id) {
+            const { error: companyError } = await supabaseClient
+              .from('management_companies')
+              .update({
+                company_name: metadata.company_name,
+                phone: metadata.phone,
+                country_id: countryId,
+                max_landlords: metadata.max_landlords,
+                max_properties: metadata.max_properties,
+                max_staff: metadata.max_staff,
+                subscription_status: metadata.subscription_status,
+                subscription_expires_at: metadata.subscription_expires_at
+              })
+              .eq('id', row.id);
+
+            if (companyError) {
+              this.admin.formError = companyError.message;
+              this.admin.saving = false;
+              return;
+            }
+
+            if (row.leader_profile_id) {
+              const { error: profileError } = await supabaseClient
+                .from('profiles')
+                .update({
+                  full_name: metadata.full_name,
+                  email: this.admin.managementAddForm.email,
+                  phone: metadata.phone,
+                  country_id: countryId
+                })
+                .eq('id', row.leader_profile_id)
+                .eq('role', 'management_leader');
+
+              if (profileError) {
+                this.admin.formError = profileError.message;
+                this.admin.saving = false;
+                return;
+              }
+            }
+          } else if (row.invite_id) {
+            const { error: inviteError } = await supabaseClient
+              .from('invite_tokens')
+              .update({
+                email: this.admin.managementAddForm.email,
+                country_id: countryId,
+                metadata
+              })
+              .eq('id', row.invite_id);
+
+            if (inviteError) {
+              this.admin.formError = inviteError.message;
+              this.admin.saving = false;
+              return;
+            }
+          }
+
+          this.admin.message = 'PMC details updated.';
+          this.closeAdminModal();
           await this.loadSuperAdminData();
         },
 
@@ -5771,15 +5890,40 @@
             return;
           }
 
-          this.admin.message = 'Management subscription updated.';
+          this.admin.message = 'PMC subscription updated.';
           this.closeAdminModal();
+          await this.loadSuperAdminData();
+        },
+
+        async suspendManagementCompany(company) {
+          if (!company?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Suspend PMC',
+            message: `Suspend ${company.company_name}? Their access will be paused until you reactivate the subscription from Manage.`,
+            confirmText: 'Suspend'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient
+            .from('management_companies')
+            .update({ subscription_status: 'suspended' })
+            .eq('id', company.id);
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'PMC suspended.';
           await this.loadSuperAdminData();
         },
 
         async archiveManagementCompany(company) {
           if (!company?.id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Archive management company',
+            title: 'Archive PMC',
             message: `Archive ${company.company_name}? Their historical records will stay saved.`,
             confirmText: 'Archive'
           });
@@ -5820,7 +5964,7 @@
             }
           }
 
-          this.admin.message = 'Management company archived.';
+          this.admin.message = 'PMC archived.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -5828,7 +5972,7 @@
         async unarchiveManagementCompany(company) {
           if (!company?.id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Unarchive management company',
+            title: 'Unarchive PMC',
             message: `Restore ${company.company_name}?`,
             confirmText: 'Unarchive',
             tone: 'success'
@@ -5848,15 +5992,15 @@
             return;
           }
 
-          this.admin.message = 'Management company restored.';
+          this.admin.message = 'PMC restored.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
 
         async permanentlyDeleteManagementCompany(company) {
           const confirmed = await this.requestConfirm({
-            title: 'Permanently delete management company',
-            message: `Permanently delete ${company.company_name || company.email}? This removes the leader account, company access, and linked management staff records. This cannot be undone.`,
+            title: 'Permanently delete PMC',
+            message: `Permanently delete ${company.company_name || company.email}? This removes the leader account, company access, and linked PMC staff records. This cannot be undone.`,
             confirmText: 'Delete permanently'
           });
           if (!confirmed) return;
@@ -5875,7 +6019,7 @@
             return;
           }
 
-          this.admin.message = 'Management company permanently deleted.';
+          this.admin.message = 'PMC permanently deleted.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -6016,7 +6160,7 @@
           const confirmed = await this.requestConfirm({
             title: staffRow.accepted === false ? 'Delete staff invite' : 'Permanently delete staff',
             message: staffRow.accepted === false
-              ? `Delete the freelancer invite for ${staffRow.full_name || staffRow.email}? The invite link will stop working.`
+              ? `Delete the IPM invite for ${staffRow.full_name || staffRow.email}? The invite link will stop working.`
               : `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the staff login and access records. Finance records already saved against this staff member will remain unassigned.`,
             confirmText: staffRow.accepted === false ? 'Delete invite' : 'Delete permanently'
           });
@@ -6825,7 +6969,7 @@
           this.staffContext.error = '';
           this.staffContext.message = '';
           if (this.profile?.staff_type !== 'freelancer') {
-            this.staffContext.error = 'Only freelancer staff can request access to another landlord.';
+            this.staffContext.error = 'Only an Individual Portfolio Manager (IPM) can request access to another landlord.';
             return;
           }
           if (!/^\d{6}$/.test(this.staffContext.addCode)) {
@@ -6877,6 +7021,8 @@
           this.propertyUnit.currentLease = null;
           this.propertyUnit.detailMode = '';
           await this.navigate('properties');
+          const firstProperty = this.filteredProperties().find(property => property.landlord_id === landlordId);
+          if (firstProperty) this.openPropertyUnits(firstProperty.id);
         },
 
         async requestManagementLandlordAccess() {
@@ -6914,6 +7060,22 @@
 
         supportMailto() {
           return `mailto:${SUPPORT_EMAIL}`;
+        },
+
+        subscriptionExpiredMessage() {
+          return 'Your Mushavo subscription has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to renew your subscription and restore access.';
+        },
+
+        markSubscriptionPaused() {
+          this.accessPaused = true;
+          this.suspendedTitle = 'Subscription Expired';
+          this.suspendedMessage = this.subscriptionExpiredMessage();
+        },
+
+        clearSubscriptionPause() {
+          this.accessPaused = false;
+          this.suspendedTitle = 'Subscription Expired';
+          this.suspendedMessage = this.subscriptionExpiredMessage();
         },
 
         copyrightText() {
@@ -8558,14 +8720,14 @@
           }
 
           if (this.profile?.role === 'management_leader' && !this.scopeWithinManagementGrant(scope)) {
-            return 'This staff member can only be assigned within the properties the landlord granted to this management company.';
+            return 'This staff member can only be assigned within the properties the landlord granted to this PMC.';
           }
 
           if (this.profile?.role === 'landlord' && member?.staff_type === 'freelancer' && this.externalAssignmentConflict({
             ...scope,
             excludePermissionId: member.permission_id || null
           })) {
-            return 'This property is already assigned to a management company or freelancer staff member. Remove that external assignment first.';
+            return 'This property is already assigned to a PMC or IPM. Remove that external assignment first.';
           }
 
           return '';
@@ -8732,7 +8894,7 @@
                   status: permission.status || 'approved',
                   profile_id: permission.staff_profile_id,
                   permission_id: permission.id,
-                  full_name: profile.full_name || fallbackMetadata.full_name || fallbackMetadata.fullName || fallbackInvite?.email || 'Management staff',
+                  full_name: profile.full_name || fallbackMetadata.full_name || fallbackMetadata.fullName || fallbackInvite?.email || 'PMC staff',
                   email: profile.email || fallbackInvite?.email || '',
                   phone: profile.phone || fallbackMetadata.phone || '',
                   created_at: profile.created_at || fallbackInvite?.created_at,
@@ -8801,7 +8963,7 @@
 
         managementPermissionTargetLabel() {
           const target = this.staff.selectedMember || {};
-          const company = target.company?.company_name || 'Management company';
+          const company = target.company?.company_name || 'PMC';
           const leader = target.leader?.email || target.leader?.full_name || '';
           return leader ? `${company} - ${leader}` : company;
         },
@@ -8818,7 +8980,7 @@
           this.staff.generatedInviteLink = '';
 
           if (this.profile?.role === 'management_leader' && !this.managementContext.company?.id) {
-            this.staff.error = 'Management company record not found.';
+            this.staff.error = 'PMC record not found.';
             this.staff.saving = false;
             return;
           }
@@ -8881,7 +9043,7 @@
             ...scope,
             excludeManagementId: target.managementMode === 'edit' ? target.id : null
           })) {
-            this.staff.error = 'This property is already assigned to a management company or freelancer staff member. Remove that external assignment first.';
+            this.staff.error = 'This property is already assigned to a PMC or IPM. Remove that external assignment first.';
             this.staff.saving = false;
             return;
           }
@@ -8932,7 +9094,7 @@
 
           if (this.profile?.role === 'management_leader') {
             if (!member.accepted || !member.permission_id) {
-              this.staff.error = 'Management staff invite permissions can be edited after the account is accepted.';
+              this.staff.error = 'PMC staff invite permissions can be edited after the account is accepted.';
               this.staff.saving = false;
               return;
             }
@@ -9005,7 +9167,7 @@
             all_properties: Boolean(member.all_properties),
             property_ids: member.property_ids || []
           })) {
-            this.staff.error = 'This property is already assigned to a management company or freelancer staff member. Remove that external assignment first.';
+            this.staff.error = 'This property is already assigned to a PMC or IPM. Remove that external assignment first.';
             this.staff.saving = false;
             return;
           }
@@ -9057,7 +9219,7 @@
           if (!request?.id) return;
           const confirmed = await this.requestConfirm({
             title: 'Reject management request',
-            message: `Reject ${request.company?.company_name || 'this management company'}'s access request?`,
+            message: `Reject ${request.company?.company_name || 'this PMC'}'s access request?`,
             confirmText: 'Reject'
           });
           if (!confirmed) return;
@@ -9081,8 +9243,8 @@
         async unassignManagementPartner(partner) {
           if (!partner?.id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Unassign management company',
-            message: `Remove ${partner.company?.company_name || 'this management company'} from this landlord? They will lose access to the assigned properties and units.`,
+            title: 'Unassign PMC',
+            message: `Remove ${partner.company?.company_name || 'this PMC'} from this landlord? They will lose access to the assigned properties and units.`,
             confirmText: 'Unassign'
           });
           if (!confirmed) return;
@@ -9109,7 +9271,7 @@
             message: member.invite_id && !member.accepted
               ? `Delete the invite for ${member.full_name || member.email}? The invite link will stop working.`
               : this.profile?.role === 'management_leader'
-              ? `Permanently delete ${member.full_name || member.email} from this management company? Their management staff login will be removed.`
+              ? `Permanently delete ${member.full_name || member.email} from this PMC? Their PMC staff login will be removed.`
               : `Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`,
             confirmText: member.invite_id && !member.accepted ? 'Delete Invite' : 'Remove'
           });
@@ -10218,7 +10380,7 @@
               status: this.profile.staff_subscription_status || 'free',
               expires_at: this.profile.staff_subscription_expires_at || null,
               landlord_limit: Number(this.profile.staff_max_landlords || 2),
-              notes: 'Freelancer staff can request access to landlords using their landlord code. Extra landlord access depends on the subscription limit set by admin.',
+              notes: 'IPMs can request access to landlords using their landlord code. Extra landlord access depends on the subscription limit set by admin.',
               created_at: this.profile.created_at,
               updated_at: null
             };
@@ -10604,6 +10766,7 @@
           this.booting = true;
           this.user = authUser;
           this.authError = '';
+          this.clearSubscriptionPause();
 
           let { data: profile, error: profileError } = await this.withTimeout(
             supabaseClient
@@ -10685,9 +10848,13 @@
               'Staff permissions are taking too long. Please refresh once.'
             );
             if (!hasStaffAccess) {
-              await supabaseClient.auth.signOut();
-              this.authError = 'Your staff account is waiting for landlord approval. Please try again after the landlord approves your request.';
-              this.currentShell = 'login';
+              if (this.accessPaused) {
+                this.currentShell = 'suspended';
+              } else {
+                await supabaseClient.auth.signOut();
+                this.authError = 'Your staff account is waiting for landlord approval. Please try again after the landlord approves your request.';
+                this.currentShell = 'login';
+              }
               this.booting = false;
               return;
             }
@@ -10707,12 +10874,16 @@
             const hasManagementAccess = await this.withTimeout(
               this.loadManagementPermissions(profile.id),
               12000,
-              'Management account loading is taking too long. Please refresh once.'
+              'PMC account loading is taking too long. Please refresh once.'
             );
             if (!hasManagementAccess) {
-              await supabaseClient.auth.signOut();
-              this.authError = 'Your management account is not active. Please contact the Mushavo administrator.';
-              this.currentShell = 'login';
+              if (this.accessPaused) {
+                this.currentShell = 'suspended';
+              } else {
+                await supabaseClient.auth.signOut();
+                this.authError = 'Your Property Management Company (PMC) account is not active. Please contact the Mushavo administrator.';
+                this.currentShell = 'login';
+              }
               this.booting = false;
               return;
             }
@@ -10732,12 +10903,16 @@
             const hasManagementStaffAccess = await this.withTimeout(
               this.loadManagementStaffPermissions(profile.id),
               12000,
-              'Management staff permissions are taking too long. Please refresh once.'
+              'PMC staff permissions are taking too long. Please refresh once.'
             );
             if (!hasManagementStaffAccess) {
-              await supabaseClient.auth.signOut();
-              this.authError = 'Your management staff account could not be loaded. Please ask your management leader to resend the invite.';
-              this.currentShell = 'login';
+              if (this.accessPaused) {
+                this.currentShell = 'suspended';
+              } else {
+                await supabaseClient.auth.signOut();
+                this.authError = 'Your PMC staff account could not be loaded. Please ask your PMC leader to resend the invite.';
+                this.currentShell = 'login';
+              }
               this.booting = false;
               return;
             }
@@ -10781,16 +10956,28 @@
 
           if (error || !data) {
             this.subscription = null;
+            this.markSubscriptionPaused();
             return false;
           }
 
           this.subscription = data;
           const expiresAt = new Date(data.expires_at);
           const activeStatus = data.status === 'active' || data.status === 'trial';
-          return activeStatus && expiresAt.getTime() > Date.now();
+          const hasAccess = activeStatus && expiresAt.getTime() > Date.now();
+          if (!hasAccess) this.markSubscriptionPaused();
+          return hasAccess;
         },
 
         async loadStaffPermissions(staffProfileId) {
+          if (this.profile?.staff_type === 'freelancer') {
+            const status = this.profile.staff_subscription_status || 'free';
+            const expired = this.profile.staff_subscription_expires_at && this.daysUntil(this.profile.staff_subscription_expires_at) < 0;
+            if (status === 'suspended' || expired) {
+              this.markSubscriptionPaused();
+              return false;
+            }
+          }
+
           const { data, error } = await supabaseClient
             .from('staff_permissions')
             .select('*, landlord:profiles!staff_permissions_landlord_id_fkey(id, full_name, email, landlord_code)')
@@ -10823,6 +11010,10 @@
 
           this.staffContext.activeLandlordId = activeLandlordId;
           const active = this.staffContext.relationships.find(row => row.landlord_id === activeLandlordId) || this.staffContext.relationships[0];
+          if (this.profile?.staff_type !== 'freelancer') {
+            const landlordHasAccess = await this.checkLandlordSubscription(activeLandlordId);
+            if (!landlordHasAccess) return false;
+          }
           this.permissions = this.permissionStateFromRow(active);
           return true;
         },
@@ -10838,8 +11029,14 @@
           if (companyError || !company) return false;
 
           const status = company.subscription_status || 'trial';
-          if (status === 'suspended') return false;
-          if (company.subscription_expires_at && this.daysUntil(company.subscription_expires_at) < 0) return false;
+          if (status === 'suspended') {
+            this.markSubscriptionPaused();
+            return false;
+          }
+          if (company.subscription_expires_at && this.daysUntil(company.subscription_expires_at) < 0) {
+            this.markSubscriptionPaused();
+            return false;
+          }
           this.subscription = {
             status,
             expires_at: company.subscription_expires_at,
@@ -10900,12 +11097,18 @@
 
           const company = staffPermission.company || {
             id: staffPermission.management_company_id,
-            company_name: 'Management company',
+            company_name: 'PMC',
             subscription_status: 'active',
             subscription_expires_at: null
           };
-          if (staffPermission.company?.subscription_status === 'suspended') return false;
-          if (staffPermission.company?.subscription_expires_at && this.daysUntil(staffPermission.company.subscription_expires_at) < 0) return false;
+          if (staffPermission.company?.subscription_status === 'suspended') {
+            this.markSubscriptionPaused();
+            return false;
+          }
+          if (staffPermission.company?.subscription_expires_at && this.daysUntil(staffPermission.company.subscription_expires_at) < 0) {
+            this.markSubscriptionPaused();
+            return false;
+          }
 
           this.managementContext.company = company;
           this.managementContext.requests = [];
