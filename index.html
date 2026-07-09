@@ -414,7 +414,7 @@
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
-              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">Staff</button>
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">IPM</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">PMC</button>
               <button class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
             </div>
@@ -651,13 +651,13 @@
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required>
                   <option value="landlord">Landlord</option>
                   <option value="management">PMC</option>
-                  <option value="staff">Staff</option>
+                  <option value="staff">IPM</option>
                 </select>
               </label>
               <label class="block">
-                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'Staff' : (admin.financeForm.payerType === 'management' ? 'PMC' : 'Landlord')"></span>
+                <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'IPM' : (admin.financeForm.payerType === 'management' ? 'PMC' : 'Landlord')"></span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required>
-                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select staff' : (admin.financeForm.payerType === 'management' ? 'Select PMC' : 'Select landlord')"></option>
+                  <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select IPM' : (admin.financeForm.payerType === 'management' ? 'Select PMC' : 'Select landlord')"></option>
                   <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
                   </template>
@@ -945,7 +945,7 @@
             </div>
             <div class="flex flex-wrap gap-2">
               <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
-              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="button" :disabled="admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned'" :class="(admin.selectedCountryId === 'all' || admin.selectedCountryId === 'unassigned') ? 'opacity-60' : ''" @click="openAdminModal('management-add')">Add PMC</button>
+              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="button" @click="openAdminModal('management-add')">Add PMC</button>
             </div>
           </div>
 
@@ -1048,7 +1048,7 @@
         <section x-show="currentPage === 'admin-staff'" id="super-admin-staff" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 class="text-2xl font-bold text-slate-900">Staff Management</h1>
+              <h1 class="text-2xl font-bold text-slate-900">IPM Management</h1>
               <p class="mt-1 text-sm text-slate-600">Review Individual Portfolio Manager (IPM) accounts, landlord limits, and subscription status.</p>
             </div>
             <div class="flex flex-wrap gap-2">
@@ -1085,7 +1085,7 @@
               <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>
-                    <th class="px-4 py-3 font-semibold">Staff</th>
+                    <th class="px-4 py-3 font-semibold">IPM</th>
                     <th class="px-4 py-3 font-semibold">Email</th>
                     <th class="px-4 py-3 font-semibold">Phone</th>
                     <th class="px-4 py-3 font-semibold">Account Status</th>
@@ -1099,7 +1099,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No staff accounts yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No IPM accounts yet.</td></tr>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
@@ -1114,7 +1114,9 @@
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
-                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)" x-text="staffRow.accepted === false ? 'Edit Invite' : 'Edit Subscription'"></button>
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminFreelancerEdit(staffRow)">Edit</button>
+                          <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Subscription</button>
+                          <button x-show="staffRow.accepted !== false && !staffRow.archived_at && staffRow.staff_subscription_status !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendAdminStaff(staffRow)">Suspend</button>
                           <button x-show="staffRow.accepted === false && staffRow.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(staffRow.invite_link)">Copy Link</button>
                           <button x-show="staffRow.accepted !== false && !staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
                           <button x-show="staffRow.accepted !== false && staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminStaff(staffRow)">Unarchive</button>
@@ -1129,13 +1131,13 @@
           </section>
         </section>
 
-        <template x-if="admin.modal === 'freelancer-add'">
+        <template x-if="admin.modal === 'freelancer-add' || admin.modal === 'freelancer-edit'">
           <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 px-4 py-8">
             <section class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900">Add Individual Portfolio Manager (IPM)</h2>
-                  <p class="mt-1 text-sm text-slate-500">Create an invite-only IPM account that can request access to multiple landlords.</p>
+                  <h2 class="text-lg font-bold text-slate-900" x-text="admin.modal === 'freelancer-edit' ? 'Edit Individual Portfolio Manager (IPM)' : 'Add Individual Portfolio Manager (IPM)'"></h2>
+                  <p class="mt-1 text-sm text-slate-500" x-text="admin.modal === 'freelancer-edit' ? 'Update the IPM name, email, phone, country, and subscription details.' : 'Create an invite-only IPM account that can request access to multiple landlords.'"></p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
@@ -1152,7 +1154,7 @@
                 </div>
               </template>
 
-              <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="createFreelancerInvite">
+              <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="admin.modal === 'freelancer-edit' ? saveFreelancerProfile() : createFreelancerInvite()">
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.freelancerForm.fullName" required>
@@ -1192,7 +1194,7 @@
                 </label>
                 <div class="flex justify-end gap-3 sm:col-span-2">
                   <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
-                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving">Create Invite</button>
+                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving" x-text="admin.modal === 'freelancer-edit' ? 'Save Changes' : 'Create Invite'"></button>
                 </div>
               </form>
             </section>
@@ -1286,7 +1288,7 @@
             <section class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-lg font-bold text-slate-900">Staff Subscription</h2>
+                  <h2 class="text-lg font-bold text-slate-900">IPM Subscription</h2>
                   <p class="mt-1 text-sm text-slate-500" x-text="admin.selectedRow?.email || ''"></p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
@@ -1487,7 +1489,7 @@
           <aside class="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex">
             <div class="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
               <img class="brand-logo h-24 w-auto max-w-[160px]" src="mushavo-logo.png" alt="Mushavo logo">
-              <span class="shrink-0 whitespace-nowrap text-[11px] font-bold uppercase leading-tight tracking-normal text-emerald-700 [overflow-wrap:normal]" x-text="accountRoleLabel()"></span>
+              <span class="max-w-[9rem] shrink truncate whitespace-nowrap text-[11px] font-bold uppercase leading-tight tracking-normal text-emerald-700 [overflow-wrap:normal]" x-text="accountRoleLabel()" :title="accountRoleLabel()"></span>
             </div>
             <nav id="landlord-staff-sidebar" class="flex-1 space-y-1 p-3">
               <template x-for="item in appNavItems()" :key="item.page">
@@ -1514,7 +1516,7 @@
                 <div class="flex h-16 items-center justify-between border-b border-slate-200 px-5">
                   <div class="flex items-center gap-3">
                     <img class="brand-logo h-24 w-auto max-w-[160px]" src="mushavo-logo.png" alt="Mushavo logo">
-                   <span class="shrink-0 whitespace-nowrap text-[11px] font-bold uppercase leading-tight tracking-normal text-emerald-700 [overflow-wrap:normal]" x-text="accountRoleLabel()"></span>
+                   <span class="max-w-[9rem] shrink truncate whitespace-nowrap text-[11px] font-bold uppercase leading-tight tracking-normal text-emerald-700 [overflow-wrap:normal]" x-text="accountRoleLabel()" :title="accountRoleLabel()"></span>
                   </div>
                   <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="sidebarOpen = false" aria-label="Close navigation">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -4902,6 +4904,9 @@
         },
 
         accountRoleLabel() {
+          if (['management_leader', 'management_staff'].includes(this.profile?.role) && this.managementContext.company?.company_name) {
+            return this.managementContext.company.company_name;
+          }
           const labels = {
             landlord: 'Landlord',
             staff: this.profile?.staff_type === 'freelancer' ? 'IPM' : 'Landlord Staff',
@@ -5381,9 +5386,6 @@
           }
 
           if (modalName === 'management-add') {
-            if (this.admin.selectedCountryId === 'all' || this.admin.selectedCountryId === 'unassigned') {
-              this.admin.formError = 'Select a country before adding a Property Management Company (PMC).';
-            }
             this.admin.managementAddForm = {
               companyName: '',
               leaderName: '',
@@ -5415,6 +5417,89 @@
           this.admin.modal = '';
           this.admin.formError = '';
           this.admin.saving = false;
+        },
+
+        openAdminFreelancerEdit(staffRow) {
+          if (!staffRow) return;
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.formError = '';
+          this.admin.generatedInviteLink = '';
+          this.admin.selectedRow = staffRow;
+          this.admin.freelancerForm = {
+            fullName: staffRow.full_name || '',
+            email: staffRow.email || '',
+            phone: staffRow.phone || '',
+            countryId: this.adminStaffCountryId(staffRow) || '',
+            maxLandlords: Number(staffRow.staff_max_landlords || 2),
+            subscriptionStatus: staffRow.staff_subscription_status || 'free',
+            expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
+          };
+          this.admin.modal = 'freelancer-edit';
+        },
+
+        async saveFreelancerProfile() {
+          const row = this.admin.selectedRow;
+          if (!row) return;
+          this.admin.formError = '';
+          this.admin.saving = true;
+
+          const countryId = this.admin.freelancerForm.countryId || null;
+          const payload = {
+            full_name: this.admin.freelancerForm.fullName,
+            email: this.admin.freelancerForm.email,
+            phone: this.admin.freelancerForm.phone || '',
+            country_id: countryId,
+            staff_type: 'freelancer',
+            staff_max_landlords: Number(this.admin.freelancerForm.maxLandlords || 2),
+            staff_subscription_status: this.admin.freelancerForm.subscriptionStatus || 'free',
+            staff_subscription_expires_at: this.admin.freelancerForm.expiresAt || null
+          };
+
+          if (row.accepted === false && row.invite_id) {
+            const metadata = {
+              ...(row.metadata || {}),
+              staff_type: 'freelancer',
+              full_name: payload.full_name,
+              phone: payload.phone,
+              country_id: countryId,
+              staff_max_landlords: payload.staff_max_landlords,
+              staff_subscription_status: payload.staff_subscription_status,
+              staff_subscription_expires_at: payload.staff_subscription_expires_at
+            };
+
+            const { error } = await supabaseClient
+              .from('invite_tokens')
+              .update({
+                email: payload.email,
+                country_id: countryId,
+                metadata
+              })
+              .eq('id', row.invite_id);
+
+            if (error) {
+              this.admin.formError = error.message;
+              this.admin.saving = false;
+              return;
+            }
+          } else if (row.id) {
+            const { error } = await supabaseClient
+              .from('profiles')
+              .update(payload)
+              .eq('id', row.id)
+              .eq('role', 'staff')
+              .eq('staff_type', 'freelancer');
+
+            if (error) {
+              this.admin.formError = error.message;
+              this.admin.saving = false;
+              return;
+            }
+          }
+
+          this.admin.message = 'IPM details updated.';
+          this.closeAdminModal();
+          await this.loadSuperAdminData();
         },
 
         openManagementEdit(company) {
@@ -6068,7 +6153,7 @@
               return;
             }
 
-            this.admin.message = 'Staff invite updated.';
+            this.admin.message = 'IPM invite updated.';
             this.closeAdminModal();
             await this.loadSuperAdminData();
             return;
@@ -6090,16 +6175,43 @@
             return;
           }
 
-          this.admin.message = 'Staff subscription updated.';
+          this.admin.message = 'IPM subscription updated.';
           this.closeAdminModal();
+          await this.loadSuperAdminData();
+        },
+
+        async suspendAdminStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Suspend IPM',
+            message: `Suspend ${staffRow.full_name || staffRow.email}? Their IPM access will be paused until you reactivate the subscription.`,
+            confirmText: 'Suspend'
+          });
+          if (!confirmed) return;
+
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient
+            .from('profiles')
+            .update({ staff_subscription_status: 'suspended' })
+            .eq('id', staffRow.id)
+            .eq('role', 'staff')
+            .eq('staff_type', 'freelancer');
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'IPM suspended.';
           await this.loadSuperAdminData();
         },
 
         async deleteAdminStaff(staffRow) {
           if (!staffRow?.id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Archive staff account',
-            message: `Archive ${staffRow.full_name || staffRow.email}? They will no longer appear as an active staff account, but finance history will stay saved.`,
+            title: 'Archive IPM account',
+            message: `Archive ${staffRow.full_name || staffRow.email}? They will no longer appear as an active IPM account, but finance history will stay saved.`,
             confirmText: 'Archive'
           });
           if (!confirmed) return;
@@ -6122,7 +6234,7 @@
             return;
           }
 
-          this.admin.message = 'Staff account archived.';
+          this.admin.message = 'IPM account archived.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -6130,7 +6242,7 @@
         async unarchiveAdminStaff(staffRow) {
           if (!staffRow?.id) return;
           const confirmed = await this.requestConfirm({
-            title: 'Unarchive staff account',
+            title: 'Unarchive IPM account',
             message: `Restore ${staffRow.full_name || staffRow.email}?`,
             confirmText: 'Unarchive',
             tone: 'success'
@@ -6150,7 +6262,7 @@
             return;
           }
 
-          this.admin.message = 'Staff account restored.';
+          this.admin.message = 'IPM account restored.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -6158,10 +6270,10 @@
         async permanentlyDeleteAdminStaff(staffRow) {
           if (!staffRow?.id && !staffRow?.invite_id) return;
           const confirmed = await this.requestConfirm({
-            title: staffRow.accepted === false ? 'Delete staff invite' : 'Permanently delete staff',
+            title: staffRow.accepted === false ? 'Delete IPM invite' : 'Permanently delete IPM',
             message: staffRow.accepted === false
               ? `Delete the IPM invite for ${staffRow.full_name || staffRow.email}? The invite link will stop working.`
-              : `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the staff login and access records. Finance records already saved against this staff member will remain unassigned.`,
+              : `Permanently delete ${staffRow.full_name || staffRow.email}? This removes the IPM login and access records. Finance records already saved against this IPM will remain unassigned.`,
             confirmText: staffRow.accepted === false ? 'Delete invite' : 'Delete permanently'
           });
           if (!confirmed) return;
@@ -6182,7 +6294,7 @@
               return;
             }
 
-            this.admin.message = 'Staff invite deleted.';
+            this.admin.message = 'IPM invite deleted.';
             this.admin.saving = false;
             await this.loadSuperAdminData();
             return;
@@ -6198,7 +6310,7 @@
             return;
           }
 
-          this.admin.message = 'Staff account permanently deleted.';
+          this.admin.message = 'IPM account permanently deleted.';
           this.admin.saving = false;
           await this.loadSuperAdminData();
         },
@@ -11272,7 +11384,7 @@
             settings: 'Settings',
             'admin-finance': 'Finance',
             'admin-tenants': 'Tenant Management',
-            'admin-staff': 'Staff Management',
+            'admin-staff': 'IPM Management',
             'landlord-management': 'Landlord Management',
             'tenant-home': 'Home',
             'tenant-payments': 'Payments',
