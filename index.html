@@ -398,7 +398,7 @@
     <template x-if="!booting && currentShell === 'super_admin'">
       <main id="super-admin-shell" class="min-h-screen overflow-x-hidden bg-emerald-50">
         <header class="border-b border-emerald-100 bg-white">
-          <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
             <div class="flex min-w-0 items-center gap-3">
               <img class="brand-logo h-24 w-auto max-w-[150px]" src="mushavo-logo.png" alt="Mushavo logo">
               <span class="text-base font-bold text-slate-900">Admin</span>
@@ -412,13 +412,13 @@
               <button class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
             </div>
           </div>
-          <div class="mx-auto flex max-w-7xl flex-col gap-2 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+          <div class="mx-auto flex max-w-7xl flex-col gap-2 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
             <p x-text="copyrightText()"></p>
             <a class="font-semibold text-emerald-700 hover:underline" :href="supportMailto()">Contact Support</a>
           </div>
         </header>
 
-        <section x-show="currentPage === 'landlord-management'" id="super-admin-landlord-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section x-show="currentPage === 'landlord-management'" id="super-admin-landlord-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Landlord Management</h1>
@@ -575,7 +575,7 @@
           </div>
         </section>
 
-        <section x-show="currentPage === 'admin-finance'" id="super-admin-finance" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section x-show="currentPage === 'admin-finance'" id="super-admin-finance" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Finance</h1>
@@ -930,7 +930,7 @@
           </div>
         </template>
 
-        <section x-show="currentPage === 'admin-management'" id="super-admin-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section x-show="currentPage === 'admin-management'" id="super-admin-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Management Companies</h1>
@@ -1036,7 +1036,7 @@
           </section>
         </section>
 
-        <section x-show="currentPage === 'admin-staff'" id="super-admin-staff" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section x-show="currentPage === 'admin-staff'" id="super-admin-staff" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Staff Management</h1>
@@ -1190,7 +1190,7 @@
           </div>
         </template>
 
-        <section x-show="currentPage === 'admin-tenants'" id="super-admin-tenants" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <section x-show="currentPage === 'admin-tenants'" id="super-admin-tenants" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-2xl font-bold text-slate-900">Tenant Management</h1>
@@ -1576,7 +1576,7 @@
               </div>
             </header>
 
-            <section id="landlord-staff-page-content" class="mx-auto w-full max-w-[1600px] p-4 sm:p-6">
+            <section id="landlord-staff-page-content" class="mx-auto w-full max-w-[1600px] p-4 sm:p-6 xl:max-w-[calc(100vw-3rem)] 2xl:max-w-[1840px]">
               <template x-if="profile?.role === 'staff' && staffContext.error">
                 <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staffContext.error"></div>
               </template>
@@ -3456,7 +3456,7 @@
           </div>
         </header>
 
-        <section class="mx-auto w-full max-w-[1400px] p-4 pb-24 sm:p-6">
+        <section class="mx-auto w-full max-w-[1400px] p-4 pb-24 sm:p-6 xl:max-w-[calc(100vw-3rem)] 2xl:max-w-[1800px]">
           <template x-if="tenant.error">
             <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenant.error"></div>
           </template>
