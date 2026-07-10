@@ -9417,7 +9417,22 @@
             };
           });
 
-          const pendingInviteMembers = (inviteTokensResult.data || []).map(invite => {
+          const acceptedProfileIds = new Set(acceptedMembers.map(member => member.profile_id).filter(Boolean));
+          const acceptedEmails = new Set(acceptedMembers.map(member => String(member.email || '').toLowerCase()).filter(Boolean));
+          const pendingRequestProfileIds = new Set(pendingMembers.map(member => member.profile_id).filter(Boolean));
+          const pendingRequestEmails = new Set(pendingMembers.map(member => String(member.email || '').toLowerCase()).filter(Boolean));
+
+          const pendingInviteMembers = (inviteTokensResult.data || [])
+          .filter(invite => {
+            const metadata = invite.metadata || {};
+            const inviteEmail = String(invite.email || metadata.email || '').toLowerCase();
+            const inviteProfileId = metadata.profile_id || metadata.profileId || '';
+            return !acceptedEmails.has(inviteEmail)
+              && !acceptedProfileIds.has(inviteProfileId)
+              && !pendingRequestEmails.has(inviteEmail)
+              && !pendingRequestProfileIds.has(inviteProfileId);
+          })
+          .map(invite => {
             const metadata = invite.metadata || {};
             return {
               rowKey: `invite-${invite.id}`,
