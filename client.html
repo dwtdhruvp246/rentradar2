@@ -9895,8 +9895,10 @@
               ? `Delete the invite for ${member.full_name || member.email}? The invite link will stop working.`
               : this.profile?.role === 'management_leader'
               ? `Permanently delete ${member.full_name || member.email} from this PMC? Their PMC staff login will be removed.`
-              : `Remove ${member.full_name || member.email} from this landlord? Their staff login will stay available for other landlords.`,
-            confirmText: member.invite_id && !member.accepted ? 'Delete Invite' : 'Remove'
+              : member.staff_type === 'freelancer'
+              ? `Remove ${member.full_name || member.email} from this landlord? Their IPM login will stay available for other landlords.`
+              : `Permanently delete ${member.full_name || member.email} from this landlord? Their personal staff login will be removed from Supabase and this email can be invited again.`,
+            confirmText: member.invite_id && !member.accepted ? 'Delete Invite' : (this.profile?.role === 'landlord' && member.staff_type !== 'freelancer' ? 'Delete Staff' : 'Remove')
           });
           if (!confirmed) return;
 
