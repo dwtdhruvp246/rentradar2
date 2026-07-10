@@ -10427,20 +10427,13 @@
           this.tenantLease.saving = true;
           this.tenantLease.generatedInviteLink = '';
 
-          const token = this.generateSecureToken();
-          const { data: tenantRow, error: tenantError } = await supabaseClient
-            .from('tenants')
-            .insert({
-              landlord_id: this.currentLandlordId(),
-              full_name: this.tenantLease.tenantForm.fullName,
-              phone: this.tenantLease.tenantForm.phone || null,
-              email: this.tenantLease.tenantForm.email,
-              id_number: this.tenantLease.tenantForm.idNumber || null,
-              invite_token: token,
-              invite_accepted: false
-            })
-            .select('id')
-            .single();
+          const { data: inviteData, error: tenantError } = await supabaseClient.rpc('create_tenant_invite', {
+            p_landlord_id: this.currentLandlordId(),
+            p_full_name: this.tenantLease.tenantForm.fullName,
+            p_phone: this.tenantLease.tenantForm.phone || null,
+            p_email: this.tenantLease.tenantForm.email,
+            p_id_number: this.tenantLease.tenantForm.idNumber || null
+          });
 
           if (tenantError) {
             this.tenantLease.error = tenantError.message;
@@ -10448,29 +10441,8 @@
             return;
           }
 
-          const { error: inviteError } = await supabaseClient
-            .from('invite_tokens')
-            .insert({
-              token,
-              email: this.tenantLease.tenantForm.email,
-              role: 'tenant',
-              landlord_id: this.currentLandlordId(),
-              metadata: {
-                tenant_id: tenantRow.id,
-                full_name: this.tenantLease.tenantForm.fullName,
-                phone: this.tenantLease.tenantForm.phone || '',
-                id_number: this.tenantLease.tenantForm.idNumber || ''
-              },
-              expires_at: this.addHoursIso(48)
-            });
-
-          if (inviteError) {
-            this.tenantLease.error = inviteError.message;
-            this.tenantLease.saving = false;
-            return;
-          }
-
-          this.tenantLease.generatedInviteLink = this.buildInviteLink(token);
+          const inviteRow = Array.isArray(inviteData) ? inviteData[0] : inviteData;
+          this.tenantLease.generatedInviteLink = this.buildInviteLink(inviteRow.invite_token);
           this.tenantLease.tenantForm = { fullName: '', phone: '', email: '', idNumber: '' };
           this.tenantLease.saving = false;
           await this.loadTenantLeaseData();
