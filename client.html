@@ -1999,10 +1999,10 @@
                             <p class="mt-2 text-sm leading-6 text-slate-600" x-text="property.address"></p>
                             <p class="text-sm text-slate-500" x-text="property.city"></p>
                           </div>
-                          <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700" x-text="`${unitCountForProperty(property.id)} units`"></span>
+                          <span x-show="canViewUnits()" class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700" x-text="`${unitCountForProperty(property.id)} units`"></span>
                         </div>
                         <div class="mt-5 flex flex-wrap gap-2">
-                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openPropertyUnits(property.id)">Open Units</button>
+                          <button x-show="canViewUnits()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openPropertyUnits(property.id)">Open Units</button>
                           <button x-show="canEditProperties()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="startEditProperty(property)">Edit</button>
                           <button x-show="canArchiveProperties()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteProperty(property)">Archive</button>
                         </div>
@@ -2028,7 +2028,7 @@
                 </div>
               </template>
 
-              <template x-if="currentPage === 'properties' && propertyUnit.selectedPropertyId">
+              <template x-if="currentPage === 'properties' && propertyUnit.selectedPropertyId && canViewUnits()">
                 <div class="space-y-6">
                   <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                     <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -2100,9 +2100,9 @@
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                   <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewUnit(unit)">View</button>
-                                  <button x-show="canManageLeases() && unit.status === 'vacant'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="prepareAssignTenant(unit)">Assign Tenant</button>
+                                  <button x-show="canAssignTenantToUnit() && unit.status === 'vacant'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="prepareAssignTenant(unit)">Assign Tenant</button>
                                   <button x-show="canMarkUnitsVacant() && unit.status === 'occupied'" class="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-yellow-100" type="button" @click="markUnitVacant(unit)">Mark Vacant</button>
-                                  <button x-show="canArchiveProperties()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteUnit(unit)">Archive</button>
+                                  <button x-show="canArchiveUnits()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteUnit(unit)">Archive</button>
                                 </div>
                               </td>
                             </tr>
@@ -2121,9 +2121,9 @@
                       <div class="flex flex-wrap gap-2">
                         <button x-show="canEditUnits()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="startEditSelectedUnit">Edit Unit</button>
                         <button x-show="canViewFinancials()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="prepareUnitPayment">Log Payment</button>
-                        <button x-show="canManageLeases()" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="prepareAssignTenant(propertyUnit.selectedUnit)">Change Tenant</button>
+                        <button x-show="canAssignTenantToUnit()" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="prepareAssignTenant(propertyUnit.selectedUnit)">Change Tenant</button>
                         <button x-show="canMarkUnitsVacant() && propertyUnit.selectedUnit?.status === 'occupied'" class="rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-yellow-100" type="button" @click="markUnitVacant(propertyUnit.selectedUnit)">Mark Vacant</button>
-                        <button x-show="canArchiveProperties()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteUnit(propertyUnit.selectedUnit)">Archive Unit</button>
+                        <button x-show="canArchiveUnits()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteUnit(propertyUnit.selectedUnit)">Archive Unit</button>
                       </div>
                     </div>
 
@@ -2140,7 +2140,7 @@
 
                       <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 lg:col-span-2">
                         <h3 class="text-sm font-semibold text-slate-900">Current Tenant + Lease</h3>
-                        <template x-if="propertyUnit.currentLease">
+                        <template x-if="propertyUnit.currentLease && canViewTenants()">
                           <div class="mt-3 grid gap-3 text-sm sm:grid-cols-2">
                             <p><span class="text-slate-500">Tenant:</span> <span class="font-medium text-slate-900" x-text="propertyUnit.currentLease.tenant?.full_name || '-'"></span></p>
                             <p><span class="text-slate-500">Lease:</span> <span class="font-medium text-slate-900" x-text="`${formatDate(propertyUnit.currentLease.start_date)} - ${formatDate(propertyUnit.currentLease.end_date)}`"></span></p>
@@ -2148,12 +2148,12 @@
                             <p x-show="canViewFinancials()"><span class="text-slate-500">Deposit:</span> <span class="font-medium text-slate-900" x-text="propertyUnit.currentLease.deposit_paid ? 'Paid' : 'Unpaid'"></span></p>
                             <div class="flex flex-wrap gap-3 sm:col-span-2">
                               <button class="text-sm font-semibold text-emerald-700 underline" type="button" @click="viewCurrentUnitLease">View Lease</button>
-                              <button x-show="leaseDocumentPath(propertyUnit.currentLease)" class="text-sm font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(propertyUnit.currentLease)">Download Lease Document</button>
+                              <button x-show="canViewLeaseDocuments() && leaseDocumentPath(propertyUnit.currentLease)" class="text-sm font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(propertyUnit.currentLease)">Download Lease Document</button>
                             </div>
                           </div>
                         </template>
-                        <template x-if="!propertyUnit.currentLease">
-                          <p class="mt-3 text-sm text-slate-500">No active lease for this unit.</p>
+                        <template x-if="!propertyUnit.currentLease || !canViewTenants()">
+                          <p class="mt-3 text-sm text-slate-500" x-text="canViewTenants() ? 'No active lease for this unit.' : 'Tenant details are hidden by permission.'"></p>
                         </template>
                       </div>
                     </div>
@@ -2357,7 +2357,7 @@
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenantLease.error"></div>
                     </template>
 
-                    <form x-show="profile?.role === 'landlord'" class="grid gap-3 lg:grid-cols-[1fr_0.9fr_1fr_0.8fr_auto]" @submit.prevent="addTenantInvite">
+                    <form x-show="canAddTenants()" class="grid gap-3 lg:grid-cols-[1fr_0.9fr_1fr_0.8fr_auto]" @submit.prevent="addTenantInvite">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenantLease.tenantForm.fullName" required>
@@ -2401,9 +2401,9 @@
                             <th class="px-4 py-3 font-semibold">Name</th>
                             <th class="px-4 py-3 font-semibold">Phone</th>
                             <th class="px-4 py-3 font-semibold">Email</th>
-                            <th class="px-4 py-3 font-semibold">Landlord</th>
-                            <th class="px-4 py-3 font-semibold">Linked Unit</th>
-                            <th class="px-4 py-3 font-semibold">Property</th>
+                            <th x-show="profile?.role === 'management_leader' || profile?.role === 'management_staff'" class="px-4 py-3 font-semibold">Landlord</th>
+                            <th x-show="canViewUnits()" class="px-4 py-3 font-semibold">Linked Unit</th>
+                            <th x-show="canViewProperties()" class="px-4 py-3 font-semibold">Property</th>
                             <th class="px-4 py-3 font-semibold">Invite</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
@@ -2417,16 +2417,16 @@
                               <td class="px-4 py-3 font-semibold text-slate-900" x-text="tenant.full_name"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.phone || '-'"></td>
                               <td class="px-4 py-3 text-slate-700" x-text="tenant.email"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="landlordNameForId(tenant.landlord_id)"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="tenantUnitLabel(tenant.id)"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="tenantPropertyLabelFromId(tenant.id)"></td>
+                              <td x-show="profile?.role === 'management_leader' || profile?.role === 'management_staff'" class="px-4 py-3 text-slate-700" x-text="landlordNameForId(tenant.landlord_id)"></td>
+                              <td x-show="canViewUnits()" class="px-4 py-3 text-slate-700" x-text="tenantUnitLabel(tenant.id)"></td>
+                              <td x-show="canViewProperties()" class="px-4 py-3 text-slate-700" x-text="tenantPropertyLabelFromId(tenant.id)"></td>
                               <td class="px-4 py-3">
                                 <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="tenant.invite_accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-amber-700'" x-text="tenant.invite_accepted ? 'Accepted' : 'Pending'"></span>
                               </td>
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                   <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewTenant(tenant)">View</button>
-                                  <button x-show="profile?.role === 'landlord'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteTenant(tenant)">Archive</button>
+                                  <button x-show="canArchiveTenants()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteTenant(tenant)">Archive</button>
                                 </div>
                               </td>
                             </tr>
@@ -2442,25 +2442,48 @@
                         <h2 class="text-lg font-bold text-slate-900" x-text="tenantLease.selectedTenant?.full_name || 'Tenant Detail'"></h2>
                         <p class="mt-1 text-sm text-slate-500" x-text="tenantLease.selectedTenant?.email || ''"></p>
                       </div>
-                      <button x-show="profile?.role === 'landlord'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteTenant(tenantLease.selectedTenant)">Archive Tenant</button>
+                      <div class="flex flex-wrap gap-2">
+                        <button x-show="canEditTenants()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="startEditTenant(tenantLease.selectedTenant)">Edit Tenant</button>
+                        <button x-show="canArchiveTenants()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteTenant(tenantLease.selectedTenant)">Archive Tenant</button>
+                      </div>
                     </div>
+                    <form x-show="tenantLease.editTenantId === tenantLease.selectedTenant?.id && canEditTenants()" class="mb-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto]" @submit.prevent="saveTenantEdit">
+                      <label class="block">
+                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Full name</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" x-model.trim="tenantLease.editTenantForm.fullName" required>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="tel" x-model.trim="tenantLease.editTenantForm.phone">
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Email</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="email" x-model.trim="tenantLease.editTenantForm.email" required>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">ID number</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" x-model.trim="tenantLease.editTenantForm.idNumber">
+                      </label>
+                      <button class="self-end rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="tenantLease.saving">Save</button>
+                      <button class="self-end rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="cancelTenantEdit">Cancel</button>
+                    </form>
                     <div class="grid gap-6 xl:grid-cols-2">
                       <section class="overflow-hidden rounded-lg border border-slate-200">
                         <div class="border-b border-slate-200 bg-slate-50 px-4 py-3"><h3 class="text-sm font-semibold text-slate-900">Lease History</h3></div>
                         <div class="overflow-x-auto">
                           <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
-                            <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Unit</th><th class="px-4 py-3">Dates</th><th class="px-4 py-3">Rent</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Actions</th></tr></thead>
+                            <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Unit</th><th class="px-4 py-3">Dates</th><th x-show="canViewFinancials()" class="px-4 py-3">Rent</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Actions</th></tr></thead>
                             <tbody class="divide-y divide-slate-200">
                               <template x-if="tenantLease.selectedTenantLeases.length === 0"><tr><td class="px-4 py-6 text-center text-sm text-slate-500" colspan="5">No leases.</td></tr></template>
                               <template x-for="lease in tenantLease.selectedTenantLeases" :key="lease.id">
-                                <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="leaseUnitLabel(lease)"></td><td class="px-4 py-3" x-text="`${formatDate(lease.start_date)} - ${formatDate(lease.end_date)}`"></td><td class="px-4 py-3" x-text="formatCurrency(lease.monthly_rent)"></td><td class="px-4 py-3" x-text="titleCase(lease.status)"></td><td class="px-4 py-3"><button x-show="profile?.role === 'landlord' && lease.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(lease)">Terminate</button></td></tr>
+                                <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="leaseUnitLabel(lease)"></td><td class="px-4 py-3" x-text="`${formatDate(lease.start_date)} - ${formatDate(lease.end_date)}`"></td><td x-show="canViewFinancials()" class="px-4 py-3" x-text="formatCurrency(lease.monthly_rent)"></td><td class="px-4 py-3" x-text="titleCase(lease.status)"></td><td class="px-4 py-3"><button x-show="canTerminateLeases() && lease.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(lease)">Terminate</button></td></tr>
                               </template>
                             </tbody>
                           </table>
                         </div>
                       </section>
 
-                      <section class="overflow-hidden rounded-lg border border-slate-200">
+                      <section x-show="canViewFinancials()" class="overflow-hidden rounded-lg border border-slate-200">
                         <div class="border-b border-slate-200 bg-slate-50 px-4 py-3"><h3 class="text-sm font-semibold text-slate-900">Payment History</h3></div>
                         <div class="overflow-x-auto">
                           <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
@@ -2494,7 +2517,7 @@
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenantLease.error"></div>
                     </template>
 
-                    <form x-show="canManageLeases()" class="grid gap-3 xl:grid-cols-4" @submit.prevent="addLeaseFromPage">
+                    <form x-show="canAssignTenantToUnit()" class="grid gap-3 xl:grid-cols-4" @submit.prevent="addLeaseFromPage">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Tenant</span>
                         <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.tenantId" required>
@@ -2532,14 +2555,14 @@
                         <span class="mb-2 block text-sm font-medium text-slate-700">Deposit</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="tenantLease.leaseForm.depositAmount">
                       </label>
-                      <label class="block xl:col-span-2">
+                      <label x-show="canUploadLeaseDocuments()" class="block xl:col-span-2">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Lease agreement PDF</span>
                         <input x-ref="leaseDocumentInput" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="file" accept="application/pdf,.pdf" @change="handleLeaseDocumentSelection($event, 'new')">
                         <span class="mt-1 block text-xs text-slate-500">PDF only, max 20 MB.</span>
                       </label>
                       <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="tenantLease.saving">Add Lease</button>
                     </form>
-                    <label x-show="canManageLeases()" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <label x-show="canAssignTenantToUnit()" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
                       <input class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" type="checkbox" x-model="tenantLease.leaseForm.depositPaid">
                       Deposit paid
                     </label>
@@ -2552,7 +2575,7 @@
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!tenantLease.loading && tenantLease.leases.length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No leases yet.</td></tr></template>
                           <template x-for="lease in tenantLease.leases" :key="lease.id">
-                            <tr class="odd:bg-white even:bg-slate-50/60"><td class="px-4 py-3 font-semibold text-slate-900" x-text="lease.tenant?.full_name || '-'"></td><td class="px-4 py-3" x-text="leasePropertyLabel(lease)"></td><td class="px-4 py-3" x-text="leaseUnitLabel(lease)"></td><td class="px-4 py-3" x-text="`${formatDate(lease.start_date)} - ${formatDate(lease.end_date)}`"></td><td class="px-4 py-3" x-text="formatCurrency(lease.monthly_rent)"></td><td class="px-4 py-3" x-text="titleCase(lease.status)"></td><td class="px-4 py-3" x-text="leaseDocumentLabel(lease)"></td><td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewLease(lease)">View</button><button x-show="profile?.role === 'landlord' && lease.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(lease)">Terminate</button></div></td></tr>
+                            <tr class="odd:bg-white even:bg-slate-50/60"><td class="px-4 py-3 font-semibold text-slate-900" x-text="lease.tenant?.full_name || '-'"></td><td class="px-4 py-3" x-text="leasePropertyLabel(lease)"></td><td class="px-4 py-3" x-text="leaseUnitLabel(lease)"></td><td class="px-4 py-3" x-text="`${formatDate(lease.start_date)} - ${formatDate(lease.end_date)}`"></td><td class="px-4 py-3" x-text="formatCurrency(lease.monthly_rent)"></td><td class="px-4 py-3" x-text="titleCase(lease.status)"></td><td class="px-4 py-3" x-text="leaseDocumentLabel(lease)"></td><td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewLease(lease)">View</button><button x-show="canTerminateLeases() && lease.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(lease)">Terminate</button></div></td></tr>
                           </template>
                         </tbody>
                       </table>
@@ -2560,14 +2583,14 @@
                   </section>
 
                   <section x-show="tenantLease.selectedLease" class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
-                    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><h2 class="text-lg font-bold text-slate-900">Lease Detail</h2><p class="mt-1 text-sm text-slate-500" x-text="tenantLease.selectedLease ? `${tenantLease.selectedLease.tenant?.full_name || '-'} - ${leaseUnitLabel(tenantLease.selectedLease)}` : ''"></p></div><button x-show="profile?.role === 'landlord' && tenantLease.selectedLease?.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(tenantLease.selectedLease)">Terminate Lease</button></div>
+                    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><h2 class="text-lg font-bold text-slate-900">Lease Detail</h2><p class="mt-1 text-sm text-slate-500" x-text="tenantLease.selectedLease ? `${tenantLease.selectedLease.tenant?.full_name || '-'} - ${leaseUnitLabel(tenantLease.selectedLease)}` : ''"></p></div><button x-show="canTerminateLeases() && tenantLease.selectedLease?.status === 'active'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteLease(tenantLease.selectedLease)">Terminate Lease</button></div>
                     <div class="grid gap-4 lg:grid-cols-4">
                       <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><p class="text-sm text-slate-500">Dates</p><p class="mt-2 font-semibold text-slate-900" x-text="tenantLease.selectedLease ? `${formatDate(tenantLease.selectedLease.start_date)} - ${formatDate(tenantLease.selectedLease.end_date)}` : '-'"></p></div>
                       <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><p class="text-sm text-slate-500">Monthly Rent</p><p class="mt-2 font-semibold text-slate-900" x-text="formatCurrency(tenantLease.selectedLease?.monthly_rent)"></p></div>
                       <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><p class="text-sm text-slate-500">Deposit</p><p class="mt-2 font-semibold text-slate-900" x-text="`${formatCurrency(tenantLease.selectedLease?.deposit_amount)} - ${tenantLease.selectedLease?.deposit_paid ? 'Paid' : 'Unpaid'}`"></p></div>
-                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><p class="text-sm text-slate-500">Agreement</p><button x-show="leaseDocumentPath(tenantLease.selectedLease)" class="mt-2 text-sm font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(tenantLease.selectedLease)">Download PDF</button><p x-show="!leaseDocumentPath(tenantLease.selectedLease)" class="mt-2 text-sm font-semibold text-slate-900">No PDF uploaded</p></div>
+                      <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"><p class="text-sm text-slate-500">Agreement</p><button x-show="canViewLeaseDocuments() && leaseDocumentPath(tenantLease.selectedLease)" class="mt-2 text-sm font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(tenantLease.selectedLease)">Download PDF</button><p x-show="!leaseDocumentPath(tenantLease.selectedLease)" class="mt-2 text-sm font-semibold text-slate-900">No PDF uploaded</p><p x-show="leaseDocumentPath(tenantLease.selectedLease) && !canViewLeaseDocuments()" class="mt-2 text-sm font-semibold text-slate-900">Hidden by permission</p></div>
                     </div>
-                    <form x-show="canManageLeases()" class="mt-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[1fr_auto]" @submit.prevent="uploadDocumentForSelectedLease">
+                    <form x-show="canUploadLeaseDocuments()" class="mt-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-[1fr_auto]" @submit.prevent="uploadDocumentForSelectedLease">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Upload or replace lease agreement</span>
                         <input x-ref="selectedLeaseDocumentInput" class="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="file" accept="application/pdf,.pdf" @change="handleLeaseDocumentSelection($event, 'selected')">
@@ -3379,6 +3402,7 @@
                               <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" x-model="staff.form.canViewUnits"> View units</label>
                               <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" x-model="staff.form.canAddUnits"> Add units</label>
                               <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" x-model="staff.form.canEditUnits"> Edit units</label>
+                              <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" x-model="staff.form.canArchiveUnits"> Archive units</label>
                               <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" x-model="staff.form.canMarkUnitsVacant"> Mark units vacant</label>
                             </div>
                             <div class="space-y-2">
@@ -3687,7 +3711,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Status</dt><dd class="font-medium text-slate-900" x-text="titleCase(tenant.activeLease?.status || 'none')"></dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Deposit</dt><dd class="font-medium text-slate-900" x-text="`${formatCurrency(tenant.activeLease?.deposit_amount)} - ${tenant.activeLease?.deposit_paid ? 'Paid' : 'Unpaid'}`"></dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Lease Ends</dt><dd class="font-medium text-slate-900" x-text="formatDate(tenant.activeLease?.end_date)"></dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Agreement</dt><dd><button x-show="leaseDocumentPath(tenant.activeLease)" class="font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(tenant.activeLease)">Download PDF</button><span x-show="!leaseDocumentPath(tenant.activeLease)" class="font-medium text-slate-900">Not uploaded</span></dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Agreement</dt><dd><button x-show="canViewLeaseDocuments() && leaseDocumentPath(tenant.activeLease)" class="font-semibold text-emerald-700 underline" type="button" @click="openLeaseDocument(tenant.activeLease)">Download PDF</button><span x-show="!leaseDocumentPath(tenant.activeLease)" class="font-medium text-slate-900">Not uploaded</span></dd></div>
                   </dl>
                 </article>
               </section>
@@ -3970,9 +3994,10 @@
           can_add_properties: false,
           can_edit_properties: false,
           can_archive_properties: false,
-          can_view_units: true,
+          can_view_units: false,
           can_add_units: false,
           can_edit_units: false,
+          can_archive_units: false,
           can_mark_units_vacant: false,
           can_view_tenants: false,
           can_add_tenants: false,
@@ -4354,9 +4379,10 @@
             canAddProperties: false,
             canEditProperties: false,
             canArchiveProperties: false,
-            canViewUnits: true,
+            canViewUnits: false,
             canAddUnits: false,
             canEditUnits: false,
+            canArchiveUnits: false,
             canMarkUnitsVacant: false,
             canViewTenants: false,
             canAddTenants: false,
@@ -4442,6 +4468,13 @@
           selectedTenant: null,
           selectedTenantLeases: [],
           selectedTenantPayments: [],
+          editTenantId: '',
+          editTenantForm: {
+            fullName: '',
+            phone: '',
+            email: '',
+            idNumber: ''
+          },
           selectedLease: null,
           selectedLeasePayments: [],
           selectedLeaseDocumentFile: null,
@@ -4736,11 +4769,37 @@
                 staff_profile_id: signUpData.user.id,
                 all_properties: Boolean(metadata.all_properties),
                 property_ids: metadata.property_ids || [],
+                can_view_properties: metadata.can_view_properties !== false,
+                can_add_properties: Boolean(metadata.can_add_properties),
+                can_edit_properties: Boolean(metadata.can_edit_properties),
+                can_archive_properties: Boolean(metadata.can_archive_properties),
+                can_view_units: Boolean(metadata.can_view_units),
+                can_add_units: Boolean(metadata.can_add_units),
+                can_edit_units: Boolean(metadata.can_edit_units),
+                can_archive_units: Boolean(metadata.can_archive_units),
+                can_mark_units_vacant: Boolean(metadata.can_mark_units_vacant),
                 can_view_tenants: Boolean(metadata.can_view_tenants),
+                can_add_tenants: Boolean(metadata.can_add_tenants),
+                can_edit_tenants: Boolean(metadata.can_edit_tenants),
+                can_archive_tenants: Boolean(metadata.can_archive_tenants),
+                can_view_leases: Boolean(metadata.can_view_leases),
+                can_create_leases: Boolean(metadata.can_create_leases),
+                can_edit_leases: Boolean(metadata.can_edit_leases),
+                can_terminate_leases: Boolean(metadata.can_terminate_leases),
+                can_view_lease_documents: Boolean(metadata.can_view_lease_documents),
+                can_upload_lease_documents: Boolean(metadata.can_upload_lease_documents),
                 can_manage_maintenance: Boolean(metadata.can_manage_maintenance),
+                can_create_maintenance: Boolean(metadata.can_create_maintenance),
+                can_assign_maintenance: Boolean(metadata.can_assign_maintenance),
+                can_add_resolution_notes: Boolean(metadata.can_add_resolution_notes),
                 can_view_payments: Boolean(metadata.can_view_payments),
+                can_log_payments: Boolean(metadata.can_log_payments),
+                can_reject_payments: Boolean(metadata.can_reject_payments),
+                can_view_payment_proofs: Boolean(metadata.can_view_payment_proofs),
                 can_verify_payments: Boolean(metadata.can_verify_payments),
                 can_manage_leases: Boolean(metadata.can_manage_leases),
+                can_manage_staff: Boolean(metadata.can_manage_staff),
+                can_view_finance: Boolean(metadata.can_view_finance),
                 accepted_at: new Date().toISOString()
               });
 
@@ -4763,9 +4822,10 @@
                 can_add_properties: Boolean(metadata.can_add_properties),
                 can_edit_properties: Boolean(metadata.can_edit_properties),
                 can_archive_properties: Boolean(metadata.can_archive_properties),
-                can_view_units: metadata.can_view_units !== false,
+                can_view_units: Boolean(metadata.can_view_units),
                 can_add_units: Boolean(metadata.can_add_units),
                 can_edit_units: Boolean(metadata.can_edit_units),
+                can_archive_units: Boolean(metadata.can_archive_units),
                 can_mark_units_vacant: Boolean(metadata.can_mark_units_vacant),
                 can_view_tenants: Boolean(metadata.can_view_tenants),
                 can_add_tenants: Boolean(metadata.can_add_tenants),
@@ -7367,8 +7427,8 @@
           if (!['staff', 'management_leader', 'management_staff'].includes(this.profile?.role)) return false;
 
           const permissionMap = {
-            properties: this.permissions.can_view_properties || this.permissions.can_view_units || this.permissions.can_add_properties,
-            tenants: this.permissions.can_view_tenants,
+            properties: this.canViewProperties(),
+            tenants: this.canViewTenants(),
             leases: this.permissions.can_view_leases || this.permissions.can_manage_leases,
             payments: this.permissions.can_view_payments || this.permissions.can_verify_payments || this.permissions.can_log_payments,
             maintenance: this.permissions.can_manage_maintenance || this.permissions.can_create_maintenance || this.permissions.can_assign_maintenance
@@ -7546,13 +7606,14 @@
           return {
             all_properties: Boolean(row.all_properties),
             property_ids: row.property_ids || [],
-            can_view_properties: row.can_view_properties !== false,
+            can_view_properties: Boolean(row.can_view_properties),
             can_add_properties: Boolean(row.can_add_properties),
             can_edit_properties: Boolean(row.can_edit_properties),
             can_archive_properties: Boolean(row.can_archive_properties),
-            can_view_units: row.can_view_units !== false,
+            can_view_units: Boolean(row.can_view_units),
             can_add_units: Boolean(row.can_add_units),
             can_edit_units: Boolean(row.can_edit_units),
+            can_archive_units: Boolean(row.can_archive_units),
             can_mark_units_vacant: Boolean(row.can_mark_units_vacant),
             can_view_tenants: Boolean(row.can_view_tenants),
             can_add_tenants: Boolean(row.can_add_tenants),
@@ -7573,7 +7634,7 @@
             can_reject_payments: Boolean(row.can_reject_payments),
             can_view_payment_proofs: Boolean(row.can_view_payment_proofs || row.can_view_payments || row.can_verify_payments),
             can_verify_payments: Boolean(row.can_verify_payments),
-            can_manage_leases: Boolean(row.can_manage_leases || row.can_create_leases || row.can_edit_leases || row.can_terminate_leases),
+            can_manage_leases: Boolean(row.can_manage_leases),
             can_manage_staff: Boolean(row.can_manage_staff),
             can_view_finance: Boolean(row.can_view_finance)
           };
@@ -7718,35 +7779,120 @@
         },
 
         canManageLeases() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_manage_leases);
+          return this.canViewLeases() || this.canCreateLeases() || this.canEditLeases() || this.canTerminateLeases();
+        },
+
+        canViewLeases() {
+          return this.canViewUnits() && (
+            this.profile?.role === 'landlord'
+            || Boolean(
+              this.permissions.can_view_leases
+              || this.permissions.can_manage_leases
+              || this.permissions.can_create_leases
+              || this.permissions.can_edit_leases
+              || this.permissions.can_terminate_leases
+            )
+          );
+        },
+
+        canCreateLeases() {
+          return this.canViewUnits() && this.canViewTenants() && (
+            this.profile?.role === 'landlord'
+            || Boolean(this.permissions.can_create_leases || this.permissions.can_manage_leases)
+          );
+        },
+
+        canEditLeases() {
+          return this.canViewLeases() && (
+            this.profile?.role === 'landlord'
+            || Boolean(this.permissions.can_edit_leases || this.permissions.can_manage_leases)
+          );
+        },
+
+        canTerminateLeases() {
+          return this.canViewLeases() && (
+            this.profile?.role === 'landlord'
+            || Boolean(this.permissions.can_terminate_leases || this.permissions.can_manage_leases)
+          );
+        },
+
+        canViewLeaseDocuments() {
+          if (['landlord', 'tenant'].includes(this.profile?.role)) return true;
+          return this.canViewLeases() && (
+            Boolean(this.permissions.can_view_lease_documents || this.permissions.can_manage_leases)
+          );
+        },
+
+        canUploadLeaseDocuments() {
+          return this.canViewLeases() && (
+            this.profile?.role === 'landlord'
+            || Boolean(this.permissions.can_upload_lease_documents || this.permissions.can_manage_leases)
+          );
+        },
+
+        canAssignTenantToUnit() {
+          return this.canCreateLeases();
+        },
+
+        canViewProperties() {
+          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_properties);
+        },
+
+        canViewUnits() {
+          return this.canViewProperties() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_units));
+        },
+
+        canViewTenants() {
+          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_tenants);
         },
 
         canManageProperties() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_properties || this.permissions.can_edit_properties || this.permissions.can_archive_properties);
+          return this.canViewProperties() && Boolean(
+            this.profile?.role === 'landlord'
+            || this.permissions.can_add_properties
+            || this.permissions.can_edit_properties
+            || this.permissions.can_archive_properties
+          );
         },
 
         canAddProperties() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_properties);
+          return this.canViewProperties() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_properties));
         },
 
         canEditProperties() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_edit_properties);
+          return this.canViewProperties() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_edit_properties));
         },
 
         canArchiveProperties() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_archive_properties);
+          return this.canViewProperties() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_archive_properties));
         },
 
         canAddUnits() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_units);
+          return this.canViewUnits() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_units));
         },
 
         canEditUnits() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_edit_units);
+          return this.canViewUnits() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_edit_units));
+        },
+
+        canArchiveUnits() {
+          return this.canViewUnits() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_archive_units));
         },
 
         canMarkUnitsVacant() {
-          return this.profile?.role === 'landlord' || Boolean(this.permissions.can_mark_units_vacant);
+          return this.canViewUnits() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_mark_units_vacant));
+        },
+
+        canAddTenants() {
+          return this.canViewTenants() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_add_tenants));
+        },
+
+        canEditTenants() {
+          return this.canViewTenants() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_edit_tenants));
+        },
+
+        canArchiveTenants() {
+          return this.canViewTenants() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_archive_tenants));
         },
 
         canVerifyPayments() {
@@ -7761,17 +7907,24 @@
           this.propertyUnit.loading = true;
           this.propertyUnit.error = '';
 
-          const canLoadTenants = this.profile?.role === 'landlord' || this.permissions.can_view_tenants || this.permissions.can_manage_leases;
-          const canLoadLeases = this.profile?.role === 'landlord' || this.permissions.can_manage_leases || this.permissions.can_view_tenants || this.permissions.can_view_payments || this.permissions.can_verify_payments;
+          const canLoadProperties = this.canViewProperties();
+          const canLoadUnits = this.canViewUnits();
+          const canLoadTenants = this.canViewTenants();
+          const canLoadLeases = this.canViewUnits() && (this.canViewTenants() || this.canManageLeases() || this.canViewPayments() || this.canMarkUnitsVacant());
+          const leaseTenantJoin = this.canViewTenants() ? ', tenants(id, full_name, email, phone)' : '';
           const unitSelect = this.canViewFinancials()
             ? 'id, property_id, unit_number, bedrooms, bathrooms, monthly_rent, status, created_at, properties(id, name, address, city)'
             : 'id, property_id, unit_number, bedrooms, bathrooms, status, created_at, properties(id, name, address, city)';
           const leaseSelect = this.canViewFinancials()
-            ? 'id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone)'
-            : 'id, unit_id, tenant_id, landlord_id, start_date, end_date, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone)';
+            ? `id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at${leaseTenantJoin}`
+            : `id, unit_id, tenant_id, landlord_id, start_date, end_date, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at${leaseTenantJoin}`;
           const results = await Promise.all([
-            supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('created_at', { ascending: false }),
-            supabaseClient.from('units').select(unitSelect).is('archived_at', null).order('created_at', { ascending: false }),
+            canLoadProperties
+              ? supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('created_at', { ascending: false })
+              : Promise.resolve({ data: [], error: null }),
+            canLoadUnits
+              ? supabaseClient.from('units').select(unitSelect).is('archived_at', null).order('created_at', { ascending: false })
+              : Promise.resolve({ data: [], error: null }),
             canLoadTenants
               ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true })
               : Promise.resolve({ data: [], error: null }),
@@ -8003,7 +8156,7 @@
 
         async deleteUnit(unit) {
           if (!unit) return;
-          if (!this.canArchiveProperties()) {
+          if (!this.canArchiveUnits()) {
             this.propertyUnit.error = 'You do not have permission to archive units.';
             return;
           }
@@ -8118,6 +8271,10 @@
         },
 
         openPropertyUnits(propertyId) {
+          if (!this.canViewUnits()) {
+            this.propertyUnit.error = 'You do not have permission to view units.';
+            return;
+          }
           this.propertyUnit.selectedPropertyId = propertyId;
           this.propertyUnit.unitForm.propertyId = propertyId;
           if (this.propertyUnit.selectedUnit?.property_id !== propertyId) {
@@ -8194,6 +8351,10 @@
         },
 
         async viewUnit(unit) {
+          if (!this.canViewUnits()) {
+            this.propertyUnit.error = 'You do not have permission to view units.';
+            return;
+          }
           this.propertyUnit.selectedUnit = unit;
           this.propertyUnit.detailMode = '';
           this.propertyUnit.selectedMaintenanceRequest = null;
@@ -8284,6 +8445,10 @@
 
         async prepareAssignTenant(unit) {
           if (!unit) return;
+          if (!this.canAssignTenantToUnit()) {
+            this.propertyUnit.error = 'You do not have permission to assign tenants to units.';
+            return;
+          }
           this.propertyUnit.selectedUnit = unit;
           await this.loadUnitDetail(unit);
           this.propertyUnit.detailMode = 'assign';
@@ -8305,6 +8470,10 @@
         async assignTenantToSelectedUnit() {
           const unit = this.propertyUnit.selectedUnit;
           if (!unit) return;
+          if (!this.canAssignTenantToUnit()) {
+            this.propertyUnit.error = 'You do not have permission to assign tenants to units.';
+            return;
+          }
 
           try {
             if (this.propertyUnit.currentLease) {
@@ -9281,9 +9450,10 @@
             canAddProperties: false,
             canEditProperties: false,
             canArchiveProperties: false,
-            canViewUnits: true,
+            canViewUnits: false,
             canAddUnits: false,
             canEditUnits: false,
+            canArchiveUnits: false,
             canMarkUnitsVacant: false,
             canViewTenants: false,
             canAddTenants: false,
@@ -9311,21 +9481,25 @@
         },
 
         staffFormPayload() {
+          const canViewProperties = Boolean(this.staff.form.canViewProperties);
+          const canViewUnits = canViewProperties && Boolean(this.staff.form.canViewUnits);
+          const canViewTenants = Boolean(this.staff.form.canViewTenants);
           return {
             all_properties: Boolean(this.staff.form.allProperties),
             property_ids: this.staff.form.allProperties ? [] : this.staff.form.propertyIds,
-            can_view_properties: Boolean(this.staff.form.canViewProperties),
-            can_add_properties: Boolean(this.staff.form.canAddProperties),
-            can_edit_properties: Boolean(this.staff.form.canEditProperties),
-            can_archive_properties: Boolean(this.staff.form.canArchiveProperties),
-            can_view_units: Boolean(this.staff.form.canViewUnits),
-            can_add_units: Boolean(this.staff.form.canAddUnits),
-            can_edit_units: Boolean(this.staff.form.canEditUnits),
-            can_mark_units_vacant: Boolean(this.staff.form.canMarkUnitsVacant),
-            can_view_tenants: Boolean(this.staff.form.canViewTenants),
-            can_add_tenants: Boolean(this.staff.form.canAddTenants),
-            can_edit_tenants: Boolean(this.staff.form.canEditTenants),
-            can_archive_tenants: Boolean(this.staff.form.canArchiveTenants),
+            can_view_properties: canViewProperties,
+            can_add_properties: canViewProperties && Boolean(this.staff.form.canAddProperties),
+            can_edit_properties: canViewProperties && Boolean(this.staff.form.canEditProperties),
+            can_archive_properties: canViewProperties && Boolean(this.staff.form.canArchiveProperties),
+            can_view_units: canViewUnits,
+            can_add_units: canViewUnits && Boolean(this.staff.form.canAddUnits),
+            can_edit_units: canViewUnits && Boolean(this.staff.form.canEditUnits),
+            can_archive_units: canViewUnits && Boolean(this.staff.form.canArchiveUnits),
+            can_mark_units_vacant: canViewUnits && Boolean(this.staff.form.canMarkUnitsVacant),
+            can_view_tenants: canViewTenants,
+            can_add_tenants: canViewTenants && Boolean(this.staff.form.canAddTenants),
+            can_edit_tenants: canViewTenants && Boolean(this.staff.form.canEditTenants),
+            can_archive_tenants: canViewTenants && Boolean(this.staff.form.canArchiveTenants),
             can_view_leases: Boolean(this.staff.form.canViewLeases),
             can_create_leases: Boolean(this.staff.form.canCreateLeases),
             can_edit_leases: Boolean(this.staff.form.canEditLeases),
@@ -9358,9 +9532,10 @@
             canAddProperties: Boolean(member.can_add_properties),
             canEditProperties: Boolean(member.can_edit_properties),
             canArchiveProperties: Boolean(member.can_archive_properties),
-            canViewUnits: member.can_view_units !== false,
+            canViewUnits: Boolean(member.can_view_units),
             canAddUnits: Boolean(member.can_add_units),
             canEditUnits: Boolean(member.can_edit_units),
+            canArchiveUnits: Boolean(member.can_archive_units),
             canMarkUnitsVacant: Boolean(member.can_mark_units_vacant),
             canViewTenants: Boolean(member.can_view_tenants),
             canAddTenants: Boolean(member.can_add_tenants),
@@ -9468,8 +9643,8 @@
           this.staff.loading = true;
           this.staff.error = '';
 
-          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
-          const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
+          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
+          const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
           const [propertiesResult, permissionsResult, requestsResult, inviteTokensResult, managementPermissionsResult, managementRequestsResult] = await Promise.all([
             supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
             supabaseClient.from('staff_permissions').select(permissionSelect).eq('landlord_id', this.currentLandlordId()).order('accepted_at', { ascending: false }),
@@ -9530,7 +9705,7 @@
               all_properties: true,
               property_ids: [],
               can_view_properties: true,
-              can_view_units: true
+              can_view_units: false
             };
           });
 
@@ -9569,7 +9744,8 @@
               all_properties: metadata.all_properties !== false,
               property_ids: metadata.property_ids || [],
               can_view_properties: metadata.can_view_properties !== false,
-              can_view_units: metadata.can_view_units !== false,
+              can_view_units: Boolean(metadata.can_view_units),
+              can_archive_units: Boolean(metadata.can_archive_units),
               can_view_tenants: Boolean(metadata.can_view_tenants),
               can_manage_maintenance: Boolean(metadata.can_manage_maintenance),
               can_view_payments: Boolean(metadata.can_view_payments),
@@ -9590,7 +9766,7 @@
           await this.loadManagementPermissions(this.profile.id);
 
           if (this.managementContext.company?.id) {
-            const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!management_staff_permissions_staff_profile_id_fkey(id, landlord_id, full_name, phone, email, role, created_at)';
+            const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!management_staff_permissions_staff_profile_id_fkey(id, landlord_id, full_name, phone, email, role, created_at)';
             const [propertiesResult, tenantsResult, leasesResult, staffResult, inviteTokensResult] = await Promise.all([
               supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('name', { ascending: true }),
               supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true }),
@@ -9664,6 +9840,7 @@
                   property_ids: metadata.property_ids || [],
                   can_view_properties: Boolean(metadata.can_view_properties),
                   can_view_units: Boolean(metadata.can_view_units),
+                  can_archive_units: Boolean(metadata.can_archive_units),
                   can_view_tenants: Boolean(metadata.can_view_tenants),
                   can_manage_maintenance: Boolean(metadata.can_manage_maintenance),
                   can_view_payments: Boolean(metadata.can_view_payments),
@@ -10083,7 +10260,7 @@
         staffPermissionBadges(member) {
           const badges = [];
           if (member.can_view_properties || member.can_add_properties || member.can_edit_properties || member.can_archive_properties) badges.push('Properties');
-          if (member.can_view_units || member.can_add_units || member.can_edit_units || member.can_mark_units_vacant) badges.push('Units');
+          if (member.can_view_units || member.can_add_units || member.can_edit_units || member.can_archive_units || member.can_mark_units_vacant) badges.push('Units');
           if (member.can_view_tenants || member.can_add_tenants || member.can_edit_tenants || member.can_archive_tenants) badges.push('Tenants');
           if (member.can_view_leases || member.can_create_leases || member.can_edit_leases || member.can_terminate_leases || member.can_manage_leases) badges.push('Leases');
           if (member.can_manage_maintenance || member.can_create_maintenance || member.can_assign_maintenance || member.can_add_resolution_notes) badges.push('Maintenance');
@@ -10386,11 +10563,23 @@
           this.tenantLease.loading = true;
           this.tenantLease.error = '';
 
+          const canLoadProperties = this.canViewProperties();
+          const canLoadUnits = this.canViewUnits();
+          const canLoadTenants = this.canViewTenants();
+          const canLoadLeases = this.canViewUnits() && (this.canViewTenants() || this.canManageLeases() || this.canViewPayments());
           const results = await Promise.all([
-            supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('name', { ascending: true }),
-            supabaseClient.from('units').select('id, property_id, unit_number, bedrooms, bathrooms, monthly_rent, status, properties(id, name, address, city)').is('archived_at', null).order('unit_number', { ascending: true }),
-            supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_token, invite_accepted, created_at').is('archived_at', null).order('created_at', { ascending: false }),
-            supabaseClient.from('leases').select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))').order('created_at', { ascending: false })
+            canLoadProperties
+              ? supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('name', { ascending: true })
+              : Promise.resolve({ data: [], error: null }),
+            canLoadUnits
+              ? supabaseClient.from('units').select('id, property_id, unit_number, bedrooms, bathrooms, monthly_rent, status, properties(id, name, address, city)').is('archived_at', null).order('unit_number', { ascending: true })
+              : Promise.resolve({ data: [], error: null }),
+            canLoadTenants
+              ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_token, invite_accepted, created_at').is('archived_at', null).order('created_at', { ascending: false })
+              : Promise.resolve({ data: [], error: null }),
+            canLoadLeases
+              ? supabaseClient.from('leases').select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))').order('created_at', { ascending: false })
+              : Promise.resolve({ data: [], error: null })
           ]);
 
           const [propertiesResult, unitsResult, tenantsResult, leasesResult] = results;
@@ -10424,6 +10613,10 @@
 
         async addTenantInvite() {
           this.tenantLease.error = '';
+          if (!this.canAddTenants()) {
+            this.tenantLease.error = 'You do not have permission to add tenants.';
+            return;
+          }
           this.tenantLease.saving = true;
           this.tenantLease.generatedInviteLink = '';
 
@@ -10450,6 +10643,10 @@
 
         async deleteTenant(tenant) {
           if (!tenant) return;
+          if (!this.canArchiveTenants()) {
+            this.tenantLease.error = 'You do not have permission to archive tenants.';
+            return;
+          }
           const confirmed = await this.requestConfirm({
             title: 'Archive tenant',
             message: `Archive ${tenant.full_name}? They will be removed from active tenant lists and their active lease will be terminated, but payment and lease history will stay saved.`,
@@ -10477,8 +10674,71 @@
           await this.loadDashboardData();
         },
 
+        startEditTenant(tenant) {
+          if (!tenant) return;
+          if (!this.canEditTenants()) {
+            this.tenantLease.error = 'You do not have permission to edit tenants.';
+            return;
+          }
+
+          this.tenantLease.error = '';
+          this.tenantLease.editTenantId = tenant.id;
+          this.tenantLease.editTenantForm = {
+            fullName: tenant.full_name || '',
+            phone: tenant.phone || '',
+            email: tenant.email || '',
+            idNumber: tenant.id_number || ''
+          };
+        },
+
+        cancelTenantEdit() {
+          this.tenantLease.editTenantId = '';
+          this.tenantLease.editTenantForm = {
+            fullName: '',
+            phone: '',
+            email: '',
+            idNumber: ''
+          };
+        },
+
+        async saveTenantEdit() {
+          const tenantId = this.tenantLease.editTenantId;
+          if (!tenantId) return;
+          if (!this.canEditTenants()) {
+            this.tenantLease.error = 'You do not have permission to edit tenants.';
+            return;
+          }
+
+          this.tenantLease.error = '';
+          this.tenantLease.saving = true;
+          const { error } = await supabaseClient
+            .from('tenants')
+            .update({
+              full_name: this.tenantLease.editTenantForm.fullName,
+              phone: this.tenantLease.editTenantForm.phone || null,
+              email: this.tenantLease.editTenantForm.email,
+              id_number: this.tenantLease.editTenantForm.idNumber || null
+            })
+            .eq('id', tenantId);
+
+          if (error) {
+            this.tenantLease.error = error.message;
+            this.tenantLease.saving = false;
+            return;
+          }
+
+          this.cancelTenantEdit();
+          this.tenantLease.saving = false;
+          await this.loadTenantLeaseData();
+          await this.loadPropertyUnitData();
+        },
+
         async deleteLease(lease) {
           if (!lease) return;
+          if (!this.canTerminateLeases()) {
+            this.tenantLease.error = 'You do not have permission to terminate leases.';
+            return;
+          }
           const confirmed = await this.requestConfirm({
             title: 'Terminate lease',
             message: `Terminate this lease for ${lease.tenant?.full_name || 'the tenant'}? Payment history, submissions, documents, and maintenance references will stay saved.`,
@@ -10649,6 +10909,9 @@
         },
 
         async uploadLeaseDocument(lease, file) {
+          if (!this.canUploadLeaseDocuments()) {
+            throw new Error('You do not have permission to upload lease PDFs.');
+          }
           this.validateLeaseDocumentFile(file);
           const landlordId = lease.landlord_id || this.currentLandlordId();
           const safeName = this.sanitizeLeaseDocumentName(file.name);
@@ -10693,6 +10956,10 @@
         async openLeaseDocument(lease) {
           const documentPath = this.leaseDocumentPath(lease);
           if (!documentPath) return;
+          if (!this.canViewLeaseDocuments()) {
+            this.setLeaseDocumentError('You do not have permission to view lease PDFs.');
+            return;
+          }
 
           if (/^https?:\/\//i.test(documentPath)) {
             window.open(documentPath, '_blank', 'noopener,noreferrer');
@@ -10723,6 +10990,10 @@
 
         async uploadDocumentForSelectedLease() {
           if (!this.tenantLease.selectedLease || !this.tenantLease.selectedLeaseDocumentFile) return;
+          if (!this.canUploadLeaseDocuments()) {
+            this.tenantLease.error = 'You do not have permission to upload lease PDFs.';
+            return;
+          }
 
           this.tenantLease.error = '';
           this.tenantLease.saving = true;
@@ -10972,11 +11243,15 @@
         },
 
         async viewTenant(tenant) {
+          if (!this.canViewTenants()) {
+            this.tenantLease.error = 'You do not have permission to view tenants.';
+            return;
+          }
           this.tenantLease.selectedTenant = tenant;
           this.tenantLease.selectedTenantLeases = this.tenantLease.leases.filter(lease => lease.tenant_id === tenant.id);
           const leaseIds = this.tenantLease.selectedTenantLeases.map(lease => lease.id);
 
-          if (leaseIds.length === 0) {
+          if (leaseIds.length === 0 || !this.canViewFinancials()) {
             this.tenantLease.selectedTenantPayments = [];
             return;
           }
@@ -11014,6 +11289,10 @@
 
         async addLeaseFromPage() {
           this.tenantLease.error = '';
+          if (!this.canAssignTenantToUnit()) {
+            this.tenantLease.error = 'You need lease, unit, and tenant permissions to create a lease.';
+            return;
+          }
           this.tenantLease.saving = true;
 
           try {
@@ -11773,7 +12052,7 @@
             notes: company.notes || ''
           };
 
-          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
+          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
           const [permissionsResult, requestsResult] = await Promise.all([
             supabaseClient
               .from('management_landlord_permissions')
@@ -11814,7 +12093,7 @@
         },
 
         async loadManagementStaffPermissions(staffProfileId) {
-          const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, company:management_companies!management_staff_permissions_management_company_id_fkey(id, leader_profile_id, country_id, company_name, subscription_status, subscription_expires_at)';
+          const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, company:management_companies!management_staff_permissions_management_company_id_fkey(id, leader_profile_id, country_id, company_name, subscription_status, subscription_expires_at)';
           const { data: staffPermission, error: staffError } = await supabaseClient
             .from('management_staff_permissions')
             .select(staffSelect)
