@@ -53,7 +53,7 @@
     <section class="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-glass backdrop-blur-2xl sm:p-10">
       <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">Contact</p>
       <h1 class="mt-3 text-4xl font-black leading-tight tracking-tight sm:text-5xl">Talk to Mushavo.</h1>
-      <p class="mt-5 leading-8 text-slate-600">Use this page for support, subscriptions, setup help, pricing questions, or account enquiries.</p>
+      <p class="mt-5 leading-8 text-slate-600">Use this page for support, subscriptions, setup help, pricing questions, country expansion, or account enquiries. The form opens an email draft so you can receive messages while the site is still static.</p>
 
       <div class="mt-8 grid gap-3">
         <div class="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
@@ -71,42 +71,46 @@
 
     <section class="rounded-[2rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-2xl sm:p-8">
       <h2 class="text-2xl font-black">Enquiry form</h2>
-      <p class="mt-2 leading-7 text-slate-600">This visual form is ready for your official Mushavo email or backend contact service when you choose one.</p>
-      <form class="mt-6 grid gap-4">
+      <p class="mt-2 leading-7 text-slate-600">Choose any country, even if Mushavo is not operating there yet. This helps you see where demand is coming from.</p>
+      <form id="contactForm" class="mt-6 grid gap-4">
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Full name</span>
-            <input class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" type="text">
+            <input name="fullName" class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" type="text" autocomplete="name" required>
           </label>
           <label class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Email</span>
-            <input class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" type="email">
+            <input name="email" class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" type="email" autocomplete="email" required>
           </label>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Country</span>
-            <select class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand">
-              <option>Zimbabwe</option>
-              <option>Malaysia</option>
-              <option>Other</option>
+            <select id="countrySelect" name="country" class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" required>
+              <option value="">Select country</option>
             </select>
           </label>
           <label class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Enquiry type</span>
-            <select class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand">
+            <select name="enquiryType" class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 outline-none transition focus:border-brand" required>
               <option>Support</option>
               <option>Sales</option>
               <option>Subscription renewal</option>
               <option>Setup help</option>
+              <option>Country availability</option>
+              <option>Partnership</option>
             </select>
           </label>
         </div>
         <label class="block">
           <span class="mb-2 block text-sm font-bold text-slate-700">Message</span>
-          <textarea class="min-h-36 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 outline-none transition focus:border-brand"></textarea>
+          <textarea name="message" class="min-h-36 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 outline-none transition focus:border-brand" required></textarea>
         </label>
-        <button class="inline-flex cursor-not-allowed items-center justify-center rounded-2xl bg-slate-300 px-6 py-4 font-bold text-slate-600" type="button">Connect Official Email First</button>
+        <div class="flex flex-col gap-3 sm:flex-row">
+          <button class="inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-4 font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-brandDark" type="submit">Submit Enquiry</button>
+          <button id="copyButton" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white/75 px-6 py-4 font-bold text-slate-900 transition hover:bg-white" type="button">Copy Message</button>
+        </div>
+        <p id="formStatus" class="hidden rounded-2xl border px-4 py-3 text-sm font-semibold"></p>
       </form>
     </section>
   </main>
@@ -122,7 +126,272 @@
   </footer>
 
   <script>
-    document.getElementById('menuButton')?.addEventListener('click', () => document.getElementById('mobileMenu').classList.toggle('hidden'));
+    const SUPPORT_EMAIL = 'dhruvp246@gmail.com';
+    const COUNTRIES = [
+      'Afghanistan',
+      'Albania',
+      'Algeria',
+      'Andorra',
+      'Angola',
+      'Antigua and Barbuda',
+      'Argentina',
+      'Armenia',
+      'Australia',
+      'Austria',
+      'Azerbaijan',
+      'Bahamas',
+      'Bahrain',
+      'Bangladesh',
+      'Barbados',
+      'Belarus',
+      'Belgium',
+      'Belize',
+      'Benin',
+      'Bhutan',
+      'Bolivia',
+      'Bosnia and Herzegovina',
+      'Botswana',
+      'Brazil',
+      'Brunei',
+      'Bulgaria',
+      'Burkina Faso',
+      'Burundi',
+      'Cabo Verde',
+      'Cambodia',
+      'Cameroon',
+      'Canada',
+      'Central African Republic',
+      'Chad',
+      'Chile',
+      'China',
+      'Colombia',
+      'Comoros',
+      'Congo (Democratic Republic)',
+      'Congo (Republic)',
+      'Costa Rica',
+      "Cote d'Ivoire",
+      'Croatia',
+      'Cuba',
+      'Cyprus',
+      'Czechia',
+      'Denmark',
+      'Djibouti',
+      'Dominica',
+      'Dominican Republic',
+      'Ecuador',
+      'Egypt',
+      'El Salvador',
+      'Equatorial Guinea',
+      'Eritrea',
+      'Estonia',
+      'Eswatini',
+      'Ethiopia',
+      'Fiji',
+      'Finland',
+      'France',
+      'Gabon',
+      'Gambia',
+      'Georgia',
+      'Germany',
+      'Ghana',
+      'Greece',
+      'Grenada',
+      'Guatemala',
+      'Guinea',
+      'Guinea-Bissau',
+      'Guyana',
+      'Haiti',
+      'Honduras',
+      'Hungary',
+      'Iceland',
+      'India',
+      'Indonesia',
+      'Iran',
+      'Iraq',
+      'Ireland',
+      'Israel',
+      'Italy',
+      'Jamaica',
+      'Japan',
+      'Jordan',
+      'Kazakhstan',
+      'Kenya',
+      'Kiribati',
+      'Kuwait',
+      'Kyrgyzstan',
+      'Laos',
+      'Latvia',
+      'Lebanon',
+      'Lesotho',
+      'Liberia',
+      'Libya',
+      'Liechtenstein',
+      'Lithuania',
+      'Luxembourg',
+      'Madagascar',
+      'Malawi',
+      'Malaysia',
+      'Maldives',
+      'Mali',
+      'Malta',
+      'Marshall Islands',
+      'Mauritania',
+      'Mauritius',
+      'Mexico',
+      'Micronesia',
+      'Moldova',
+      'Monaco',
+      'Mongolia',
+      'Montenegro',
+      'Morocco',
+      'Mozambique',
+      'Myanmar',
+      'Namibia',
+      'Nauru',
+      'Nepal',
+      'Netherlands',
+      'New Zealand',
+      'Nicaragua',
+      'Niger',
+      'Nigeria',
+      'North Korea',
+      'North Macedonia',
+      'Norway',
+      'Oman',
+      'Pakistan',
+      'Palau',
+      'Palestine',
+      'Panama',
+      'Papua New Guinea',
+      'Paraguay',
+      'Peru',
+      'Philippines',
+      'Poland',
+      'Portugal',
+      'Qatar',
+      'Romania',
+      'Russia',
+      'Rwanda',
+      'Saint Kitts and Nevis',
+      'Saint Lucia',
+      'Saint Vincent and the Grenadines',
+      'Samoa',
+      'San Marino',
+      'Sao Tome and Principe',
+      'Saudi Arabia',
+      'Senegal',
+      'Serbia',
+      'Seychelles',
+      'Sierra Leone',
+      'Singapore',
+      'Slovakia',
+      'Slovenia',
+      'Solomon Islands',
+      'Somalia',
+      'South Africa',
+      'South Korea',
+      'South Sudan',
+      'Spain',
+      'Sri Lanka',
+      'Sudan',
+      'Suriname',
+      'Sweden',
+      'Switzerland',
+      'Syria',
+      'Tajikistan',
+      'Tanzania',
+      'Thailand',
+      'Timor-Leste',
+      'Togo',
+      'Tonga',
+      'Trinidad and Tobago',
+      'Tunisia',
+      'Turkey',
+      'Turkmenistan',
+      'Tuvalu',
+      'Uganda',
+      'Ukraine',
+      'United Arab Emirates',
+      'United Kingdom',
+      'United States',
+      'Uruguay',
+      'Uzbekistan',
+      'Vanuatu',
+      'Vatican City',
+      'Venezuela',
+      'Vietnam',
+      'Yemen',
+      'Zambia',
+      'Zimbabwe'
+    ];
+
+    const menuButton = document.getElementById('menuButton');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const contactForm = document.getElementById('contactForm');
+    const countrySelect = document.getElementById('countrySelect');
+    const copyButton = document.getElementById('copyButton');
+    const formStatus = document.getElementById('formStatus');
+
+    menuButton?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+    COUNTRIES.forEach(country => {
+      const option = document.createElement('option');
+      option.value = country;
+      option.textContent = country;
+      countrySelect.appendChild(option);
+    });
+
+    function getMessage() {
+      const data = new FormData(contactForm);
+      return {
+        fullName: String(data.get('fullName') || '').trim(),
+        email: String(data.get('email') || '').trim(),
+        country: String(data.get('country') || '').trim(),
+        enquiryType: String(data.get('enquiryType') || '').trim(),
+        message: String(data.get('message') || '').trim()
+      };
+    }
+
+    function formatBody(values) {
+      return [
+        'Mushavo website enquiry',
+        '',
+        `Name: ${values.fullName}`,
+        `Email: ${values.email}`,
+        `Country: ${values.country}`,
+        `Enquiry type: ${values.enquiryType}`,
+        '',
+        'Message:',
+        values.message
+      ].join('\n');
+    }
+
+    function showStatus(message, type = 'success') {
+      formStatus.textContent = message;
+      formStatus.className = `rounded-2xl border px-4 py-3 text-sm font-semibold ${type === 'success' ? 'border-emerald-200 bg-emerald-50 text-brandDark' : 'border-red-200 bg-red-50 text-red-700'}`;
+    }
+
+    contactForm?.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!contactForm.reportValidity()) return;
+      const values = getMessage();
+      const subject = encodeURIComponent(`Mushavo ${values.enquiryType} enquiry from ${values.fullName}`);
+      const body = encodeURIComponent(formatBody(values));
+      window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+      showStatus(`Your email app should open now. If it does not, copy the message and send it to ${SUPPORT_EMAIL}.`);
+    });
+
+    copyButton?.addEventListener('click', async () => {
+      if (!contactForm.reportValidity()) return;
+      const values = getMessage();
+      const message = formatBody(values);
+      try {
+        await navigator.clipboard.writeText(message);
+        showStatus(`Copied. Send it to ${SUPPORT_EMAIL}.`);
+      } catch (error) {
+        showStatus(`Copy failed. Please email ${SUPPORT_EMAIL} directly.`, 'error');
+      }
+    });
   </script>
 </body>
 </html>

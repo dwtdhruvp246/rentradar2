@@ -54,8 +54,8 @@
       <div class="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">Pricing</p>
-          <h1 class="mt-3 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">Plans that match your country and account type.</h1>
-          <p id="locationNote" class="mt-4 max-w-2xl leading-8 text-slate-600">Choose your country to see local pricing. If location detection works, we will select a country automatically.</p>
+          <h1 class="mt-3 max-w-3xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">Plans that match your country, portfolio size, and account type.</h1>
+          <p id="locationNote" class="mt-4 max-w-2xl leading-8 text-slate-600">Choose your country to see local pricing. Mushavo can price each market separately, so Zimbabwe, Malaysia, and future countries can have plans that make sense locally.</p>
         </div>
         <div class="grid gap-3 sm:grid-cols-2 lg:min-w-[28rem]">
           <label class="block">
@@ -86,10 +86,33 @@
 
     <section id="pricingGrid" class="mt-6 grid gap-4 lg:grid-cols-3"></section>
 
+    <section class="mt-6 grid gap-4 lg:grid-cols-4">
+      <div class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
+        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">01</p>
+        <h2 class="mt-3 text-xl font-black">Choose country</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">Each country can have its own currency, pricing level, and add-on prices.</p>
+      </div>
+      <div class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
+        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">02</p>
+        <h2 class="mt-3 text-xl font-black">Choose account type</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">Landlords, individual portfolio managers, and property management companies have different limits.</p>
+      </div>
+      <div class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
+        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">03</p>
+        <h2 class="mt-3 text-xl font-black">Match the portfolio</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">Plans are mainly based on properties, units, landlord connections, staff, and storage needs.</p>
+      </div>
+      <div class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
+        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">04</p>
+        <h2 class="mt-3 text-xl font-black">Add capacity later</h2>
+        <p class="mt-3 text-sm leading-6 text-slate-600">Customers can add units, properties, staff, storage, or setup support as they grow.</p>
+      </div>
+    </section>
+
     <section class="mt-6 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
       <div class="rounded-[2rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
         <h2 class="text-2xl font-black">Add-ons</h2>
-        <p class="mt-3 leading-7 text-slate-600">Use add-ons when a customer needs more capacity without moving to a higher plan.</p>
+        <p class="mt-3 leading-7 text-slate-600">Use add-ons when a customer needs more capacity without moving to a higher plan. Deposits are not treated as revenue in Mushavo reporting because they are normally held for return or applied according to the lease.</p>
       </div>
       <div id="addonsGrid" class="grid gap-3 sm:grid-cols-2"></div>
     </section>
