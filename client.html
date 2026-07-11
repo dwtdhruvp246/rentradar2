@@ -417,6 +417,7 @@
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-enquiries' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-enquiries')">Enquiries</button>
               <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-team' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-team')">Staff</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">IPM</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">PMC</button>
@@ -1119,6 +1120,110 @@
                           <button x-show="staffRow.accepted && !staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveAdminTeamStaff(staffRow)">Archive</button>
                           <button x-show="staffRow.accepted && staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminTeamStaff(staffRow)">Unarchive</button>
                           <button x-show="staffRow.accepted === false" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteAdminTeamStaffInvite(staffRow)">Delete Invite</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section x-show="currentPage === 'admin-enquiries'" id="super-admin-enquiries" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Enquiries</h1>
+              <p class="mt-1 text-sm text-slate-600">Review website enquiries from the contact page. Admin staff only see enquiries from their assigned country.</p>
+            </div>
+            <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+          <template x-if="admin.message">
+            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="admin.message"></div>
+          </template>
+
+          <div class="mb-6 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+              <p class="text-sm text-slate-500">New</p>
+              <p class="mt-2 text-3xl font-bold text-amber-700" x-text="adminEnquiryStats().new"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+              <p class="text-sm text-slate-500">In Progress</p>
+              <p class="mt-2 text-3xl font-bold text-slate-900" x-text="adminEnquiryStats().in_progress"></p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+              <p class="text-sm text-slate-500">Resolved</p>
+              <p class="mt-2 text-3xl font-bold text-emerald-700" x-text="adminEnquiryStats().resolved"></p>
+            </div>
+          </div>
+
+          <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.enquirySearch" placeholder="Name, email, country, message">
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.enquiryStatus">
+                  <option value="">All statuses</option>
+                  <option value="new">New</option>
+                  <option value="in_progress">In progress</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+              <label class="block" x-show="profile?.role === 'super_admin'">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.selectedCountryId">
+                  <option value="all">All countries</option>
+                  <option value="unassigned">Unassigned</option>
+                  <template x-for="country in admin.countries" :key="`enquiry-filter-${country.id}`">
+                    <option :value="country.id" x-text="country.name"></option>
+                  </template>
+                </select>
+              </label>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Contact</th>
+                    <th class="px-4 py-3 font-semibold">Country</th>
+                    <th class="px-4 py-3 font-semibold">Type</th>
+                    <th class="px-4 py-3 font-semibold">Message</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Submitted</th>
+                    <th class="px-4 py-3 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                  <template x-if="!admin.loading && selectedAdminEnquiries().length === 0">
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No enquiries yet.</td></tr>
+                  </template>
+                  <template x-for="enquiry in selectedAdminEnquiries()" :key="enquiry.id">
+                    <tr class="odd:bg-white even:bg-slate-50/60">
+                      <td class="px-4 py-3">
+                        <p class="font-semibold text-slate-900" x-text="enquiry.full_name"></p>
+                        <a class="mt-1 block text-xs font-medium text-emerald-700 hover:underline" :href="`mailto:${enquiry.email}`" x-text="enquiry.email"></a>
+                      </td>
+                      <td class="px-4 py-3 text-slate-700" x-text="enquiry.country?.name || enquiry.country_name || '-'"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="enquiry.enquiry_type || '-'"></td>
+                      <td class="max-w-lg px-4 py-3 text-slate-700">
+                        <p class="whitespace-pre-wrap break-words" x-text="enquiry.message"></p>
+                      </td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="enquiryStatusBadgeClass(enquiry.status)" x-text="titleCase(enquiry.status || 'new')"></span></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="formatDateTime(enquiry.created_at)"></td>
+                      <td class="px-4 py-3">
+                        <div class="flex flex-wrap gap-2">
+                          <button x-show="enquiry.status !== 'new'" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100" type="button" @click="updateEnquiryStatus(enquiry, 'new')">Mark New</button>
+                          <button x-show="enquiry.status !== 'in_progress'" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="updateEnquiryStatus(enquiry, 'in_progress')">In Progress</button>
+                          <button x-show="enquiry.status !== 'resolved'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="updateEnquiryStatus(enquiry, 'resolved')">Resolved</button>
+                          <button x-show="enquiry.status !== 'archived'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="updateEnquiryStatus(enquiry, 'archived')">Archive</button>
                         </div>
                       </td>
                     </tr>
@@ -4071,12 +4176,15 @@
           selectedCountryId: 'all',
           landlords: [],
           tenants: [],
+          enquiries: [],
           managementCompanies: [],
           filters: {
             landlordSearch: '',
             landlordStatus: '',
             financeSearch: '',
             financePayerType: '',
+            enquirySearch: '',
+            enquiryStatus: '',
             adminTeamSearch: '',
             adminTeamStatus: '',
             staffSearch: '',
@@ -4928,7 +5036,7 @@
           if (!page) return false;
 
           if (this.currentShell === 'super_admin') {
-            const pages = ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-staff', 'admin-management'];
+            const pages = ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-enquiries', 'admin-staff', 'admin-management'];
             if (this.profile?.role === 'super_admin') pages.push('admin-team');
             return pages.includes(page);
           }
@@ -5118,6 +5226,38 @@
           return rows;
         },
 
+        selectedAdminEnquiries() {
+          let rows = this.admin.enquiries || [];
+          if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
+          if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
+
+          const search = (this.admin.filters.enquirySearch || '').toLowerCase();
+          if (search) {
+            rows = rows.filter(row => [
+              row.full_name,
+              row.email,
+              row.country_name,
+              row.country?.name,
+              row.enquiry_type,
+              row.message,
+              row.status
+            ].some(value => String(value || '').toLowerCase().includes(search)));
+          }
+
+          const status = this.admin.filters.enquiryStatus || '';
+          if (status) rows = rows.filter(row => (row.status || 'new') === status);
+          return rows;
+        },
+
+        adminEnquiryStats() {
+          const rows = this.selectedAdminEnquiries();
+          return {
+            new: rows.filter(row => (row.status || 'new') === 'new').length,
+            in_progress: rows.filter(row => row.status === 'in_progress').length,
+            resolved: rows.filter(row => row.status === 'resolved').length
+          };
+        },
+
         adminStaffCountryId(staffRow) {
           return staffRow?.country_id || staffRow?.primary_country_id || null;
         },
@@ -5282,7 +5422,7 @@
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, adminTeamProfilesResult, adminTeamInvitesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, adminTeamProfilesResult, adminTeamInvitesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -5362,6 +5502,11 @@
               .from('management_staff_permissions')
               .select('id, management_company_id, staff_profile_id, status')
               .eq('status', 'approved')
+            ,
+            supabaseClient
+              .from('enquiries')
+              .select('id, full_name, email, country_name, country_id, enquiry_type, message, status, source, handled_by, handled_at, created_at, updated_at, country:countries(id, name, code, currency_code), handler:profiles!enquiries_handled_by_fkey(id, full_name, email)')
+              .order('created_at', { ascending: false })
           ]);
 
           const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
@@ -5372,6 +5517,10 @@
           }
 
           this.admin.countries = countriesResult.data || [];
+          this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
+          if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
+            this.admin.error = enquiriesResult.error.message;
+          }
           this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
           const staffPermissions = staffPermissionsResult.data || [];
@@ -5682,6 +5831,31 @@
           };
 
           this.admin.loading = false;
+        },
+
+        async updateEnquiryStatus(enquiry, status) {
+          if (!enquiry?.id) return;
+          this.admin.error = '';
+          this.admin.message = '';
+          const handledAt = ['resolved', 'archived'].includes(status) ? new Date().toISOString() : null;
+          const { data, error } = await supabaseClient
+            .from('enquiries')
+            .update({
+              status,
+              handled_by: this.profile?.id || null,
+              handled_at: handledAt
+            })
+            .eq('id', enquiry.id)
+            .select('id, full_name, email, country_name, country_id, enquiry_type, message, status, source, handled_by, handled_at, created_at, updated_at, country:countries(id, name, code, currency_code), handler:profiles!enquiries_handled_by_fkey(id, full_name, email)')
+            .single();
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.enquiries = (this.admin.enquiries || []).map(row => row.id === enquiry.id ? data : row);
+          this.admin.message = 'Enquiry updated.';
         },
 
         openAdminModal(modalName) {
@@ -7281,6 +7455,16 @@
             archived: 'bg-slate-100 text-slate-700'
           };
           return classes[status] || 'bg-slate-100 text-slate-600';
+        },
+
+        enquiryStatusBadgeClass(status) {
+          const classes = {
+            new: 'bg-amber-100 text-amber-700',
+            in_progress: 'bg-slate-100 text-slate-700',
+            resolved: 'bg-emerald-100 text-emerald-700',
+            archived: 'bg-red-100 text-red-700'
+          };
+          return classes[status || 'new'] || 'bg-slate-100 text-slate-600';
         },
 
         requestConfirm(options = {}) {
@@ -12220,7 +12404,7 @@
             await this.loadLandlordFinanceData();
           }
 
-          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
+          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-enquiries' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             await this.loadSuperAdminData();
           }
@@ -12280,6 +12464,7 @@
             settings: 'Settings',
             'admin-finance': 'Finance',
             'admin-tenants': 'Tenant Management',
+            'admin-enquiries': 'Enquiries',
             'admin-team': 'Admin Staff',
             'admin-staff': 'IPM Management',
             'admin-management': 'Property Management Companies',

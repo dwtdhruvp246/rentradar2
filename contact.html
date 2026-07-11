@@ -6,6 +6,7 @@
   <title>Contact Mushavo | Support and Sales</title>
   <meta name="description" content="Contact Mushavo for support, pricing, subscriptions, setup, and business enquiries.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -53,7 +54,7 @@
     <section class="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-glass backdrop-blur-2xl sm:p-10">
       <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">Contact</p>
       <h1 class="mt-3 text-4xl font-black leading-tight tracking-tight sm:text-5xl">Talk to Mushavo.</h1>
-      <p class="mt-5 leading-8 text-slate-600">Use this page for support, subscriptions, setup help, pricing questions, country expansion, or account enquiries. The form opens an email draft so you can receive messages while the site is still static.</p>
+      <p class="mt-5 leading-8 text-slate-600">Use this page for support, subscriptions, setup help, pricing questions, country expansion, or account enquiries. Your message is sent straight to the Mushavo admin area.</p>
 
       <div class="mt-8 grid gap-3">
         <div class="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
@@ -106,8 +107,12 @@
           <span class="mb-2 block text-sm font-bold text-slate-700">Message</span>
           <textarea name="message" class="min-h-36 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 outline-none transition focus:border-brand" required></textarea>
         </label>
+        <label class="hidden" aria-hidden="true">
+          <span>Website</span>
+          <input name="website" type="text" tabindex="-1" autocomplete="off">
+        </label>
         <div class="flex flex-col gap-3 sm:flex-row">
-          <button class="inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-4 font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-brandDark" type="submit">Submit Enquiry</button>
+          <button id="submitButton" class="inline-flex items-center justify-center rounded-2xl bg-brand px-6 py-4 font-bold text-white shadow-lg shadow-emerald-900/10 transition hover:bg-brandDark disabled:cursor-not-allowed disabled:opacity-60" type="submit">Submit Enquiry</button>
           <button id="copyButton" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white/75 px-6 py-4 font-bold text-slate-900 transition hover:bg-white" type="button">Copy Message</button>
         </div>
         <p id="formStatus" class="hidden rounded-2xl border px-4 py-3 text-sm font-semibold"></p>
@@ -127,6 +132,9 @@
 
   <script>
     const SUPPORT_EMAIL = 'dhruvp246@gmail.com';
+    const SUPABASE_URL = 'https://rmbvgtaadkvbsasbvdmb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYnZndGFhZGt2YnNhc2J2ZG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTQ1NjIsImV4cCI6MjA5ODIzMDU2Mn0.kMhXDI85TVAsw_Mb-PO5iaSHipG3vLFmM7DF3TUnf00';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const COUNTRIES = [
       'Afghanistan',
       'Albania',
@@ -330,6 +338,7 @@
     const contactForm = document.getElementById('contactForm');
     const countrySelect = document.getElementById('countrySelect');
     const copyButton = document.getElementById('copyButton');
+    const submitButton = document.getElementById('submitButton');
     const formStatus = document.getElementById('formStatus');
 
     menuButton?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
@@ -348,7 +357,8 @@
         email: String(data.get('email') || '').trim(),
         country: String(data.get('country') || '').trim(),
         enquiryType: String(data.get('enquiryType') || '').trim(),
-        message: String(data.get('message') || '').trim()
+        message: String(data.get('message') || '').trim(),
+        website: String(data.get('website') || '').trim()
       };
     }
 
@@ -371,14 +381,35 @@
       formStatus.className = `rounded-2xl border px-4 py-3 text-sm font-semibold ${type === 'success' ? 'border-emerald-200 bg-emerald-50 text-brandDark' : 'border-red-200 bg-red-50 text-red-700'}`;
     }
 
-    contactForm?.addEventListener('submit', event => {
+    contactForm?.addEventListener('submit', async event => {
       event.preventDefault();
       if (!contactForm.reportValidity()) return;
       const values = getMessage();
-      const subject = encodeURIComponent(`Mushavo ${values.enquiryType} enquiry from ${values.fullName}`);
-      const body = encodeURIComponent(formatBody(values));
-      window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
-      showStatus(`Your email app should open now. If it does not, copy the message and send it to ${SUPPORT_EMAIL}.`);
+      if (values.website) return;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      showStatus('Submitting your enquiry...');
+      const { error } = await supabaseClient
+        .from('enquiries')
+        .insert({
+          full_name: values.fullName,
+          email: values.email,
+          country_name: values.country,
+          enquiry_type: values.enquiryType,
+          message: values.message,
+          source: 'website'
+        });
+
+      submitButton.disabled = false;
+      submitButton.textContent = 'Submit Enquiry';
+
+      if (error) {
+        showStatus(`We could not submit the enquiry yet. Please copy the message and send it to ${SUPPORT_EMAIL}. Error: ${error.message}`, 'error');
+        return;
+      }
+
+      contactForm.reset();
+      showStatus('Enquiry submitted. The Mushavo team will review it from the admin area.');
     });
 
     copyButton?.addEventListener('click', async () => {
