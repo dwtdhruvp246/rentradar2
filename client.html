@@ -212,8 +212,8 @@
         <section class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-soft">
           <div class="mb-8">
             <img class="brand-logo mx-auto mb-5 h-48 w-auto" src="mushavo-logo.png" alt="Mushavo logo">
-            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authMode === 'staff-signup' ? 'Staff signup' : 'Sign in to Mushavo'"></h1>
-            <p class="mt-2 text-sm leading-6 text-slate-500" x-text="authMode === 'staff-signup' ? 'Create a staff account and request access with a landlord code.' : 'Access is invite-only. Use the credentials created for your account.'"></p>
+            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authMode === 'staff-signup' ? 'Staff signup' : (authMode === 'landlord-signup' ? 'Create free landlord account' : 'Sign in to Mushavo')"></h1>
+            <p class="mt-2 text-sm leading-6 text-slate-500" x-text="authMode === 'staff-signup' ? 'Create a staff account and request access with a landlord code.' : (authMode === 'landlord-signup' ? 'For landlords only. Start with 1 property, 1 unit, finance tracking, and 1 IPM or PMC connection.' : 'Access your Mushavo account or create a free landlord account.')"></p>
           </div>
 
           <template x-if="successMessage">
@@ -252,6 +252,43 @@
               <span x-show="!authLoading">Sign in</span>
               <span x-show="authLoading">Signing in...</span>
             </button>
+            <div class="space-y-2 border-t border-slate-100 pt-4 text-center">
+              <button class="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" type="button" @click="authMode = 'landlord-signup'; authError = ''; successMessage = ''">Create free landlord account</button>
+              <p class="text-xs leading-5 text-slate-500">Only landlords can sign up directly. IPM, PMC, staff, and tenant accounts require an invite.</p>
+            </div>
+          </form>
+
+          <form x-show="authMode === 'landlord-signup'" class="space-y-4" @submit.prevent="signUpLandlord">
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" autocomplete="name" x-model.trim="landlordSignupForm.fullName" required>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="landlordSignupForm.phone">
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" autocomplete="email" x-model.trim="landlordSignupForm.email" required>
+            </label>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Password</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="password" minlength="8" autocomplete="new-password" x-model="landlordSignupForm.password" required>
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Confirm</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="password" minlength="8" autocomplete="new-password" x-model="landlordSignupForm.confirmPassword" required>
+              </label>
+            </div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
+              Free plan includes 1 property, 1 unit, Finance page access, 0 personal staff, and 1 IPM or PMC connection.
+            </div>
+            <button class="flex w-full items-center justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="submit" :disabled="authLoading">
+              <span x-show="!authLoading">Sign up for free</span>
+              <span x-show="authLoading">Creating...</span>
+            </button>
+            <button class="w-full text-center text-sm font-semibold text-slate-700 hover:underline" type="button" @click="authMode = 'login'; authError = ''; successMessage = ''">Back to sign in</button>
           </form>
 
           <form x-show="authMode === 'staff-signup'" class="space-y-4" @submit.prevent="signUpStaff">
@@ -1697,6 +1734,17 @@
 
               <form class="space-y-4" @submit.prevent="saveSubscription">
                 <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Plan</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.plan" required>
+                    <option value="free">Free</option>
+                    <option value="starter">Starter</option>
+                    <option value="growth">Growth</option>
+                    <option value="portfolio">Portfolio</option>
+                    <option value="custom">Custom</option>
+                    <option value="standard">Standard</option>
+                  </select>
+                </label>
+                <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.status" required>
                     <option value="trial">Trial</option>
@@ -1711,6 +1759,18 @@
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Property limit</span>
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.subscriptionForm.propertyLimit" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Unit limit</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.subscriptionForm.unitLimit" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Personal staff limit</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.subscriptionForm.personalStaffLimit" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">IPM / PMC connection limit</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.subscriptionForm.partnerConnectionLimit" required>
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Notes</span>
@@ -1816,10 +1876,7 @@
                       <option :value="relationship.landlord_id" x-text="relationship.landlord?.full_name || relationship.landlord?.email || 'Landlord'"></option>
                     </template>
                   </select>
-                  <form class="flex items-center gap-2" @submit.prevent="requestAdditionalStaffLandlord">
-                    <input class="w-28 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" inputmode="numeric" maxlength="6" placeholder="Code" x-model.trim="staffContext.addCode">
-                    <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="submit">Add</button>
-                  </form>
+                  <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="navigate('management-landlords')">Find Landlord</button>
                 </div>
                 <button
                   class="hidden max-w-44 truncate rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:block"
@@ -1849,13 +1906,10 @@
                   <section x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer' && staffContext.relationships.length === 0" class="rounded-xl border border-emerald-200 bg-emerald-50 p-5 shadow-soft">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                       <div>
-                        <h1 class="text-xl font-bold text-slate-900">Request landlord access</h1>
-                        <p class="mt-1 text-sm text-slate-600">Enter the landlord's 6 digit code. The landlord will approve the request before you can see their properties, tenants, payments, or maintenance data.</p>
+                        <h1 class="text-xl font-bold text-slate-900">Find your first landlord</h1>
+                        <p class="mt-1 text-sm text-slate-600">Search by landlord email from the Landlords page. Existing landlords can approve access, and new landlords can be invited to the free plan.</p>
                       </div>
-                      <form class="flex flex-col gap-2 sm:flex-row sm:items-center" @submit.prevent="requestAdditionalStaffLandlord">
-                        <input class="w-full rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 sm:w-40" type="text" inputmode="numeric" maxlength="6" placeholder="Landlord code" x-model.trim="staffContext.addCode">
-                        <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600" type="submit">Request Access</button>
-                      </form>
+                      <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="navigate('management-landlords')">Open Landlords</button>
                     </div>
                   </section>
 
@@ -3234,19 +3288,95 @@
 
               <template x-if="currentPage === 'management-landlords'">
                 <div class="space-y-6">
-                  <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
-                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div>
-                        <h1 class="text-xl font-bold text-slate-900">Connected Landlords</h1>
-                        <p class="mt-1 text-sm text-slate-500">Request landlord access, review approval status, and open the active landlord workspace.</p>
-                        <div class="mt-3 flex flex-wrap items-center gap-2">
-                          <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" x-text="managementContext.company?.company_name || 'PMC'"></span>
-                          <input class="w-36 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" inputmode="numeric" maxlength="6" placeholder="Landlord code" x-model.trim="managementContext.addCode">
-                          <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="requestManagementLandlordAccess">Request Access</button>
-                        </div>
+                  <section x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div class="max-w-2xl">
+                        <h1 class="text-xl font-bold text-slate-900">Landlords</h1>
+                        <p class="mt-1 text-sm text-slate-500">Search a landlord by email. If they are already on Mushavo, request access. If not, invite them to create a free landlord account.</p>
                       </div>
                       <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                     </div>
+                    <form class="mt-5 grid gap-3 md:grid-cols-[1fr_auto]" @submit.prevent="searchStaffLandlordByEmail">
+                      <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" placeholder="Landlord email address" x-model.trim="staffContext.searchEmail" required>
+                      <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600" type="submit">Search Landlord</button>
+                    </form>
+                    <template x-if="staffContext.searchResult">
+                      <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <p class="text-sm font-semibold text-emerald-900" x-text="staffContext.searchResult.account_found ? 'This landlord is already using Mushavo.' : 'No landlord account found.'"></p>
+                        <p class="mt-1 text-sm text-emerald-800" x-text="staffContext.searchResult.account_found ? `${staffContext.searchResult.full_name || 'Landlord'} - ${staffContext.searchResult.email}` : 'Invite this landlord to join Mushavo on the free landlord plan.'"></p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                          <button x-show="staffContext.searchResult.account_found" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" type="button" @click="requestStaffLandlordAccessByEmail">Request Access</button>
+                          <button x-show="!staffContext.searchResult.account_found" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" type="button" @click="inviteStaffLandlordByEmail">Invite Landlord</button>
+                          <button x-show="staffContext.inviteLink" class="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(staffContext.inviteLink)">Copy Invite Link</button>
+                        </div>
+                      </div>
+                    </template>
+                    <template x-if="staffContext.error">
+                      <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staffContext.error"></div>
+                    </template>
+                    <template x-if="staffContext.message">
+                      <div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="staffContext.message"></div>
+                    </template>
+                  </section>
+
+                  <section x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+                    <div class="overflow-x-auto">
+                      <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
+                        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                          <tr>
+                            <th class="px-4 py-3 font-semibold">Landlord</th>
+                            <th class="px-4 py-3 font-semibold">Status</th>
+                            <th class="px-4 py-3 font-semibold">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                          <template x-if="staffContext.relationships.length === 0 && staffContext.requests.length === 0">
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="3">No landlord connections yet.</td></tr>
+                          </template>
+                          <template x-for="request in staffContext.requests" :key="`ipm-request-${request.id}`">
+                            <tr class="odd:bg-white even:bg-slate-50/60">
+                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.landlord?.email || ''"></p></td>
+                              <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
+                              <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
+                            </tr>
+                          </template>
+                          <template x-for="relationship in staffContext.relationships" :key="`ipm-relationship-${relationship.id}`">
+                            <tr class="odd:bg-white even:bg-slate-50/60">
+                              <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="relationship.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord?.email || ''"></p></td>
+                              <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
+                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchStaffLandlord(relationship.landlord_id)">Open</button></td>
+                            </tr>
+                          </template>
+                        </tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  <section x-show="profile?.role === 'management_leader'" class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div>
+                        <h1 class="text-xl font-bold text-slate-900">Connected Landlords</h1>
+                        <p class="mt-1 text-sm text-slate-500">Search a landlord by email. If they are already on Mushavo, request access. If not, invite them to create a free landlord account.</p>
+                        <form class="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]" @submit.prevent="searchManagementLandlordByEmail">
+                          <span class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700" x-text="managementContext.company?.company_name || 'PMC'"></span>
+                          <input class="min-w-0 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm outline-none focus:border-emerald-500" type="email" placeholder="Landlord email" x-model.trim="managementContext.searchEmail" required>
+                          <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="submit">Search</button>
+                        </form>
+                      </div>
+                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                    </div>
+
+                    <template x-if="managementContext.searchResult">
+                      <div class="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <p class="text-sm font-semibold text-emerald-900" x-text="managementContext.searchResult.account_found ? 'This landlord is already using Mushavo.' : 'No landlord account found.'"></p>
+                        <p class="mt-1 text-sm text-emerald-800" x-text="managementContext.searchResult.account_found ? `${managementContext.searchResult.full_name || 'Landlord'} - ${managementContext.searchResult.email}` : 'Invite this landlord to join Mushavo on the free landlord plan.'"></p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                          <button x-show="managementContext.searchResult.account_found" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" type="button" @click="requestManagementLandlordAccessByEmail">Request Access</button>
+                          <button x-show="!managementContext.searchResult.account_found" class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700" type="button" @click="inviteManagementLandlordByEmail">Invite Landlord</button>
+                          <button x-show="managementContext.inviteLink" class="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(managementContext.inviteLink)">Copy Invite Link</button>
+                        </div>
+                      </div>
+                    </template>
 
                     <template x-if="managementContext.error">
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="managementContext.error"></div>
@@ -3263,7 +3393,7 @@
                     </div>
                   </section>
 
-                  <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+                  <section x-show="profile?.role === 'management_leader'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                     <div class="overflow-x-auto">
                       <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -3662,7 +3792,7 @@
                     <div class="grid gap-4 lg:grid-cols-3">
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Subscription Status</p>
-                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'trial')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.status || 'trial')"></span>
+                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'trial')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.subscription_plan === 'free' && account.subscription?.status === 'active' ? 'free' : (account.subscription?.status || 'trial'))"></span>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Account Expires</p>
@@ -3689,9 +3819,13 @@
                       <section class="rounded-lg border border-slate-200 p-4">
                         <h2 class="text-sm font-semibold text-slate-900">Subscription Details</h2>
                         <dl class="mt-4 space-y-3 text-sm">
+                          <div x-show="account.subscription?.subscription_plan" class="flex justify-between gap-4"><dt class="text-slate-500">Plan</dt><dd class="font-medium text-slate-900" x-text="titleCase(account.subscription?.subscription_plan || '-')"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Started</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.created_at)"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Last Updated</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.updated_at)"></dd></div>
                           <div x-show="account.subscription?.property_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Property Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.property_limit ?? '-'"></dd></div>
+                          <div x-show="account.subscription?.unit_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Unit Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.unit_limit ?? '-'"></dd></div>
+                          <div x-show="account.subscription?.personal_staff_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Personal Staff Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.personal_staff_limit ?? '-'"></dd></div>
+                          <div x-show="account.subscription?.partner_connection_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">IPM / PMC Connection Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.partner_connection_limit ?? '-'"></dd></div>
                           <div x-show="account.subscription?.landlord_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Landlord Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.landlord_limit ?? '-'"></dd></div>
                           <div x-show="profile?.staff_type === 'freelancer'" class="flex justify-between gap-4"><dt class="text-slate-500">Connected Landlords</dt><dd class="font-medium text-slate-900" x-text="staffContext.relationships?.length || 0"></dd></div>
                           <div x-show="account.subscription?.staff_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Staff Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.staff_limit ?? '-'"></dd></div>
@@ -4121,6 +4255,9 @@
           requests: [],
           activeLandlordId: '',
           addCode: '',
+          searchEmail: '',
+          searchResult: null,
+          inviteLink: '',
           message: '',
           error: ''
         },
@@ -4131,6 +4268,9 @@
           requests: [],
           activeLandlordId: '',
           addCode: '',
+          searchEmail: '',
+          searchResult: null,
+          inviteLink: '',
           message: '',
           error: '',
           filters: {
@@ -4142,6 +4282,13 @@
         loginForm: {
           email: '',
           password: ''
+        },
+        landlordSignupForm: {
+          fullName: '',
+          phone: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
         },
         staffSignupForm: {
           fullName: '',
@@ -4259,9 +4406,13 @@
             countryId: ''
           },
           subscriptionForm: {
+            plan: 'standard',
             status: 'trial',
             expiresAt: '',
             propertyLimit: 5,
+            unitLimit: 25,
+            personalStaffLimit: 1,
+            partnerConnectionLimit: 2,
             notes: ''
           },
           staffLimitForm: {
@@ -4622,6 +4773,8 @@
             }
 
             if (!data.session) {
+              const params = new URLSearchParams(window.location.search);
+              if (params.get('signup') === 'landlord') this.authMode = 'landlord-signup';
               this.currentShell = 'login';
               this.booting = false;
               return;
@@ -5051,7 +5204,7 @@
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
           if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role) || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
           if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
-          if (page === 'management-landlords') return this.profile?.role === 'management_leader';
+          if (page === 'management-landlords') return this.profile?.role === 'management_leader' || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
           if (page === 'staff') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff);
           return this.canShowAppPage(page);
         },
@@ -5441,7 +5594,7 @@
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('landlord_subscriptions')
-              .select('id, landlord_id, country_id, property_limit, status, expires_at, notes, invite_token_id, updated_by, updated_at, created_at')
+              .select('id, landlord_id, country_id, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, status, expires_at, notes, invite_token_id, updated_by, updated_at, created_at')
               .order('created_at', { ascending: false })
             ,
             supabaseClient
@@ -6400,9 +6553,13 @@
           this.admin.formError = '';
           this.admin.selectedRow = row;
           this.admin.subscriptionForm = {
+            plan: row.subscription?.subscription_plan || 'standard',
             status: row.subscription?.status || 'trial',
             expiresAt: this.toDateInputValue(expiresAt),
             propertyLimit: Number(row.subscription?.property_limit ?? 5),
+            unitLimit: Number(row.subscription?.unit_limit ?? 25),
+            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 1),
+            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 2),
             notes: row.subscription?.notes || ''
           };
           this.admin.modal = 'subscription';
@@ -7282,9 +7439,13 @@
           const { error } = await supabaseClient
             .from('landlord_subscriptions')
             .update({
+              subscription_plan: this.admin.subscriptionForm.plan || 'standard',
               status: this.admin.subscriptionForm.status,
               expires_at: `${this.admin.subscriptionForm.expiresAt}T23:59:59.000Z`,
               property_limit: Number(this.admin.subscriptionForm.propertyLimit || 0),
+              unit_limit: Number(this.admin.subscriptionForm.unitLimit || 0),
+              personal_staff_limit: Number(this.admin.subscriptionForm.personalStaffLimit || 0),
+              partner_connection_limit: Number(this.admin.subscriptionForm.partnerConnectionLimit || 0),
               notes: this.admin.subscriptionForm.notes || '',
               updated_by: this.profile.id
             })
@@ -7575,7 +7736,7 @@
             { page: 'payments', label: 'Payments', icon: 'card', visible: this.canShowAppPage('payments') },
             { page: 'finance', label: 'Finance', icon: 'chart', visible: this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance) },
             { page: 'maintenance', label: 'Maintenance', icon: 'wrench', visible: this.canShowAppPage('maintenance') },
-            { page: 'management-landlords', label: 'Landlords', icon: 'building', visible: this.profile?.role === 'management_leader' },
+            { page: 'management-landlords', label: 'Landlords', icon: 'building', visible: this.profile?.role === 'management_leader' || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') },
             { page: 'staff', label: 'Staff', icon: 'badge', visible: this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff) },
             { page: 'notifications', label: 'Notifications', icon: 'bell', visible: true },
             { page: 'my-account', label: 'My Account', icon: 'account', visible: ['landlord', 'management_leader'].includes(this.profile?.role) || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') },
@@ -7740,7 +7901,7 @@
         },
 
         subscriptionDashboardLabel() {
-          const status = this.subscription?.status || 'trial';
+          const status = this.subscription?.subscription_plan === 'free' && this.subscription?.status === 'active' ? 'free' : (this.subscription?.status || 'trial');
           return this.subscriptionExpiringSoon() ? `${this.titleCase(status)} - Expiring soon` : this.titleCase(status);
         },
 
@@ -7854,6 +8015,60 @@
           this.staffContext.message = 'Request sent to landlord for approval.';
         },
 
+        async searchStaffLandlordByEmail() {
+          this.staffContext.error = '';
+          this.staffContext.message = '';
+          this.staffContext.inviteLink = '';
+          this.staffContext.searchResult = null;
+
+          const { data, error } = await supabaseClient.rpc('search_landlord_by_email', {
+            p_email: this.staffContext.searchEmail
+          });
+
+          if (error) {
+            this.staffContext.error = error.message;
+            return;
+          }
+
+          this.staffContext.searchResult = Array.isArray(data) ? data[0] : data;
+        },
+
+        async requestStaffLandlordAccessByEmail() {
+          this.staffContext.error = '';
+          this.staffContext.message = '';
+          const email = this.staffContext.searchResult?.email || this.staffContext.searchEmail;
+
+          const { error } = await supabaseClient.rpc('request_staff_landlord_access_by_email', {
+            p_landlord_email: email
+          });
+
+          if (error) {
+            this.staffContext.error = error.message;
+            return;
+          }
+
+          this.staffContext.message = 'Request sent to landlord for approval.';
+          await this.loadStaffPermissions(this.profile.id);
+        },
+
+        async inviteStaffLandlordByEmail() {
+          this.staffContext.error = '';
+          this.staffContext.message = '';
+          const email = this.staffContext.searchResult?.email || this.staffContext.searchEmail;
+
+          const { data, error } = await supabaseClient.rpc('invite_landlord_from_ipm', {
+            p_landlord_email: email
+          });
+
+          if (error) {
+            this.staffContext.error = error.message;
+            return;
+          }
+
+          this.staffContext.inviteLink = this.buildInviteLink(data);
+          this.staffContext.message = 'Free landlord invite link created.';
+        },
+
         async switchManagementLandlord(landlordId) {
           if (!landlordId || landlordId === this.currentLandlordId()) return;
           this.managementContext.error = '';
@@ -7909,6 +8124,60 @@
           this.managementContext.addCode = '';
           this.managementContext.message = 'Request sent to landlord for approval.';
           await this.loadManagementPageData();
+        },
+
+        async searchManagementLandlordByEmail() {
+          this.managementContext.error = '';
+          this.managementContext.message = '';
+          this.managementContext.inviteLink = '';
+          this.managementContext.searchResult = null;
+
+          const { data, error } = await supabaseClient.rpc('search_landlord_by_email', {
+            p_email: this.managementContext.searchEmail
+          });
+
+          if (error) {
+            this.managementContext.error = error.message;
+            return;
+          }
+
+          this.managementContext.searchResult = Array.isArray(data) ? data[0] : data;
+        },
+
+        async requestManagementLandlordAccessByEmail() {
+          this.managementContext.error = '';
+          this.managementContext.message = '';
+          const email = this.managementContext.searchResult?.email || this.managementContext.searchEmail;
+
+          const { error } = await supabaseClient.rpc('request_management_landlord_access_by_email', {
+            p_landlord_email: email
+          });
+
+          if (error) {
+            this.managementContext.error = error.message;
+            return;
+          }
+
+          this.managementContext.message = 'Request sent to landlord for approval.';
+          await this.loadManagementPageData();
+        },
+
+        async inviteManagementLandlordByEmail() {
+          this.managementContext.error = '';
+          this.managementContext.message = '';
+          const email = this.managementContext.searchResult?.email || this.managementContext.searchEmail;
+
+          const { data, error } = await supabaseClient.rpc('invite_landlord_from_management', {
+            p_landlord_email: email
+          });
+
+          if (error) {
+            this.managementContext.error = error.message;
+            return;
+          }
+
+          this.managementContext.inviteLink = this.buildInviteLink(data);
+          this.managementContext.message = 'Free landlord invite link created.';
         },
 
         async regenerateLandlordCode() {
@@ -11587,7 +11856,7 @@
           } else {
             const result = await supabaseClient
               .from('landlord_subscriptions')
-              .select('id, landlord_id, status, expires_at, property_limit, notes, updated_at, created_at')
+              .select('id, landlord_id, subscription_plan, status, expires_at, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, notes, updated_at, created_at')
               .eq('landlord_id', this.profile.id)
               .maybeSingle();
 
@@ -11865,6 +12134,68 @@
           }
         },
 
+        async signUpLandlord() {
+          this.authError = '';
+          this.successMessage = '';
+
+          if (this.landlordSignupForm.password !== this.landlordSignupForm.confirmPassword) {
+            this.authError = 'Passwords do not match.';
+            return;
+          }
+
+          this.authLoading = true;
+          await supabaseClient.auth.signOut();
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: this.landlordSignupForm.email,
+            password: this.landlordSignupForm.password,
+            options: {
+              data: {
+                mushavo_signup: 'landlord_free',
+                full_name: this.landlordSignupForm.fullName,
+                phone: this.landlordSignupForm.phone || ''
+              }
+            }
+          });
+
+          if (error) {
+            this.authError = error.message;
+            this.authLoading = false;
+            return;
+          }
+
+          if (!data.session || !data.user) {
+            this.authLoading = false;
+            this.successMessage = 'Check your email to verify your landlord account, then sign in to finish setup.';
+            this.authMode = 'login';
+            return;
+          }
+
+          const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
+            p_full_name: this.landlordSignupForm.fullName,
+            p_phone: this.landlordSignupForm.phone || ''
+          });
+
+          if (registerError) {
+            this.authError = registerError.message;
+            this.authLoading = false;
+            return;
+          }
+
+          await supabaseClient.auth.signOut();
+          this.loginForm.email = this.landlordSignupForm.email;
+          this.landlordSignupForm = {
+            fullName: '',
+            phone: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          };
+          this.authMode = 'login';
+          this.authLoading = false;
+          this.successMessage = 'Free landlord account created. Sign in to start with your first property and unit.';
+        },
+
         async signUpStaff() {
           this.authError = '';
           this.successMessage = '';
@@ -11955,6 +12286,24 @@
             12000,
             'Profile loading is taking too long. Please refresh once or sign in again.'
           );
+
+          if (profileError || !profile) {
+            if (authUser.user_metadata?.mushavo_signup === 'landlord_free') {
+              const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
+                p_full_name: authUser.user_metadata?.full_name || authUser.email || 'Landlord',
+                p_phone: authUser.user_metadata?.phone || ''
+              });
+              if (!registerError) {
+                const retry = await supabaseClient
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', authUser.id)
+                  .maybeSingle();
+                profile = retry.data;
+                profileError = retry.error;
+              }
+            }
+          }
 
           if (profileError || !profile) {
             const { data: fallbackProfile, error: fallbackError } = await supabaseClient.rpc('get_current_profile');
@@ -12052,7 +12401,9 @@
               return;
             }
             this.currentShell = 'app';
-            this.currentPage = previousShell === 'app' && this.isPageAllowed(previousPage) ? previousPage : 'dashboard';
+            this.currentPage = previousShell === 'app' && this.isPageAllowed(previousPage)
+              ? previousPage
+              : (profile.staff_type === 'freelancer' ? 'management-landlords' : 'dashboard');
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
             await this.loadUnreadCount(profile.id);
@@ -12143,7 +12494,7 @@
         async checkLandlordSubscription(landlordId) {
           const { data, error } = await supabaseClient
             .from('landlord_subscriptions')
-            .select('status, expires_at, notes, property_limit')
+            .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
             .eq('landlord_id', landlordId)
             .maybeSingle();
 
@@ -12171,16 +12522,25 @@
             }
           }
 
-          const { data, error } = await supabaseClient
-            .from('staff_permissions')
-            .select('*, landlord:profiles!staff_permissions_landlord_id_fkey(id, full_name, email, landlord_code)')
-            .eq('staff_profile_id', staffProfileId)
-            .eq('status', 'approved')
-            .order('accepted_at', { ascending: true });
+          const [permissionsResult, requestsResult] = await Promise.all([
+            supabaseClient
+              .from('staff_permissions')
+              .select('*, landlord:profiles!staff_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)')
+              .eq('staff_profile_id', staffProfileId)
+              .eq('status', 'approved')
+              .order('accepted_at', { ascending: true }),
+            supabaseClient
+              .from('staff_landlord_requests')
+              .select('id, staff_profile_id, landlord_id, landlord_code, status, requested_at, landlord:profiles!staff_landlord_requests_landlord_id_fkey(id, full_name, email, phone, landlord_code)')
+              .eq('staff_profile_id', staffProfileId)
+              .eq('status', 'pending')
+              .order('requested_at', { ascending: false })
+          ]);
 
-          if (error) return false;
+          if (permissionsResult.error || requestsResult.error) return false;
 
-          this.staffContext.relationships = data || [];
+          this.staffContext.relationships = permissionsResult.data || [];
+          this.staffContext.requests = requestsResult.data || [];
           if (this.staffContext.relationships.length === 0) {
             if (this.profile?.staff_type === 'freelancer') {
               this.staffContext.activeLandlordId = '';
@@ -12415,7 +12775,11 @@
           }
 
           if (page === 'management-landlords' && this.currentShell === 'app') {
-            await this.loadManagementPageData();
+            if (this.profile?.role === 'management_leader') {
+              await this.loadManagementPageData();
+            } else if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') {
+              await this.loadStaffPermissions(this.profile.id);
+            }
           }
 
           if (page === 'staff' && this.currentShell === 'app') {

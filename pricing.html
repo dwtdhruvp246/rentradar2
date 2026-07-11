@@ -145,14 +145,15 @@
         label: 'Zimbabwe',
         plans: {
           landlord: [
-            { name: 'Starter', monthly: 5, yearly: 50, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord starting with one property.' },
+            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
+            { name: 'Starter', monthly: 5, yearly: 50, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord who needs extra units or personal staff.' },
             { name: 'Growth', monthly: 12, yearly: 120, limits: '5 properties, 25 units, 3 staff', description: 'For growing owners with multiple units.' },
             { name: 'Portfolio', monthly: 25, yearly: 250, limits: '15 properties, 100 units, 8 staff', description: 'For larger private portfolios.' }
           ],
           ipm: [
-            { name: 'Free', monthly: 0, yearly: 0, limits: '2 landlord connections', description: 'For a new individual portfolio manager.' },
-            { name: 'Pro', monthly: 12, yearly: 120, limits: '10 landlord connections', description: 'For active independent managers.' },
-            { name: 'Business', monthly: 25, yearly: 250, limits: '25 landlord connections', description: 'For larger IPM operations.' }
+            { name: 'Pro', monthly: 12, yearly: 120, limits: '10 landlord connections', description: 'For active independent managers. IPM accounts are paid and admin-created.' },
+            { name: 'Business', monthly: 25, yearly: 250, limits: '25 landlord connections', description: 'For larger IPM operations.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlord limits', description: 'For IPMs needing larger country-specific limits.', customPrice: 'Custom' }
           ],
           pmc: [
             { name: 'Starter', monthly: 25, yearly: 250, limits: '2 landlords, 10 properties, 3 staff', description: 'For a small property management company.' },
@@ -174,14 +175,15 @@
         label: 'Malaysia',
         plans: {
           landlord: [
-            { name: 'Starter', monthly: 29, yearly: 290, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord starting with one property.' },
+            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
+            { name: 'Starter', monthly: 29, yearly: 290, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord who needs extra units or personal staff.' },
             { name: 'Growth', monthly: 79, yearly: 790, limits: '5 properties, 25 units, 3 staff', description: 'For growing owners with multiple units.' },
             { name: 'Portfolio', monthly: 179, yearly: 1790, limits: '15 properties, 100 units, 8 staff', description: 'For larger private portfolios.' }
           ],
           ipm: [
-            { name: 'Free', monthly: 0, yearly: 0, limits: '2 landlord connections', description: 'For a new individual portfolio manager.' },
-            { name: 'Pro', monthly: 79, yearly: 790, limits: '10 landlord connections', description: 'For active independent managers.' },
-            { name: 'Business', monthly: 179, yearly: 1790, limits: '25 landlord connections', description: 'For larger IPM operations.' }
+            { name: 'Pro', monthly: 79, yearly: 790, limits: '10 landlord connections', description: 'For active independent managers. IPM accounts are paid and admin-created.' },
+            { name: 'Business', monthly: 179, yearly: 1790, limits: '25 landlord connections', description: 'For larger IPM operations.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlord limits', description: 'For IPMs needing larger country-specific limits.', customPrice: 'Custom' }
           ],
           pmc: [
             { name: 'Starter', monthly: 199, yearly: 1990, limits: '2 landlords, 10 properties, 3 staff', description: 'For a small property management company.' },
@@ -227,9 +229,9 @@
           ${index === 1 ? '<p class="mb-4 w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-brandDark">Popular</p>' : ''}
           <h2 class="text-2xl font-black">${plan.name}</h2>
           <p class="mt-3 min-h-[3rem] leading-7 text-slate-600">${plan.description}</p>
-          <p class="mt-6 text-4xl font-black">${money(country, plan[billing])}<span class="text-base font-bold text-slate-500">${plan[billing] === 0 ? '' : billing === 'monthly' ? '/mo' : '/yr'}</span></p>
+          <p class="mt-6 text-4xl font-black">${plan.customPrice || money(country, plan[billing])}<span class="text-base font-bold text-slate-500">${plan.customPrice || plan[billing] === 0 ? '' : billing === 'monthly' ? '/mo' : '/yr'}</span></p>
           <p class="mt-5 rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-brandDark">${plan.limits}</p>
-          <a href="contact.html" class="mt-6 inline-flex items-center justify-center rounded-2xl ${index === 1 ? 'bg-brand text-white hover:bg-brandDark' : 'border border-slate-200 bg-white/75 text-slate-950 hover:bg-white'} px-5 py-3 font-bold transition">Enquire</a>
+          <a href="${plan.href || 'contact.html'}" class="mt-6 inline-flex items-center justify-center rounded-2xl ${index === 1 ? 'bg-brand text-white hover:bg-brandDark' : 'border border-slate-200 bg-white/75 text-slate-950 hover:bg-white'} px-5 py-3 font-bold transition">${plan.cta || 'Enquire'}</a>
         </article>
       `).join('');
       addonsGrid.innerHTML = data.addons.map(([name, price]) => `
