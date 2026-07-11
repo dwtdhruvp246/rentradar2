@@ -65,13 +65,13 @@
               <option value="MY">Malaysia</option>
             </select>
           </label>
-          <label class="block">
+          <div class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Billing</span>
-            <select id="billingSelect" class="h-12 w-full rounded-2xl border border-slate-200 bg-white/80 px-4 font-semibold outline-none transition focus:border-brand">
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-            </select>
-          </label>
+            <div class="grid h-12 grid-cols-2 rounded-2xl border border-slate-200 bg-white/70 p-1 shadow-sm backdrop-blur-xl">
+              <button class="billingButton rounded-xl px-4 text-sm font-black transition" type="button" data-billing="monthly">Monthly</button>
+              <button class="billingButton rounded-xl px-4 text-sm font-black transition" type="button" data-billing="yearly">Yearly</button>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -204,11 +204,12 @@
 
     let selectedType = 'landlord';
     const countrySelect = document.getElementById('countrySelect');
-    const billingSelect = document.getElementById('billingSelect');
     const pricingGrid = document.getElementById('pricingGrid');
     const addonsGrid = document.getElementById('addonsGrid');
     const tabButtons = [...document.querySelectorAll('.tabButton')];
+    const billingButtons = [...document.querySelectorAll('.billingButton')];
     const locationNote = document.getElementById('locationNote');
+    let selectedBilling = 'monthly';
 
     function money(country, value) {
       const data = PRICES[country];
@@ -218,11 +219,15 @@
 
     function render() {
       const country = countrySelect.value;
-      const billing = billingSelect.value;
+      const billing = selectedBilling;
       const data = PRICES[country];
       tabButtons.forEach(button => {
         const active = button.dataset.type === selectedType;
         button.className = `tabButton rounded-2xl px-4 py-3 text-sm font-black transition ${active ? 'bg-brand text-white shadow-lg shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
+      });
+      billingButtons.forEach(button => {
+        const active = button.dataset.billing === billing;
+        button.className = `billingButton rounded-xl px-4 text-sm font-black transition ${active ? 'bg-brand text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
       });
       pricingGrid.innerHTML = data.plans[selectedType].map((plan, index) => `
         <article class="flex min-w-0 flex-col rounded-[2rem] border ${index === 1 ? 'border-emerald-300 bg-white/80' : 'border-white/70 bg-white/60'} p-6 shadow-glass backdrop-blur-xl">
@@ -247,7 +252,10 @@
       render();
     }));
     countrySelect.addEventListener('change', render);
-    billingSelect.addEventListener('change', render);
+    billingButtons.forEach(button => button.addEventListener('click', () => {
+      selectedBilling = button.dataset.billing;
+      render();
+    }));
 
     async function detectCountry() {
       try {
