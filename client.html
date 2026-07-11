@@ -3124,6 +3124,7 @@
                                 <div class="flex flex-wrap gap-2">
                                   <button x-show="maintenancePhotoPath(request)" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openMaintenancePhoto(request)">Photo</button>
                                   <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openMaintenanceEditModal(request)">Update</button>
+                                  <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60" type="button" @click="deleteMaintenanceRequest(request)" :disabled="maintenance.saving">Delete</button>
                                 </div>
                               </td>
                             </tr>
@@ -9593,9 +9594,9 @@
         async deleteMaintenanceRequest(request) {
           if (!request) return;
           const confirmed = await this.requestConfirm({
-            title: 'Archive maintenance request',
-            message: 'Archive this maintenance request? Its details and work notes will stay saved.',
-            confirmText: 'Archive'
+            title: 'Delete maintenance request',
+            message: 'Delete this maintenance request from the active list? Its details and work notes will stay saved in the records.',
+            confirmText: 'Delete'
           });
           if (!confirmed) return;
 
