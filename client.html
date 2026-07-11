@@ -1953,7 +1953,7 @@
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="propertyUnit.error"></div>
                     </template>
 
-                    <form x-show="canAddProperties()" class="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]" @submit.prevent="addProperty">
+                    <form data-property-form x-show="canAddProperties() || (propertyUnit.editPropertyId && canEditProperties())" class="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]" @submit.prevent="submitPropertyForm">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Property name</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.propertyForm.name" required>
@@ -1966,7 +1966,10 @@
                         <span class="mb-2 block text-sm font-medium text-slate-700">City</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.propertyForm.city" required>
                       </label>
-                      <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="propertyUnit.saving">Add Property</button>
+                      <div class="flex flex-col gap-2 self-end sm:flex-row md:flex-col xl:flex-row">
+                        <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="propertyUnit.saving" x-text="propertyUnit.editPropertyId ? 'Save Changes' : 'Add Property'"></button>
+                        <button x-show="propertyUnit.editPropertyId" class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="cancelPropertyEdit">Cancel</button>
+                      </div>
                     </form>
 
                     <div x-show="profile?.role === 'management_leader'" class="mt-5 grid gap-3 md:grid-cols-[1fr_220px_auto]">
@@ -2006,22 +2009,6 @@
                           <button x-show="canEditProperties()" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="startEditProperty(property)">Edit</button>
                           <button x-show="canArchiveProperties()" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteProperty(property)">Archive</button>
                         </div>
-                        <form x-show="propertyUnit.editPropertyId === property.id && canEditProperties()" class="mt-5 grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_1fr_auto_auto]" @submit.prevent="savePropertyEdit">
-                          <label class="block">
-                            <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Property name</span>
-                            <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" x-model.trim="propertyUnit.editPropertyForm.name" required>
-                          </label>
-                          <label class="block">
-                            <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Address</span>
-                            <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" x-model.trim="propertyUnit.editPropertyForm.address" required>
-                          </label>
-                          <label class="block">
-                            <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">City</span>
-                            <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="text" x-model.trim="propertyUnit.editPropertyForm.city" required>
-                          </label>
-                          <button class="self-end rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="propertyUnit.saving">Save</button>
-                          <button class="self-end rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="cancelPropertyEdit">Cancel</button>
-                        </form>
                       </article>
                     </template>
                   </section>
@@ -7960,6 +7947,14 @@
           this.propertyUnit.loading = false;
         },
 
+        async submitPropertyForm() {
+          if (this.propertyUnit.editPropertyId) {
+            await this.savePropertyEdit();
+          } else {
+            await this.addProperty();
+          }
+        },
+
         async addProperty() {
           this.propertyUnit.error = '';
           if (!this.canAddProperties()) {
@@ -8001,16 +7996,21 @@
 
         startEditProperty(property) {
           if (!property || !this.canEditProperties()) return;
+          this.propertyUnit.error = '';
           this.propertyUnit.editPropertyId = property.id;
-          this.propertyUnit.editPropertyForm = {
+          this.propertyUnit.propertyForm = {
             name: property.name || '',
             address: property.address || '',
             city: property.city || ''
           };
+          this.$nextTick(() => {
+            document.querySelector('[data-property-form]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
         },
 
         cancelPropertyEdit() {
           this.propertyUnit.editPropertyId = '';
+          this.propertyUnit.propertyForm = { name: '', address: '', city: '' };
           this.propertyUnit.editPropertyForm = { name: '', address: '', city: '' };
         },
 
@@ -8027,9 +8027,9 @@
           const { error } = await supabaseClient
             .from('properties')
             .update({
-              name: this.propertyUnit.editPropertyForm.name,
-              address: this.propertyUnit.editPropertyForm.address,
-              city: this.propertyUnit.editPropertyForm.city
+              name: this.propertyUnit.propertyForm.name,
+              address: this.propertyUnit.propertyForm.address,
+              city: this.propertyUnit.propertyForm.city
             })
             .eq('id', propertyId);
 
