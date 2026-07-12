@@ -2518,13 +2518,14 @@
                       <template x-if="tenantLease.lookup.result">
                         <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
                           <p class="text-sm font-semibold text-emerald-900" x-text="tenantLease.lookup.result.account_found ? 'Tenant account found on Mushavo.' : 'No tenant account found.'"></p>
-                          <p class="mt-1 text-sm text-emerald-800" x-text="tenantLease.lookup.result.account_found ? `${tenantLease.lookup.result.full_name || 'Tenant'} - ${tenantLease.lookup.result.email}` : 'You can still add the tenant below and send them a new invite link.'"></p>
+                          <p class="mt-1 text-sm text-emerald-800" x-text="tenantLease.lookup.result.account_found ? `${tenantLease.lookup.result.full_name || 'Tenant'} - ${tenantLease.lookup.result.email}` : 'Click Add New Tenant to enter their details and send a new invite link.'"></p>
                           <button x-show="tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="inviteFoundTenant" :disabled="tenantLease.saving">Invite Existing Tenant</button>
+                          <button x-show="!tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="prepareNewTenantInvite" :disabled="tenantLease.saving">Add New Tenant</button>
                         </div>
                       </template>
                     </div>
 
-                    <form x-show="canAddTenants()" class="grid gap-3 lg:grid-cols-[1fr_0.9fr_1fr_0.8fr_auto]" @submit.prevent="addTenantInvite">
+                    <form x-show="canAddTenants() && tenantLease.showNewTenantForm && tenantLease.lookup.result && !tenantLease.lookup.result.account_found" class="grid gap-3 lg:grid-cols-[1fr_0.9fr_1fr_0.8fr_auto]" @submit.prevent="addTenantInvite">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenantLease.tenantForm.fullName" required>
@@ -2542,6 +2543,7 @@
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenantLease.tenantForm.idNumber">
                       </label>
                       <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="tenantLease.saving">Add Tenant</button>
+                      <button class="self-end rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60" type="button" @click="tenantLease.showNewTenantForm = false" :disabled="tenantLease.saving">Cancel</button>
                     </form>
 
                     <template x-if="tenantLease.generatedInviteLink">
@@ -4761,6 +4763,7 @@
             email: '',
             result: null
           },
+          showNewTenantForm: false,
           filters: {
             search: ''
           },
@@ -11235,6 +11238,15 @@
             this.tenantLease.error = 'You do not have permission to add tenants.';
             return;
           }
+          const lookupResult = this.tenantLease.lookup.result;
+          const normalizedLookupEmail = String(lookupResult?.email || this.tenantLease.lookup.email || '').trim().toLowerCase();
+          const normalizedFormEmail = String(this.tenantLease.tenantForm.email || '').trim().toLowerCase();
+          const canInviteExistingTenant = Boolean(lookupResult?.account_found && normalizedLookupEmail && normalizedFormEmail === normalizedLookupEmail);
+          const canAddNewTenant = Boolean(!lookupResult?.account_found && this.tenantLease.showNewTenantForm && normalizedLookupEmail && normalizedFormEmail === normalizedLookupEmail);
+          if (!canInviteExistingTenant && !canAddNewTenant) {
+            this.tenantLease.error = 'Search for the tenant email first. If no tenant is found, click Add New Tenant before entering their details.';
+            return;
+          }
           this.tenantLease.saving = true;
           this.tenantLease.generatedInviteLink = '';
 
@@ -11255,6 +11267,7 @@
           const inviteRow = Array.isArray(inviteData) ? inviteData[0] : inviteData;
           this.tenantLease.generatedInviteLink = this.buildInviteLink(inviteRow.invite_token);
           this.tenantLease.tenantForm = { fullName: '', phone: '', email: '', idNumber: '' };
+          this.tenantLease.showNewTenantForm = false;
           this.tenantLease.saving = false;
           await this.loadTenantLeaseData();
         },
@@ -11263,6 +11276,7 @@
           this.tenantLease.error = '';
           this.tenantLease.generatedInviteLink = '';
           this.tenantLease.lookup.result = null;
+          this.tenantLease.showNewTenantForm = false;
           if (!this.canAddTenants()) {
             this.tenantLease.error = 'You do not have permission to add tenants.';
             return;
@@ -11283,14 +11297,34 @@
 
           this.tenantLease.lookup.result = Array.isArray(data) ? data[0] : data;
           if (this.tenantLease.lookup.result && !this.tenantLease.lookup.result.account_found) {
-            this.tenantLease.tenantForm.email = this.tenantLease.lookup.result.email || this.tenantLease.lookup.email;
+            this.tenantLease.tenantForm = {
+              fullName: '',
+              phone: '',
+              email: this.tenantLease.lookup.result.email || this.tenantLease.lookup.email,
+              idNumber: ''
+            };
           }
+        },
+
+        prepareNewTenantInvite() {
+          const result = this.tenantLease.lookup.result;
+          if (!result || result.account_found) return;
+          this.tenantLease.error = '';
+          this.tenantLease.generatedInviteLink = '';
+          this.tenantLease.tenantForm = {
+            fullName: '',
+            phone: '',
+            email: result.email || this.tenantLease.lookup.email,
+            idNumber: ''
+          };
+          this.tenantLease.showNewTenantForm = true;
         },
 
         async inviteFoundTenant() {
           const result = this.tenantLease.lookup.result;
           if (!result?.account_found) return;
 
+          this.tenantLease.showNewTenantForm = false;
           this.tenantLease.tenantForm = {
             fullName: result.full_name || 'Tenant',
             phone: result.phone || '',
