@@ -2377,7 +2377,7 @@
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.paymentForm.otherDescription" :required="propertyUnit.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                         </label>
                         <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
+                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="propertyUnit.paymentForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="propertyUnit.paymentForm.amount" required>
                         </label>
                         <label class="block">
@@ -2932,7 +2932,7 @@
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="payments.manualForm.otherDescription" :required="payments.manualForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                         </label>
                         <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
+                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="payments.manualForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="payments.manualForm.amount" required>
                         </label>
                         <label class="block">
@@ -4023,7 +4023,7 @@
                     <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenant.paymentForm.otherDescription" :required="tenant.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                   </label>
                   <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
+                    <span class="mb-2 block text-sm font-medium text-slate-700" x-text="tenant.paymentForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
                     <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="tenant.paymentForm.amount" required>
                   </label>
                   <label class="block">
