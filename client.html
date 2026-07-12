@@ -2372,6 +2372,10 @@
                             </template>
                           </select>
                         </label>
+                        <label class="block lg:col-span-2" x-show="propertyUnit.paymentForm.rentPeriodKey === 'other'">
+                          <span class="mb-2 block text-sm font-medium text-slate-700">Describe what this payment is for</span>
+                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.paymentForm.otherDescription" :required="propertyUnit.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
+                        </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="propertyUnit.paymentForm.amount" required>
@@ -2502,6 +2506,23 @@
                     <template x-if="tenantLease.error">
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenantLease.error"></div>
                     </template>
+
+                    <div x-show="canAddTenants()" class="mb-5 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+                      <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
+                        <label class="block flex-1">
+                          <span class="mb-2 block text-sm font-medium text-slate-700">Find existing tenant by email</span>
+                          <input class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" x-model.trim="tenantLease.lookup.email" placeholder="tenant@email.com">
+                        </label>
+                        <button class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="searchTenantByEmail" :disabled="tenantLease.saving">Search Tenant</button>
+                      </div>
+                      <template x-if="tenantLease.lookup.result">
+                        <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
+                          <p class="text-sm font-semibold text-emerald-900" x-text="tenantLease.lookup.result.account_found ? 'Tenant account found on Mushavo.' : 'No tenant account found.'"></p>
+                          <p class="mt-1 text-sm text-emerald-800" x-text="tenantLease.lookup.result.account_found ? `${tenantLease.lookup.result.full_name || 'Tenant'} - ${tenantLease.lookup.result.email}` : 'You can still add the tenant below and send them a new invite link.'"></p>
+                          <button x-show="tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="inviteFoundTenant" :disabled="tenantLease.saving">Invite Existing Tenant</button>
+                        </div>
+                      </template>
+                    </div>
 
                     <form x-show="canAddTenants()" class="grid gap-3 lg:grid-cols-[1fr_0.9fr_1fr_0.8fr_auto]" @submit.prevent="addTenantInvite">
                       <label class="block">
@@ -2903,6 +2924,10 @@
                               <option :value="option.key" x-text="option.label"></option>
                             </template>
                           </select>
+                        </label>
+                        <label class="block sm:col-span-2" x-show="payments.manualForm.rentPeriodKey === 'other'">
+                          <span class="mb-2 block text-sm font-medium text-slate-700">Describe what this payment is for</span>
+                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="payments.manualForm.otherDescription" :required="payments.manualForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
@@ -3991,6 +4016,10 @@
                       </template>
                     </select>
                   </label>
+                  <label class="block sm:col-span-2" x-show="tenant.paymentForm.rentPeriodKey === 'other'">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Describe what this payment is for</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenant.paymentForm.otherDescription" :required="tenant.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
+                  </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Rent amount</span>
                     <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="tenant.paymentForm.amount" required>
@@ -4523,6 +4552,7 @@
           paymentForm: {
             amount: 0,
             rentPeriodKey: '',
+            otherDescription: '',
             date: '',
             method: 'cash',
             notes: '',
@@ -4566,6 +4596,7 @@
             leaseId: '',
             amount: 0,
             rentPeriodKey: '',
+            otherDescription: '',
             date: '',
             method: 'cash',
             notes: '',
@@ -4692,6 +4723,7 @@
           paymentForm: {
             amount: 0,
             rentPeriodKey: '',
+            otherDescription: '',
             date: '',
             method: 'bank_transfer',
             reference: '',
@@ -4725,6 +4757,10 @@
           selectedLease: null,
           selectedLeasePayments: [],
           selectedLeaseDocumentFile: null,
+          lookup: {
+            email: '',
+            result: null
+          },
           filters: {
             search: ''
           },
@@ -7734,7 +7770,7 @@
             { page: 'tenants', label: 'Tenants', icon: 'users', visible: this.canShowAppPage('tenants') },
             { page: 'leases', label: 'Leases', icon: 'file', visible: this.canShowAppPage('leases') },
             { page: 'payments', label: 'Payments', icon: 'card', visible: this.canShowAppPage('payments') },
-            { page: 'finance', label: 'Finance', icon: 'chart', visible: this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance) },
+            { page: 'finance', label: 'Finance', icon: 'chart', visible: this.canShowAppPage('finance') },
             { page: 'maintenance', label: 'Maintenance', icon: 'wrench', visible: this.canShowAppPage('maintenance') },
             { page: 'management-landlords', label: 'Landlords', icon: 'building', visible: this.profile?.role === 'management_leader' || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') },
             { page: 'staff', label: 'Staff', icon: 'badge', visible: this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff) },
@@ -7760,11 +7796,12 @@
           if (!['staff', 'management_leader', 'management_staff'].includes(this.profile?.role)) return false;
 
           const permissionMap = {
-            properties: this.canViewProperties(),
-            tenants: this.canViewTenants(),
-            leases: this.permissions.can_view_leases || this.permissions.can_manage_leases,
-            payments: this.permissions.can_view_payments || this.permissions.can_verify_payments || this.permissions.can_log_payments,
-            maintenance: this.canViewMaintenance()
+            properties: true,
+            tenants: true,
+            leases: true,
+            payments: true,
+            finance: true,
+            maintenance: true
           };
 
           return Boolean(permissionMap[page]);
@@ -9002,6 +9039,7 @@
           this.propertyUnit.paymentForm = {
             amount: Number(this.propertyUnit.currentLease.monthly_rent || 0),
             rentPeriodKey: '',
+            otherDescription: '',
             date: this.toIsoDate(new Date()),
             method: 'cash',
             notes: '',
@@ -9017,7 +9055,12 @@
           if (!this.propertyUnit.currentLease) return;
           const selectedPeriod = this.selectedPaymentPeriod('unitPayment');
           if (!selectedPeriod) {
-            this.propertyUnit.error = 'Select what month this rent payment is for.';
+            this.propertyUnit.error = 'Select what this payment is for.';
+            return;
+          }
+          const periodPayload = this.paymentPeriodPayload('unitPayment');
+          if (periodPayload.error) {
+            this.propertyUnit.error = periodPayload.error;
             return;
           }
 
@@ -9029,9 +9072,9 @@
               amount_paid: Number(this.propertyUnit.paymentForm.amount || 0),
               payment_date: this.propertyUnit.paymentForm.date,
               payment_method: this.propertyUnit.paymentForm.method,
-              rent_period_start: selectedPeriod.start,
-              rent_period_end: selectedPeriod.end,
-              rent_period_label: selectedPeriod.saveLabel,
+              rent_period_start: periodPayload.start,
+              rent_period_end: periodPayload.end,
+              rent_period_label: periodPayload.label,
               notes: this.propertyUnit.paymentForm.notes || null,
               recorded_by: this.profile.id
             })
@@ -9361,6 +9404,7 @@
           payments
             .filter(payment => payment.lease_id === lease.id)
             .forEach(payment => {
+              if (!payment.rent_period_start && /^other:/i.test(String(payment.rent_period_label || ''))) return;
               const key = this.monthKey(payment.rent_period_start || payment.payment_date);
               if (!key) return;
               coveredByMonth.set(key, (coveredByMonth.get(key) || 0) + Number(payment.amount_paid || 0));
@@ -9369,6 +9413,7 @@
           submissions
             .filter(submission => submission.lease_id === lease.id && submission.status === 'pending')
             .forEach(submission => {
+              if (!submission.rent_period_start && /^other:/i.test(String(submission.rent_period_label || ''))) return;
               const key = this.monthKey(submission.rent_period_start || submission.payment_date);
               if (!key) return;
               coveredByMonth.set(key, (coveredByMonth.get(key) || 0) + Number(submission.amount_claimed || 0));
@@ -9410,6 +9455,17 @@
             });
           }
 
+          options.push({
+            key: 'other',
+            start: null,
+            end: null,
+            label: 'Other',
+            saveLabel: 'Other',
+            amount: 0,
+            status: 'other',
+            isOther: true
+          });
+
           return options;
         },
 
@@ -9436,9 +9492,39 @@
           return config.options.find(option => option.key === config.form.rentPeriodKey) || null;
         },
 
+        paymentPeriodForm(scope) {
+          return {
+            unitPayment: this.propertyUnit.paymentForm,
+            manualPayment: this.payments.manualForm,
+            tenantPayment: this.tenant.paymentForm
+          }[scope] || null;
+        },
+
+        paymentPeriodPayload(scope) {
+          const selectedPeriod = this.selectedPaymentPeriod(scope);
+          if (!selectedPeriod) return { error: 'Select what this payment is for.' };
+
+          if (selectedPeriod.isOther) {
+            const description = String(this.paymentPeriodForm(scope)?.otherDescription || '').trim();
+            if (!description) return { error: 'Enter what this payment is for.' };
+            return {
+              start: null,
+              end: null,
+              label: `Other: ${description}`
+            };
+          }
+
+          return {
+            start: selectedPeriod.start,
+            end: selectedPeriod.end,
+            label: selectedPeriod.saveLabel
+          };
+        },
+
         syncPaymentPeriodAmount(scope) {
           const selected = this.selectedPaymentPeriod(scope);
           if (!selected) return;
+          if (selected.isOther) return;
           if (scope === 'unitPayment') this.propertyUnit.paymentForm.amount = selected.amount;
           if (scope === 'manualPayment') this.payments.manualForm.amount = selected.amount;
           if (scope === 'tenantPayment') this.tenant.paymentForm.amount = selected.amount;
@@ -9460,6 +9546,7 @@
             leaseId: '',
             amount: 0,
             rentPeriodKey: '',
+            otherDescription: '',
             date: this.toIsoDate(new Date()),
             method: 'cash',
             notes: '',
@@ -9491,7 +9578,13 @@
           this.payments.saving = true;
           const selectedPeriod = this.selectedPaymentPeriod('manualPayment');
           if (!selectedPeriod) {
-            this.payments.error = 'Select what month this rent payment is for.';
+            this.payments.error = 'Select what this payment is for.';
+            this.payments.saving = false;
+            return;
+          }
+          const periodPayload = this.paymentPeriodPayload('manualPayment');
+          if (periodPayload.error) {
+            this.payments.error = periodPayload.error;
             this.payments.saving = false;
             return;
           }
@@ -9504,9 +9597,9 @@
               amount_paid: Number(this.payments.manualForm.amount || 0),
               payment_date: this.payments.manualForm.date,
               payment_method: this.payments.manualForm.method,
-              rent_period_start: selectedPeriod.start,
-              rent_period_end: selectedPeriod.end,
-              rent_period_label: selectedPeriod.saveLabel,
+              rent_period_start: periodPayload.start,
+              rent_period_end: periodPayload.end,
+              rent_period_label: periodPayload.label,
               notes: this.payments.manualForm.notes || null,
               recorded_by: this.profile.id
             })
@@ -10919,6 +11012,7 @@
           this.tenant.paymentForm = {
             amount: Number(this.tenant.activeLease?.monthly_rent || 0),
             rentPeriodKey: '',
+            otherDescription: '',
             date: this.toIsoDate(new Date()),
             method: 'bank_transfer',
             reference: '',
@@ -10985,7 +11079,13 @@
           this.tenant.saving = true;
           const selectedPeriod = this.selectedPaymentPeriod('tenantPayment');
           if (!selectedPeriod) {
-            this.tenant.error = 'Select what month this rent payment is for.';
+            this.tenant.error = 'Select what this payment is for.';
+            this.tenant.saving = false;
+            return;
+          }
+          const periodPayload = this.paymentPeriodPayload('tenantPayment');
+          if (periodPayload.error) {
+            this.tenant.error = periodPayload.error;
             this.tenant.saving = false;
             return;
           }
@@ -10999,9 +11099,9 @@
               amount_claimed: Number(this.tenant.paymentForm.amount || 0),
               payment_date: this.tenant.paymentForm.date,
               payment_method: this.tenant.paymentForm.method,
-              rent_period_start: selectedPeriod.start,
-              rent_period_end: selectedPeriod.end,
-              rent_period_label: selectedPeriod.saveLabel,
+              rent_period_start: periodPayload.start,
+              rent_period_end: periodPayload.end,
+              rent_period_label: periodPayload.label,
               reference_note: this.tenant.paymentForm.reference || null,
               status: 'pending'
             })
@@ -11157,6 +11257,47 @@
           this.tenantLease.tenantForm = { fullName: '', phone: '', email: '', idNumber: '' };
           this.tenantLease.saving = false;
           await this.loadTenantLeaseData();
+        },
+
+        async searchTenantByEmail() {
+          this.tenantLease.error = '';
+          this.tenantLease.generatedInviteLink = '';
+          this.tenantLease.lookup.result = null;
+          if (!this.canAddTenants()) {
+            this.tenantLease.error = 'You do not have permission to add tenants.';
+            return;
+          }
+          if (!this.tenantLease.lookup.email) {
+            this.tenantLease.error = 'Enter the tenant email address.';
+            return;
+          }
+
+          const { data, error } = await supabaseClient.rpc('search_tenant_by_email', {
+            p_email: this.tenantLease.lookup.email
+          });
+
+          if (error) {
+            this.tenantLease.error = error.message;
+            return;
+          }
+
+          this.tenantLease.lookup.result = Array.isArray(data) ? data[0] : data;
+          if (this.tenantLease.lookup.result && !this.tenantLease.lookup.result.account_found) {
+            this.tenantLease.tenantForm.email = this.tenantLease.lookup.result.email || this.tenantLease.lookup.email;
+          }
+        },
+
+        async inviteFoundTenant() {
+          const result = this.tenantLease.lookup.result;
+          if (!result?.account_found) return;
+
+          this.tenantLease.tenantForm = {
+            fullName: result.full_name || 'Tenant',
+            phone: result.phone || '',
+            email: result.email || this.tenantLease.lookup.email,
+            idNumber: ''
+          };
+          await this.addTenantInvite();
         },
 
         async deleteTenant(tenant) {
@@ -12971,6 +13112,7 @@
             paymentForm: {
               amount: 0,
               rentPeriodKey: '',
+              otherDescription: '',
               date: '',
               method: 'bank_transfer',
               reference: '',
