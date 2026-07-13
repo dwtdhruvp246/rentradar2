@@ -238,7 +238,42 @@
       'Submitted': 'Dihantar',
       'Open': 'Terbuka',
       'In Progress': 'Sedang Berjalan',
-      'Resolved': 'Selesai'
+      'Resolved': 'Selesai',
+      'Tenant': 'Penyewa',
+      'Current Balance': 'Baki Semasa',
+      'Monthly Rent': 'Sewa Bulanan',
+      "Based on this month's rent and verified rent payments only.": 'Berdasarkan sewa bulan ini dan bayaran sewa yang telah disahkan sahaja.',
+      'Unit Details': 'Butiran Unit',
+      'Lease Details': 'Butiran Perjanjian Sewa',
+      'Property': 'Hartanah',
+      'Unit': 'Unit',
+      'Address': 'Alamat',
+      'Assigned Contact': 'Kenalan Ditugaskan',
+      'Landlord staff': 'Staf tuan rumah',
+      'Recent Maintenance': 'Penyelenggaraan Terkini',
+      'View All': 'Lihat Semua',
+      'Deposit': 'Deposit',
+      'Lease Ends': 'Perjanjian Tamat',
+      'Agreement': 'Perjanjian',
+      'Paid': 'Dibayar',
+      'Unpaid': 'Belum Dibayar',
+      'Not uploaded': 'Belum dimuat naik',
+      'No active lease is linked yet.': 'Belum ada perjanjian aktif yang dipautkan.',
+      'No maintenance requests.': 'Tiada permintaan penyelenggaraan.',
+      'Submit Payment': 'Hantar Bayaran',
+      'New Maintenance Request': 'Permintaan Penyelenggaraan Baharu',
+      'Payment is for': 'Bayaran untuk',
+      'Amount': 'Jumlah',
+      'Rent amount': 'Jumlah sewa',
+      'Payment date': 'Tarikh bayaran',
+      'Method': 'Kaedah',
+      'Other': 'Lain-lain',
+      'Describe what this payment is for': 'Terangkan tujuan bayaran ini',
+      'Proof': 'Bukti',
+      'Download': 'Muat Turun',
+      'Receipt': 'Resit',
+      'Priority': 'Keutamaan',
+      'Description': 'Penerangan'
     },
     zh: {
       'Menu': '菜单',
@@ -469,7 +504,42 @@
       'Submitted': '已提交',
       'Open': '打开',
       'In Progress': '进行中',
-      'Resolved': '已解决'
+      'Resolved': '已解决',
+      'Tenant': '租户',
+      'Current Balance': '当前余额',
+      'Monthly Rent': '每月租金',
+      "Based on this month's rent and verified rent payments only.": '仅根据本月租金和已核实的租金付款计算。',
+      'Unit Details': '单位详情',
+      'Lease Details': '租约详情',
+      'Property': '物业',
+      'Unit': '单位',
+      'Address': '地址',
+      'Assigned Contact': '指定联系人',
+      'Landlord staff': '房东员工',
+      'Recent Maintenance': '最近维修',
+      'View All': '查看全部',
+      'Deposit': '押金',
+      'Lease Ends': '租约结束',
+      'Agreement': '协议',
+      'Paid': '已支付',
+      'Unpaid': '未支付',
+      'Not uploaded': '未上传',
+      'No active lease is linked yet.': '尚未关联有效租约。',
+      'No maintenance requests.': '没有维修请求。',
+      'Submit Payment': '提交付款',
+      'New Maintenance Request': '新的维修请求',
+      'Payment is for': '付款用途',
+      'Amount': '金额',
+      'Rent amount': '租金金额',
+      'Payment date': '付款日期',
+      'Method': '方式',
+      'Other': '其他',
+      'Describe what this payment is for': '说明这笔付款的用途',
+      'Proof': '凭证',
+      'Download': '下载',
+      'Receipt': '收据',
+      'Priority': '优先级',
+      'Description': '说明'
     }
   };
 
@@ -486,7 +556,13 @@
 
   function translate(text, language = getLanguage()) {
     if (language === DEFAULT_LANGUAGE) return text;
-    return translations[language]?.[text] || text;
+    const dictionary = translations[language] || {};
+    if (dictionary[text]) return dictionary[text];
+    const paidSuffix = text.match(/^(.*)\s-\s(Paid|Unpaid)$/);
+    if (paidSuffix && dictionary[paidSuffix[2]]) return `${paidSuffix[1]} - ${dictionary[paidSuffix[2]]}`;
+    const unitLabel = text.match(/^Unit\s+(.+)$/);
+    if (unitLabel && dictionary.Unit) return `${dictionary.Unit} ${unitLabel[1]}`;
+    return text;
   }
 
   function setDocumentLanguage(language) {
