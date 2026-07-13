@@ -3927,7 +3927,7 @@
                 <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                   <p class="text-sm font-medium text-slate-500">Current Balance</p>
                   <p class="mt-2 text-3xl font-bold text-slate-900" x-text="formatCurrency(tenantCurrentBalance())"></p>
-                  <p class="mt-1 text-xs text-slate-500">Based on this month's rent and verified payments.</p>
+                  <p class="mt-1 text-xs text-slate-500">Based on this month's rent and verified rent payments only.</p>
                 </article>
                 <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                   <p class="text-sm font-medium text-slate-500">Monthly Rent</p>
@@ -9735,7 +9735,9 @@
             const landlordName = this.profile?.role === 'landlord' ? this.profile.full_name : this.profile?.landlord_name || 'Landlord';
             const amountPaid = Number(receiptPayment.amount_paid || 0);
             const monthlyRent = Number(lease.monthly_rent || 0);
-            const remainingBalance = Math.max(monthlyRent - amountPaid, 0);
+            const isRentPayment = Boolean(receiptPayment.rent_period_start)
+              && !/^other(?::|$)/i.test(String(receiptPayment.rent_period_label || '').trim());
+            const remainingBalance = isRentPayment ? Math.max(monthlyRent - amountPaid, 0) : null;
             const receiptNumber = receiptPayment.receipt_number || `RR-${receiptPayment.id?.slice(0, 8) || Date.now()}`;
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -9761,10 +9763,10 @@
               ['Unit', unit.unit_number || '-'],
               ['Property Address', [property.name, property.address, property.city].filter(Boolean).join(', ') || '-'],
               ['Amount Paid', this.formatCurrency(amountPaid)],
-              ['Rent Period', this.paymentPeriodLabel(receiptPayment)],
-              ['Method', this.titleCase(receiptPayment.payment_method)],
-              ['Remaining Balance', this.formatCurrency(remainingBalance)]
+              ['Payment For', this.paymentPeriodLabel(receiptPayment)],
+              ['Method', this.titleCase(receiptPayment.payment_method)]
             ];
+            if (isRentPayment) rows.push(['Remaining Rent Balance', this.formatCurrency(remainingBalance)]);
 
             let y = 56;
             rows.forEach(([label, value]) => {
@@ -10982,7 +10984,7 @@
           const [paymentsResult, submissionsResult, maintenanceResult] = await Promise.all([
             supabaseClient
               .from('payments')
-              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
               .in('lease_id', leaseIds)
               .order('payment_date', { ascending: false }),
             supabaseClient
@@ -11064,9 +11066,14 @@
           const activeLease = this.tenant.activeLease;
           if (!activeLease) return 0;
 
-          const monthPrefix = new Date().toISOString().slice(0, 7);
+          const currentRentMonth = this.monthKey(new Date());
           const paidThisMonth = this.tenant.payments
-            .filter(payment => payment.lease_id === activeLease.id && String(payment.payment_date || '').startsWith(monthPrefix))
+            .filter(payment => (
+              payment.lease_id === activeLease.id
+              && Boolean(payment.rent_period_start)
+              && this.monthKey(payment.rent_period_start) === currentRentMonth
+              && !/^other(?::|$)/i.test(String(payment.rent_period_label || '').trim())
+            ))
             .reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0);
           return Math.max(Number(activeLease.monthly_rent || 0) - paidThisMonth, 0);
         },
