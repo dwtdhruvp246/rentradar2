@@ -5041,30 +5041,8 @@
             }
           }
 
-          const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-            email: inviteEmail,
-            password: this.invite.form.password
-          });
-
-          if (signUpError) {
-            const alreadyRegistered = /already registered|already exists|user exists/i.test(signUpError.message);
-            this.invite.submitError = signUpError.message.includes('Signups not allowed')
-              ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
-              : alreadyRegistered && tokenRow.role === 'tenant'
-                ? 'This tenant email already has a Mushavo login. Enter the existing password to accept this invite, or reset the password first.'
-                : signUpError.message;
-            this.invite.submitting = false;
-            return;
-          }
-
-          if (!signUpData.session || !signUpData.user) {
-            this.invite.submitError = 'Account created, but Supabase did not start a session. Disable email confirmation for invite-only accounts, then retry with a fresh invite.';
-            this.invite.submitting = false;
-            return;
-          }
-
-          const profilePayload = {
-            id: signUpData.user.id,
+          const invitedProfilePayload = userId => ({
+            id: userId,
             landlord_id: ['staff', 'management_staff'].includes(tokenRow.role) ? tokenRow.landlord_id : null,
             country_id: ['landlord', 'management_leader', 'admin_staff'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
@@ -5075,9 +5053,76 @@
             staff_max_landlords: tokenRow.role === 'staff' ? Number(metadata.staff_max_landlords || (metadata.staff_type === 'freelancer' ? 2 : 1)) : 2,
             staff_subscription_status: tokenRow.role === 'staff' ? (metadata.staff_subscription_status || (metadata.staff_type === 'freelancer' ? 'free' : 'active')) : 'free',
             staff_subscription_expires_at: tokenRow.role === 'staff' ? (metadata.staff_subscription_expires_at || null) : null
-          };
+          });
 
-          const { error: profileError } = await supabaseClient
+          let invitedUser = null;
+          let existingProfile = null;
+
+          const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+            email: inviteEmail,
+            password: this.invite.form.password
+          });
+
+          if (signUpError) {
+            const alreadyRegistered = /already registered|already exists|user exists/i.test(signUpError.message);
+
+            if (!alreadyRegistered) {
+              this.invite.submitError = signUpError.message.includes('Signups not allowed')
+                ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
+                : signUpError.message;
+              this.invite.submitting = false;
+              return;
+            }
+
+            const { data: invitedSignInData, error: invitedSignInError } = await supabaseClient.auth.signInWithPassword({
+              email: inviteEmail,
+              password: this.invite.form.password
+            });
+
+            if (invitedSignInError || !invitedSignInData?.user) {
+              this.invite.submitError = tokenRow.role === 'tenant'
+                ? 'This tenant email already has a Mushavo login. Enter the existing password to accept this invite, or reset the password first.'
+                : 'This email already has a Mushavo login. Enter the password used before, or ask support to remove the incomplete account.';
+              this.invite.submitting = false;
+              return;
+            }
+
+            invitedUser = invitedSignInData.user;
+
+            const { data: profileCheck, error: profileCheckError } = await supabaseClient
+              .from('profiles')
+              .select('id, role, email')
+              .eq('id', invitedUser.id)
+              .maybeSingle();
+
+            if (profileCheckError) {
+              await supabaseClient.auth.signOut();
+              this.invite.submitError = profileCheckError.message;
+              this.invite.submitting = false;
+              return;
+            }
+
+            if (profileCheck && profileCheck.role !== tokenRow.role) {
+              await supabaseClient.auth.signOut();
+              this.invite.submitError = 'This email is already used by a different Mushavo account type.';
+              this.invite.submitting = false;
+              return;
+            }
+
+            existingProfile = profileCheck;
+          } else {
+            if (!signUpData.session || !signUpData.user) {
+              this.invite.submitError = 'Account created, but Supabase did not start a session. Disable email confirmation for invite-only accounts, then retry with a fresh invite.';
+              this.invite.submitting = false;
+              return;
+            }
+
+            invitedUser = signUpData.user;
+          }
+
+          const profilePayload = invitedProfilePayload(invitedUser.id);
+
+          const { error: profileError } = existingProfile ? { error: null } : await supabaseClient
             .from('profiles')
             .insert(profilePayload);
 
@@ -5092,7 +5137,7 @@
               .from('staff_permissions')
               .insert({
                 landlord_id: tokenRow.landlord_id,
-                staff_profile_id: signUpData.user.id,
+                staff_profile_id: invitedUser.id,
                 all_properties: Boolean(metadata.all_properties),
                 property_ids: metadata.property_ids || [],
                 can_view_properties: metadata.can_view_properties !== false,
@@ -5141,7 +5186,7 @@
               .from('management_staff_permissions')
               .insert({
                 management_company_id: metadata.management_company_id,
-                staff_profile_id: signUpData.user.id,
+                staff_profile_id: invitedUser.id,
                 all_properties: Boolean(metadata.all_properties ?? true),
                 property_ids: metadata.property_ids || [],
                 can_view_properties: metadata.can_view_properties !== false,
