@@ -386,10 +386,12 @@
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                 <input
-                  class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600 outline-none"
+                  class="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  :class="inviteNameLocked() ? 'bg-slate-100 text-slate-600' : 'bg-white text-slate-900'"
                   type="text"
                   x-model="invite.form.fullName"
-                  readonly>
+                  :readonly="inviteNameLocked()"
+                  required>
               </label>
 
               <label class="block">
@@ -4940,11 +4942,21 @@
           this.invite.loading = false;
         },
 
+        inviteNameLocked() {
+          const metadata = this.invite.tokenRow?.metadata || {};
+          return Boolean(metadata.full_name || metadata.fullName);
+        },
+
         async acceptInvite() {
           this.invite.submitError = '';
 
           if (!this.invite.tokenRow) {
             this.invite.submitError = 'Invite details are not loaded yet.';
+            return;
+          }
+
+          if (!String(this.invite.form.fullName || '').trim()) {
+            this.invite.submitError = 'Enter your full name to create this account.';
             return;
           }
 
