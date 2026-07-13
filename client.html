@@ -2299,6 +2299,25 @@
                           <p class="mt-3 text-sm text-slate-500" x-text="canViewTenants() ? 'No active lease for this unit.' : 'Tenant details are hidden by permission.'"></p>
                         </template>
                       </div>
+
+                      <div x-show="canViewUnitAssignedStaff()" class="rounded-lg border border-slate-200 bg-slate-50 p-4 lg:col-span-3">
+                        <h3 class="text-sm font-semibold text-slate-900">Assigned Staff</h3>
+                        <template x-if="propertyUnit.assignedStaff.length === 0">
+                          <p class="mt-3 text-sm text-slate-500">No staff assigned to this unit.</p>
+                        </template>
+                        <div x-show="propertyUnit.assignedStaff.length > 0" class="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                          <template x-for="member in propertyUnit.assignedStaff" :key="`${member.assignment_type}-${member.profile_id}`">
+                            <article class="min-w-0 rounded-lg border border-slate-200 bg-white p-3">
+                              <div class="flex items-start justify-between gap-3">
+                                <p class="min-w-0 break-words text-sm font-semibold text-slate-900" x-text="member.full_name || member.email || 'Staff member'"></p>
+                                <span class="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700" x-text="member.assignment_type"></span>
+                              </div>
+                              <p class="mt-2 break-all text-xs text-slate-500" x-text="member.email || '-' "></p>
+                              <p class="mt-1 break-words text-xs text-slate-500" x-text="member.phone || '-' "></p>
+                            </article>
+                          </template>
+                        </div>
+                      </div>
                     </div>
 
                     <template x-if="propertyUnit.detailMode === 'edit' && canEditUnits()">
@@ -3161,7 +3180,7 @@
                         <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.assignedTo">
                           <option value="">Anyone</option>
                           <option value="unassigned">Unassigned</option>
-                          <template x-for="staff in maintenance.staff" :key="staff.profile_id">
+                          <template x-for="staff in maintenanceStaffOptions()" :key="staff.profile_id">
                             <option :value="staff.profile_id" x-text="staff.full_name"></option>
                           </template>
                         </select>
@@ -3230,7 +3249,7 @@
                       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="logMaintenanceRequest">
                         <label class="block sm:col-span-2">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Unit</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.unitId" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.unitId" @change="maintenance.logForm.assignedTo = ''" required>
                             <option value="">Select unit</option>
                             <template x-for="unit in maintenance.units" :key="unit.id">
                               <option :value="unit.id" x-text="maintenanceUnitOptionLabel(unit)"></option>
@@ -3245,11 +3264,11 @@
                             <option value="high">High</option>
                           </select>
                         </label>
-                        <label x-show="canAssignMaintenance()" class="block">
+                        <label x-show="canAssignMaintenanceForUnit(maintenance.logForm.unitId)" class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Assign to staff</span>
                           <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.assignedTo">
                             <option value="">Unassigned</option>
-                            <template x-for="staff in maintenance.staff" :key="staff.profile_id">
+                            <template x-for="staff in maintenanceStaffForUnit(maintenance.logForm.unitId)" :key="staff.profile_id">
                               <option :value="staff.profile_id" x-text="staff.full_name"></option>
                             </template>
                           </select>
@@ -3291,11 +3310,11 @@
                             <option value="resolved">Resolved</option>
                           </select>
                         </label>
-                        <label x-show="canAssignMaintenance()" class="block">
+                        <label x-show="canAssignMaintenanceForUnit(maintenance.selectedRequest?.unit_id)" class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Assign to staff</span>
                           <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.editForm.assignedTo">
                             <option value="">Unassigned</option>
-                            <template x-for="staff in maintenance.staff" :key="staff.profile_id">
+                            <template x-for="staff in maintenanceStaffForUnit(maintenance.selectedRequest?.unit_id)" :key="staff.profile_id">
                               <option :value="staff.profile_id" x-text="staff.full_name"></option>
                             </template>
                           </select>
@@ -4507,6 +4526,7 @@
           selectedPropertyId: '',
           selectedUnit: null,
           currentLease: null,
+          assignedStaff: [],
           selectedMaintenanceRequest: null,
           payments: [],
           maintenance: [],
@@ -4620,6 +4640,7 @@
           leases: [],
           properties: [],
           staff: [],
+          assignableUnitIds: [],
           filters: {
             status: '',
             priority: '',
@@ -8357,6 +8378,10 @@
           return this.canViewProperties() && (this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_units));
         },
 
+        canViewUnitAssignedStaff() {
+          return this.canViewUnits() && ['landlord', 'management_leader', 'management_staff'].includes(this.profile?.role);
+        },
+
         canViewTenants() {
           return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_tenants);
         },
@@ -8913,18 +8938,22 @@
           const activeLease = this.propertyUnit.leases.find(lease => lease.unit_id === unit.id && lease.status === 'active') || null;
           this.propertyUnit.currentLease = activeLease;
 
-          const [paymentsResult, maintenanceResult] = await Promise.all([
+          const [paymentsResult, maintenanceResult, assignedStaffResult] = await Promise.all([
             activeLease && this.canViewFinancials()
               ? supabaseClient.from('payments').select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size)').eq('lease_id', activeLease.id).order('payment_date', { ascending: false })
               : Promise.resolve({ data: [], error: null }),
-            supabaseClient.from('maintenance_requests').select('id, unit_id, lease_id, description, photo_url, photo_path, photo_name, photo_size, photo_uploaded_by, photo_uploaded_at, status, priority, resolution_notes, created_at, resolved_at').eq('unit_id', unit.id).is('archived_at', null).order('created_at', { ascending: false })
+            supabaseClient.from('maintenance_requests').select('id, unit_id, lease_id, description, photo_url, photo_path, photo_name, photo_size, photo_uploaded_by, photo_uploaded_at, status, priority, resolution_notes, created_at, resolved_at').eq('unit_id', unit.id).is('archived_at', null).order('created_at', { ascending: false }),
+            this.canViewUnitAssignedStaff()
+              ? supabaseClient.rpc('unit_assigned_staff', { p_unit_id: unit.id })
+              : Promise.resolve({ data: [], error: null })
           ]);
 
-          const firstError = paymentsResult.error || maintenanceResult.error;
+          const firstError = paymentsResult.error || maintenanceResult.error || assignedStaffResult.error;
           if (firstError) this.propertyUnit.error = firstError.message;
 
           this.propertyUnit.payments = paymentsResult.data || [];
           this.propertyUnit.maintenance = maintenanceResult.data || [];
+          this.propertyUnit.assignedStaff = assignedStaffResult.data || [];
         },
 
         startEditSelectedUnit() {
@@ -9812,7 +9841,7 @@
           this.maintenance.loading = true;
           this.maintenance.error = '';
 
-          const [requestsResult, propertiesResult, unitsResult, leasesResult, staffResult] = await Promise.all([
+          const [requestsResult, propertiesResult, unitsResult, leasesResult, staffResult, assignableUnitsResult] = await Promise.all([
             supabaseClient
               .from('maintenance_requests')
               .select('id, unit_id, lease_id, landlord_id, submitted_by_profile_id, assigned_to_staff_id, description, photo_url, photo_path, photo_name, photo_size, photo_uploaded_by, photo_uploaded_at, status, priority, resolution_notes, created_at, resolved_at')
@@ -9832,14 +9861,15 @@
               .from('leases')
               .select('id, unit_id, tenant_id, landlord_id, status, tenants(id, full_name, email)')
               .eq('status', 'active'),
-            supabaseClient
-              .from('profiles')
-              .select('id, full_name, email, phone, role, landlord_id')
-              .eq('role', 'staff')
-              .order('full_name', { ascending: true })
+            this.canAssignMaintenance()
+              ? supabaseClient.rpc('maintenance_assignable_staff', { p_unit_id: null })
+              : Promise.resolve({ data: [], error: null }),
+            this.canAssignMaintenance()
+              ? supabaseClient.rpc('maintenance_assignable_units')
+              : Promise.resolve({ data: [], error: null })
           ]);
 
-          const firstError = requestsResult.error || propertiesResult.error || unitsResult.error || leasesResult.error || staffResult.error;
+          const firstError = requestsResult.error || propertiesResult.error || unitsResult.error || leasesResult.error || staffResult.error || assignableUnitsResult.error;
           if (firstError) {
             this.maintenance.error = firstError.message;
             this.maintenance.loading = false;
@@ -9849,13 +9879,38 @@
           this.maintenance.properties = propertiesResult.data || [];
           this.maintenance.units = (unitsResult.data || []).map(unit => ({ ...unit, property: unit.properties || null }));
           this.maintenance.leases = (leasesResult.data || []).map(lease => ({ ...lease, tenant: lease.tenants || null }));
-          this.maintenance.staff = (staffResult.data || []).map(profile => ({
-            profile_id: profile.id,
-            full_name: profile.full_name,
-            email: profile.email
-          }));
+          this.maintenance.staff = staffResult.data || [];
+          this.maintenance.assignableUnitIds = (assignableUnitsResult.data || []).map(row => row.unit_id);
           this.maintenance.requests = requestsResult.data || [];
           this.maintenance.loading = false;
+        },
+
+        maintenanceStaffOptions() {
+          const unique = new Map();
+          this.maintenance.staff.forEach(member => {
+            if (!unique.has(member.profile_id)) unique.set(member.profile_id, member);
+          });
+          return Array.from(unique.values()).sort((left, right) => String(left.full_name || left.email || '').localeCompare(String(right.full_name || right.email || '')));
+        },
+
+        maintenanceStaffForUnit(unitId) {
+          if (!unitId) return [];
+          const unique = new Map();
+          this.maintenance.staff
+            .filter(member => member.unit_id === unitId)
+            .forEach(member => {
+              if (!unique.has(member.profile_id)) unique.set(member.profile_id, member);
+            });
+          return Array.from(unique.values()).sort((left, right) => String(left.full_name || left.email || '').localeCompare(String(right.full_name || right.email || '')));
+        },
+
+        maintenanceAssigneeAllowedForUnit(profileId, unitId) {
+          if (!profileId) return true;
+          return this.maintenanceStaffForUnit(unitId).some(member => member.profile_id === profileId);
+        },
+
+        canAssignMaintenanceForUnit(unitId) {
+          return Boolean(unitId) && this.maintenance.assignableUnitIds.includes(unitId);
         },
 
         filteredMaintenanceRequests() {
@@ -9937,6 +9992,18 @@
           }
           this.maintenance.saving = true;
 
+          if (this.maintenance.logForm.assignedTo && !this.canAssignMaintenanceForUnit(this.maintenance.logForm.unitId)) {
+            this.maintenance.error = 'You do not have permission to assign maintenance for this unit.';
+            this.maintenance.saving = false;
+            return;
+          }
+
+          if (!this.maintenanceAssigneeAllowedForUnit(this.maintenance.logForm.assignedTo, this.maintenance.logForm.unitId)) {
+            this.maintenance.error = 'That staff member is not assigned to this landlord and unit.';
+            this.maintenance.saving = false;
+            return;
+          }
+
           const activeLease = this.activeLeaseForUnit(this.maintenance.logForm.unitId);
           const photoFile = this.maintenance.logForm.photoFile;
           const { data: requestRow, error } = await supabaseClient
@@ -9946,7 +10013,7 @@
               lease_id: activeLease?.id || null,
               landlord_id: this.currentLandlordId(),
               submitted_by_profile_id: this.profile.id,
-              assigned_to_staff_id: this.canAssignMaintenance() ? (this.maintenance.logForm.assignedTo || null) : null,
+              assigned_to_staff_id: this.canAssignMaintenanceForUnit(this.maintenance.logForm.unitId) ? (this.maintenance.logForm.assignedTo || null) : null,
               description: this.maintenance.logForm.description,
               status: 'open',
               priority: this.maintenance.logForm.priority,
@@ -9987,12 +10054,26 @@
           }
           this.maintenance.saving = true;
 
+          const originalAssignee = this.maintenance.selectedRequest.assigned_to_staff_id || '';
+          const assignmentChanged = this.maintenance.editForm.assignedTo !== originalAssignee;
+          if (assignmentChanged && !this.canAssignMaintenanceForUnit(this.maintenance.selectedRequest.unit_id)) {
+            this.maintenance.error = 'You do not have permission to assign maintenance for this unit.';
+            this.maintenance.saving = false;
+            return;
+          }
+
+          if (assignmentChanged && !this.maintenanceAssigneeAllowedForUnit(this.maintenance.editForm.assignedTo, this.maintenance.selectedRequest.unit_id)) {
+            this.maintenance.error = 'That staff member is not assigned to this landlord and unit.';
+            this.maintenance.saving = false;
+            return;
+          }
+
           const updates = {};
           if (this.canAddResolutionNotes()) {
             updates.status = this.maintenance.editForm.status;
             updates.resolution_notes = this.maintenance.editForm.resolutionNotes || null;
           }
-          if (this.canAssignMaintenance()) {
+          if (assignmentChanged && this.canAssignMaintenanceForUnit(this.maintenance.selectedRequest.unit_id)) {
             updates.assigned_to_staff_id = this.maintenance.editForm.assignedTo || null;
           }
 
