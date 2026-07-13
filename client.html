@@ -3609,7 +3609,7 @@
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                   <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openStaffPermissionsModal(member)">Edit</button>
-                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="approveStaffRequest(member)">Approve</button>
+                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="openStaffPermissionsModal(member)">Approve</button>
                                   <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectStaffRequest(member)">Reject</button>
                                   <button x-show="!member.accepted && member.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(member.invite_link)">Copy Link</button>
                                   <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="removeStaff(member)">Delete</button>
@@ -3626,7 +3626,7 @@
                     <section class="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
                         <div>
-                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'PMC Permissions' : 'Edit Staff Permissions')"></h2>
+                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'PMC Permissions' : (staff.selectedMember?.request_id && !staff.selectedMember?.accepted ? 'Approve Staff Request' : 'Edit Staff Permissions'))"></h2>
                           <p class="mt-1 text-sm text-slate-500" x-text="staff.modal === 'management-permissions' ? managementPermissionTargetLabel() : (staff.selectedMember?.email || 'Create a single-use invite that expires in 48 hours.')"></p>
                         </div>
                         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeStaffModal" aria-label="Close modal">
@@ -3718,7 +3718,7 @@
 
                         <div class="flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4">
                           <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeStaffModal">Cancel</button>
-                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : (staff.modal === 'management-permissions' && staff.selectedMember?.managementMode === 'request' ? 'Accept' : 'Save Permissions')"></button>
+                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : ((staff.modal === 'management-permissions' && staff.selectedMember?.managementMode === 'request') || (staff.selectedMember?.request_id && !staff.selectedMember?.accepted) ? 'Accept' : 'Save Permissions')"></button>
                         </div>
                       </form>
                     </section>
@@ -10842,6 +10842,17 @@
               : supabaseClient.from('staff_permissions').insert(permissionPayload);
 
             const { error } = await saveQuery;
+
+            if (error) {
+              this.staff.error = error.message;
+              this.staff.saving = false;
+              return;
+            }
+          } else if (member.request_id) {
+            const { error } = await supabaseClient.rpc('approve_staff_landlord_request_with_permissions', {
+              p_request_id: member.request_id,
+              p_permissions: permissions
+            });
 
             if (error) {
               this.staff.error = error.message;
