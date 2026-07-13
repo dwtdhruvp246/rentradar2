@@ -10665,9 +10665,13 @@
             });
 
           if (error) {
-            this.staff.error = this.profile?.role === 'landlord' && /row-level security|violates row-level/i.test(error.message || '')
-              ? this.personalStaffLimitMessage()
-              : error.message;
+            if (this.profile?.role === 'landlord' && /row-level security|violates row-level/i.test(error.message || '')) {
+              this.staff.error = this.canInvitePersonalStaff()
+                ? 'Supabase is still blocking this invite because the database is counting an old pending staff invite. Run the updated SQL in Supabase, refresh this page, and try again.'
+                : this.personalStaffLimitMessage();
+            } else {
+              this.staff.error = error.message;
+            }
             this.staff.saving = false;
             return;
           }
