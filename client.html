@@ -3502,11 +3502,14 @@
                         </div>
                       </div>
                       <div class="flex flex-wrap gap-2">
-                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openStaffInviteModal">Invite Staff</button>
+                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="button" @click="openStaffInviteModal" :disabled="profile?.role === 'landlord' && !canInvitePersonalStaff()">Invite Staff</button>
                         <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                       </div>
                     </div>
 
+                    <template x-if="profile?.role === 'landlord' && !canInvitePersonalStaff()">
+                      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800" x-text="personalStaffLimitMessage()"></div>
+                    </template>
                     <template x-if="staff.error">
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staff.error"></div>
                     </template>
@@ -10332,6 +10335,32 @@
           return '';
         },
 
+        personalStaffLimit() {
+          return Number(this.subscription?.personal_staff_limit ?? 1);
+        },
+
+        personalStaffUsage() {
+          const members = this.staff.members || [];
+          return members.filter(member => (
+            (member.staff_type || 'landlord') === 'landlord'
+            && (member.accepted || member.invite_id)
+          )).length;
+        },
+
+        canInvitePersonalStaff() {
+          if (this.profile?.role !== 'landlord') return true;
+          return this.personalStaffUsage() < this.personalStaffLimit();
+        },
+
+        personalStaffLimitMessage() {
+          const limit = this.personalStaffLimit();
+          const usage = this.personalStaffUsage();
+          if (limit <= 0) {
+            return 'Your current subscription does not include personal landlord staff. Upgrade your plan or ask admin to increase the personal staff limit.';
+          }
+          return `Your current subscription allows ${limit} personal staff member${limit === 1 ? '' : 's'}. You already have ${usage}. Upgrade your plan or ask admin to increase the personal staff limit.`;
+        },
+
         async loadStaffData() {
           if (this.profile?.role === 'management_leader') {
             await this.loadManagementPageData();
@@ -10595,6 +10624,12 @@
           this.staff.saving = true;
           this.staff.generatedInviteLink = '';
 
+          if (this.profile?.role === 'landlord' && !this.canInvitePersonalStaff()) {
+            this.staff.error = this.personalStaffLimitMessage();
+            this.staff.saving = false;
+            return;
+          }
+
           if (this.profile?.role === 'management_leader' && !this.managementContext.company?.id) {
             this.staff.error = 'PMC record not found.';
             this.staff.saving = false;
@@ -10630,7 +10665,9 @@
             });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.profile?.role === 'landlord' && /row-level security|violates row-level/i.test(error.message || '')
+              ? this.personalStaffLimitMessage()
+              : error.message;
             this.staff.saving = false;
             return;
           }
