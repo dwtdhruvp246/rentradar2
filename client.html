@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="i18n.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -2312,8 +2313,8 @@
                                 <p class="min-w-0 break-words text-sm font-semibold text-slate-900" x-text="member.full_name || member.email || 'Staff member'"></p>
                                 <span class="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700" x-text="member.assignment_type"></span>
                               </div>
-                              <p class="mt-2 break-all text-xs text-slate-500" x-text="member.email || '-' "></p>
-                              <p class="mt-1 break-words text-xs text-slate-500" x-text="member.phone || '-' "></p>
+                              <p class="mt-2 break-all text-xs text-slate-500" x-text="member.email || '-'"></p>
+                              <p class="mt-1 break-words text-xs text-slate-500" x-text="member.phone || '-'"></p>
                             </article>
                           </template>
                         </div>
