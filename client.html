@@ -3037,7 +3037,7 @@
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">Finance</h1>
-                        <p class="mt-1 text-sm text-slate-500">Track revenue generated from verified rent payments. Refundable deposits are not counted as revenue.</p>
+                        <p class="mt-1 text-sm text-slate-500" x-text="isPartnerFinanceAccount() ? 'Track payments received from connected landlords.' : 'Track revenue generated from verified rent payments. Refundable deposits are not counted as revenue.'"></p>
                       </div>
                       <div class="flex flex-wrap gap-2">
                         <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadFinanceCsv" :disabled="filteredFinancePayments().length === 0">Download CSV</button>
@@ -3049,13 +3049,52 @@
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="finance.error"></div>
                     </template>
 
+                    <form x-show="canRecordPartnerPayments()" class="mt-5 grid gap-3 lg:grid-cols-6" @submit.prevent="recordPartnerPayment">
+                      <label class="block lg:col-span-2">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Landlord</span>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.partnerForm.landlordId" required>
+                          <option value="">Select landlord</option>
+                          <template x-for="relationship in partnerFinanceLandlordOptions()" :key="`partner-finance-landlord-${relationship.landlord_id}`">
+                            <option :value="relationship.landlord_id" x-text="`${relationship.landlord?.full_name || 'Landlord'} - ${relationship.landlord?.email || ''}`"></option>
+                          </template>
+                        </select>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Amount</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="finance.partnerForm.amount" required>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Paid date</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.paidAt" required>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">From</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.periodStart" required>
+                      </label>
+                      <label class="block">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">To</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.periodEnd" required>
+                      </label>
+                      <label class="block lg:col-span-5">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Notes</span>
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="finance.partnerForm.notes" placeholder="Subscription, management fee, service fee">
+                      </label>
+                      <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="finance.saving">Record Payment</button>
+                    </form>
+
                     <div class="mt-5 grid gap-3 lg:grid-cols-4">
                       <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">Property</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property">
+                        <span class="mb-2 block text-sm font-medium text-slate-700" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Property'"></span>
+                        <select x-show="!isPartnerFinanceAccount()" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property">
                           <option value="">All properties</option>
-                          <template x-for="property in financePropertyOptions()" :key="property">
-                            <option :value="property" x-text="property"></option>
+                          <template x-for="option in financePrimaryOptions()" :key="`property-filter-${option}`">
+                            <option :value="option" x-text="option"></option>
+                          </template>
+                        </select>
+                        <select x-show="isPartnerFinanceAccount()" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.landlord">
+                          <option value="">All landlords</option>
+                          <template x-for="option in financePrimaryOptions()" :key="`landlord-filter-${option}`">
+                            <option :value="option" x-text="option"></option>
                           </template>
                         </select>
                       </label>
@@ -3069,7 +3108,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="finance.filters.search" placeholder="Tenant, unit, receipt">
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="finance.filters.search" :placeholder="isPartnerFinanceAccount() ? 'Landlord, notes' : 'Tenant, unit, receipt'">
                       </label>
                     </div>
                   </section>
@@ -3114,12 +3153,12 @@
 
                     <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="border-b border-slate-200 px-4 py-3">
-                        <h2 class="text-sm font-semibold text-slate-900">Revenue by Property</h2>
+                        <h2 class="text-sm font-semibold text-slate-900" x-text="isPartnerFinanceAccount() ? 'Revenue by Landlord' : 'Revenue by Property'"></h2>
                       </div>
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr><th class="px-4 py-3 font-semibold">Property</th><th class="px-4 py-3 font-semibold">Payments</th><th class="px-4 py-3 font-semibold">Revenue</th></tr>
+                            <tr><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Property'"></th><th class="px-4 py-3 font-semibold">Payments</th><th class="px-4 py-3 font-semibold">Revenue</th></tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
                             <template x-if="!finance.loading && filteredFinanceByProperty().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="3">No revenue yet.</td></tr></template>
@@ -3138,12 +3177,12 @@
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr><th class="px-4 py-3 font-semibold">Tenant</th><th class="px-4 py-3 font-semibold">Unit</th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th></tr>
+                            <tr><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Tenant'"></th><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Email' : 'Unit'"></th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th></tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
                             <template x-if="!finance.loading && filteredFinancePayments().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No verified payments.</td></tr></template>
                             <template x-for="payment in filteredFinancePayments().slice(0, 20)" :key="payment.id">
-                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td></tr>
+                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="isPartnerFinanceAccount() ? payment.landlord : payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="isPartnerFinanceAccount() ? payment.landlordEmail : payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -3393,17 +3432,19 @@
                           <tr>
                             <th class="px-4 py-3 font-semibold">Landlord</th>
                             <th class="px-4 py-3 font-semibold">Status</th>
+                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="staffContext.relationships.length === 0 && staffContext.requests.length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="3">No landlord connections yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="4">No landlord connections yet.</td></tr>
                           </template>
                           <template x-for="request in staffContext.requests" :key="`ipm-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.landlord?.email || ''"></p></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
+                              <td class="px-4 py-3 text-slate-500">-</td>
                               <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
                             </tr>
                           </template>
@@ -3411,7 +3452,10 @@
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="relationship.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord?.email || ''"></p></td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
-                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchStaffLandlord(relationship.landlord_id)">Open</button></td>
+                              <td class="px-4 py-3">
+                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_start_date || ''" @change="updatePartnerContractDate('ipm', relationship, $event.target.value)">
+                              </td>
+                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchStaffLandlord(relationship.landlord_id)">Open</button><button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropPartnerLandlord('ipm', relationship)">Drop Landlord</button></div></td>
                             </tr>
                           </template>
                         </tbody>
@@ -3470,13 +3514,14 @@
                             <th class="px-4 py-3 font-semibold">Properties</th>
                             <th class="px-4 py-3 font-semibold">Tenants</th>
                             <th class="px-4 py-3 font-semibold">Permissions</th>
+                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
                             <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!managementContext.loading && filteredManagementRequests().length === 0 && filteredManagementRelationships().length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No landlord connections yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No landlord connections yet.</td></tr>
                           </template>
                           <template x-for="request in filteredManagementRequests()" :key="`mgmt-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
@@ -3485,6 +3530,7 @@
                               <td class="px-4 py-3 text-slate-700">Pending review</td>
                               <td class="px-4 py-3 text-slate-700">-</td>
                               <td class="px-4 py-3 text-slate-700">-</td>
+                              <td class="px-4 py-3 text-slate-500">-</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
                               <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
                             </tr>
@@ -3496,8 +3542,11 @@
                               <td class="px-4 py-3 text-slate-700"><p x-text="relationship.all_properties ? `${managementLandlordProperties(relationship.landlord_id).length} properties` : `${(relationship.property_ids || []).length} selected`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordPropertyNames(relationship.landlord_id) || '-'"></p></td>
                               <td class="px-4 py-3 text-slate-700"><p x-text="`${managementLandlordTenants(relationship.landlord_id).length} tenants`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordTenantNames(relationship.landlord_id) || '-'"></p></td>
                               <td class="px-4 py-3"><div class="flex max-w-md flex-wrap gap-1.5"><template x-for="badge in staffPermissionBadges(relationship)" :key="badge"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700" x-text="badge"></span></template></div></td>
+                              <td class="px-4 py-3">
+                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_start_date || ''" @change="updatePartnerContractDate('pmc', relationship, $event.target.value)">
+                              </td>
                               <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
-                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlordProperties(relationship.landlord_id)">View</button></td>
+                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlordProperties(relationship.landlord_id)">View</button><button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropPartnerLandlord('pmc', relationship)">Drop Landlord</button></div></td>
                             </tr>
                           </template>
                         </tbody>
@@ -4612,14 +4661,24 @@
         },
         finance: {
           loading: false,
+          saving: false,
           error: '',
           payments: [],
           byProperty: [],
           filters: {
             property: '',
+            landlord: '',
             startDate: '',
             endDate: '',
             search: ''
+          },
+          partnerForm: {
+            landlordId: '',
+            amount: 0,
+            paidAt: '',
+            periodStart: '',
+            periodEnd: '',
+            notes: ''
           },
           stats: {
             totalRevenue: 0,
@@ -5342,7 +5401,7 @@
 
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
           if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role) || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
-          if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
+          if (page === 'finance') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || this.profile?.staff_type === 'freelancer' || Boolean(this.permissions.can_view_finance);
           if (page === 'management-landlords') return this.profile?.role === 'management_leader' || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
           if (page === 'staff') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff);
           return this.canShowAppPage(page);
@@ -8432,6 +8491,57 @@
           this.managementContext.message = 'Free landlord invite link created.';
         },
 
+        async updatePartnerContractDate(partnerType, relationship, contractDate) {
+          const errorTarget = partnerType === 'pmc' ? this.managementContext : this.staffContext;
+          errorTarget.error = '';
+          errorTarget.message = '';
+          const { error } = await supabaseClient.rpc('update_partner_landlord_contract', {
+            p_partner_type: partnerType,
+            p_permission_id: relationship.id,
+            p_contract_start_date: contractDate || null
+          });
+
+          if (error) {
+            errorTarget.error = this.friendlyErrorMessage(error);
+            return;
+          }
+
+          relationship.contract_start_date = contractDate || null;
+          errorTarget.message = 'Partnered date updated.';
+        },
+
+        async dropPartnerLandlord(partnerType, relationship) {
+          const label = relationship?.landlord?.full_name || relationship?.landlord?.email || 'this landlord';
+          const confirmed = await this.requestConfirm({
+            title: 'Drop landlord',
+            message: `Stop serving ${label}? Their data will stay with the landlord account, but this connection will be removed from your account.`,
+            confirmText: 'Drop Landlord',
+            tone: 'danger'
+          });
+          if (!confirmed) return;
+
+          const errorTarget = partnerType === 'pmc' ? this.managementContext : this.staffContext;
+          errorTarget.error = '';
+          errorTarget.message = '';
+          const { error } = await supabaseClient.rpc('drop_partner_landlord', {
+            p_partner_type: partnerType,
+            p_permission_id: relationship.id
+          });
+
+          if (error) {
+            errorTarget.error = this.friendlyErrorMessage(error);
+            return;
+          }
+
+          errorTarget.message = 'Landlord connection dropped.';
+          if (partnerType === 'pmc') {
+            await this.loadManagementPageData();
+          } else {
+            await this.loadStaffPermissions(this.profile.id);
+          }
+          if (this.currentPage === 'finance') await this.loadPartnerFinanceData();
+        },
+
         async regenerateLandlordCode() {
           this.staff.error = '';
           const { data, error } = await supabaseClient.rpc('regenerate_landlord_code');
@@ -8469,6 +8579,24 @@
 
         canViewFinancials() {
           return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance || this.permissions.can_view_payments || this.permissions.can_verify_payments);
+        },
+
+        isPartnerFinanceAccount() {
+          return this.profile?.role === 'management_leader'
+            || this.profile?.role === 'management_staff'
+            || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
+        },
+
+        canRecordPartnerPayments() {
+          if (!this.isPartnerFinanceAccount()) return false;
+          if (this.profile?.role === 'management_staff') return Boolean(this.permissions.can_view_finance);
+          return true;
+        },
+
+        partnerFinanceLandlordOptions() {
+          return ['management_leader', 'management_staff'].includes(this.profile?.role)
+            ? (this.managementContext.relationships || [])
+            : (this.staffContext.relationships || []);
         },
 
         canManageLeases() {
@@ -9369,6 +9497,10 @@
         },
 
         async loadLandlordFinanceData() {
+          if (this.isPartnerFinanceAccount()) {
+            await this.loadPartnerFinanceData();
+            return;
+          }
           if (!this.canViewFinancials()) return;
 
           this.finance.loading = true;
@@ -9427,8 +9559,157 @@
           this.finance.loading = false;
         },
 
+        resetPartnerFinanceForm() {
+          const today = this.toIsoDate(new Date());
+          const monthStart = today.slice(0, 8) + '01';
+          this.finance.partnerForm = {
+            landlordId: '',
+            amount: 0,
+            paidAt: today,
+            periodStart: monthStart,
+            periodEnd: today,
+            notes: ''
+          };
+        },
+
+        async loadPartnerFinanceData() {
+          this.finance.loading = true;
+          this.finance.error = '';
+          if (!this.finance.partnerForm.paidAt) this.resetPartnerFinanceForm();
+
+          if (this.profile?.role === 'management_leader' && !this.managementContext.company?.id) {
+            await this.loadManagementPageData();
+          } else if (this.profile?.role === 'management_staff' && !this.managementContext.company?.id) {
+            await this.loadManagementStaffPermissions(this.profile.id);
+          } else if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer' && this.staffContext.relationships.length === 0) {
+            await this.loadStaffPermissions(this.profile.id);
+          }
+
+          const relationships = this.partnerFinanceLandlordOptions();
+          const landlordIds = relationships.map(row => row.landlord_id).filter(Boolean);
+          if (landlordIds.length === 0) {
+            this.finance.payments = [];
+            this.finance.byProperty = [];
+            this.finance.stats = { totalRevenue: 0, monthRevenue: 0, yearRevenue: 0, averagePayment: 0 };
+            this.finance.loading = false;
+            return;
+          }
+
+          let query = supabaseClient
+            .from('partner_payments')
+            .select('id, partner_type, partner_staff_id, management_company_id, landlord_id, amount_paid, paid_at, period_start, period_end, notes, created_at, landlord:profiles!partner_payments_landlord_id_fkey(id, full_name, email, phone)')
+            .in('landlord_id', landlordIds)
+            .order('paid_at', { ascending: false });
+
+          if (['management_leader', 'management_staff'].includes(this.profile?.role)) {
+            query = query.eq('partner_type', 'pmc').eq('management_company_id', this.managementContext.company?.id);
+          } else {
+            query = query.eq('partner_type', 'ipm').eq('partner_staff_id', this.profile.id);
+          }
+
+          const { data, error } = await query;
+          if (error) {
+            this.finance.error = this.friendlyErrorMessage(error);
+            this.finance.loading = false;
+            return;
+          }
+
+          const payments = (data || []).map(payment => ({
+            id: payment.id,
+            amount: Number(payment.amount_paid || 0),
+            date: payment.paid_at || payment.created_at,
+            method: 'Partner payment',
+            period: `${this.formatDate(payment.period_start)} - ${this.formatDate(payment.period_end)}`,
+            notes: payment.notes || '',
+            receipt: '',
+            tenant: payment.landlord?.full_name || 'Landlord',
+            landlord: payment.landlord?.full_name || 'Landlord',
+            landlordEmail: payment.landlord?.email || '-',
+            unit: payment.landlord?.email || '-',
+            property: payment.landlord?.full_name || payment.landlord?.email || 'Landlord',
+            propertyAddress: payment.landlord?.email || ''
+          }));
+
+          const now = new Date();
+          const monthKey = now.toISOString().slice(0, 7);
+          const yearKey = String(now.getFullYear());
+          const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
+          const byLandlordMap = new Map();
+          payments.forEach(payment => {
+            const current = byLandlordMap.get(payment.landlord) || { property: payment.landlord, count: 0, total: 0 };
+            current.count += 1;
+            current.total += payment.amount;
+            byLandlordMap.set(payment.landlord, current);
+          });
+
+          this.finance.payments = payments;
+          this.finance.byProperty = Array.from(byLandlordMap.values()).sort((a, b) => b.total - a.total);
+          this.finance.stats = {
+            totalRevenue,
+            monthRevenue: payments.filter(payment => String(payment.date || '').slice(0, 7) === monthKey).reduce((sum, payment) => sum + payment.amount, 0),
+            yearRevenue: payments.filter(payment => String(payment.date || '').slice(0, 4) === yearKey).reduce((sum, payment) => sum + payment.amount, 0),
+            averagePayment: payments.length ? totalRevenue / payments.length : 0
+          };
+          this.finance.loading = false;
+        },
+
+        async recordPartnerPayment() {
+          this.finance.error = '';
+          if (!this.canRecordPartnerPayments()) {
+            this.finance.error = 'You do not have permission to record partner payments.';
+            return;
+          }
+          const form = this.finance.partnerForm;
+          const relationship = this.partnerFinanceLandlordOptions().find(row => row.landlord_id === form.landlordId);
+          if (!relationship) {
+            this.finance.error = 'Select a connected landlord before recording a payment.';
+            return;
+          }
+          if (Number(form.amount || 0) <= 0) {
+            this.finance.error = 'Enter a payment amount greater than zero.';
+            return;
+          }
+          if (!form.paidAt || !form.periodStart || !form.periodEnd) {
+            this.finance.error = 'Enter the paid date and payment period.';
+            return;
+          }
+          if (form.periodEnd < form.periodStart) {
+            this.finance.error = 'The payment period end date cannot be before the start date.';
+            return;
+          }
+
+          this.finance.saving = true;
+          const payload = {
+            partner_type: ['management_leader', 'management_staff'].includes(this.profile?.role) ? 'pmc' : 'ipm',
+            partner_staff_id: ['management_leader', 'management_staff'].includes(this.profile?.role) ? null : this.profile.id,
+            management_company_id: ['management_leader', 'management_staff'].includes(this.profile?.role) ? this.managementContext.company?.id : null,
+            landlord_id: form.landlordId,
+            amount_paid: Number(form.amount || 0),
+            paid_at: form.paidAt,
+            period_start: form.periodStart,
+            period_end: form.periodEnd,
+            notes: form.notes || null,
+            recorded_by: this.profile.id
+          };
+
+          const { error } = await supabaseClient.from('partner_payments').insert(payload);
+          if (error) {
+            this.finance.error = this.friendlyErrorMessage(error);
+            this.finance.saving = false;
+            return;
+          }
+
+          this.resetPartnerFinanceForm();
+          this.finance.saving = false;
+          await this.loadPartnerFinanceData();
+        },
+
         financePropertyOptions() {
           return [...new Set((this.finance.payments || []).map(payment => payment.property).filter(Boolean))].sort();
+        },
+
+        financePrimaryOptions() {
+          return this.financePropertyOptions();
         },
 
         filteredFinancePayments() {
@@ -9436,10 +9717,11 @@
           const search = String(filters.search || '').toLowerCase();
           return (this.finance.payments || []).filter(payment => {
             if (filters.property && payment.property !== filters.property) return false;
+            if (filters.landlord && payment.landlord !== filters.landlord) return false;
             if (filters.startDate && String(payment.date || '').slice(0, 10) < filters.startDate) return false;
             if (filters.endDate && String(payment.date || '').slice(0, 10) > filters.endDate) return false;
             if (search) {
-              const haystack = [payment.tenant, payment.unit, payment.property, payment.period, payment.receipt, payment.notes, payment.method].join(' ').toLowerCase();
+              const haystack = [payment.tenant, payment.landlord, payment.landlordEmail, payment.unit, payment.property, payment.period, payment.receipt, payment.notes, payment.method].join(' ').toLowerCase();
               if (!haystack.includes(search)) return false;
             }
             return true;
@@ -9493,21 +9775,17 @@
         downloadFinanceCsv() {
           const rows = this.filteredFinancePayments();
           if (rows.length === 0) return;
-          const headers = ['Date', 'Property', 'Unit', 'Tenant', 'Period', 'Amount', 'Method', 'Receipt', 'Notes'];
+          const headers = this.isPartnerFinanceAccount()
+            ? ['Date', 'Landlord', 'Email', 'Period', 'Amount', 'Notes']
+            : ['Date', 'Property', 'Unit', 'Tenant', 'Period', 'Amount', 'Method', 'Receipt', 'Notes'];
           const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
           const csv = [
             headers.map(escapeCell).join(','),
-            ...rows.map(row => [
-              row.date,
-              row.property,
-              row.unit,
-              row.tenant,
-              row.period,
-              row.amount,
-              row.method,
-              row.receipt,
-              row.notes
-            ].map(escapeCell).join(','))
+            ...rows.map(row => (
+              this.isPartnerFinanceAccount()
+                ? [row.date, row.landlord, row.landlordEmail, row.period, row.amount, row.notes]
+                : [row.date, row.property, row.unit, row.tenant, row.period, row.amount, row.method, row.receipt, row.notes]
+            ).map(escapeCell).join(','))
           ].join('\n');
           const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
@@ -13171,7 +13449,7 @@
             notes: company.notes || ''
           };
 
-          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
+          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, contract_start_date, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
           const [permissionsResult, requestsResult] = await Promise.all([
             supabaseClient
               .from('management_landlord_permissions')
@@ -13249,7 +13527,7 @@
 
           const { data: landlordPermission, error: landlordError } = await supabaseClient
             .from('management_landlord_permissions')
-            .select('id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, status, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, landlord_code)')
+            .select('id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, status, contract_start_date, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)')
             .eq('management_company_id', staffPermission.management_company_id)
             .eq('landlord_id', this.profile.landlord_id)
             .eq('status', 'approved')
