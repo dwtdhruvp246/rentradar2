@@ -3845,11 +3845,11 @@
                     <div class="grid gap-4 lg:grid-cols-3">
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Subscription Status</p>
-                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'trial')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.subscription_plan === 'free' && account.subscription?.status === 'active' ? 'free' : (account.subscription?.status || 'trial'))"></span>
+                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'active')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.subscription_plan === 'free' && (account.subscription?.status || 'active') === 'active' ? 'free' : (account.subscription?.status || 'active'))"></span>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Account Expires</p>
-                        <p class="mt-3 text-xl font-bold text-slate-900" x-text="formatDate(account.subscription?.expires_at)"></p>
+                        <p class="mt-3 text-xl font-bold text-slate-900" x-text="subscriptionExpiryLabel(account.subscription)"></p>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Days Remaining</p>
@@ -4833,7 +4833,7 @@
             );
 
             if (error) {
-              this.authError = error.message;
+              this.authError = this.friendlyErrorMessage(error);
               this.currentShell = 'login';
               this.booting = false;
               return;
@@ -4872,13 +4872,13 @@
                   await this.loadAuthenticatedUser(session.user);
                 }
               } catch (error) {
-                this.authError = error.message || 'Authentication state could not be restored.';
+                this.authError = this.friendlyErrorMessage(error, 'Authentication state could not be restored.');
                 this.currentShell = 'login';
                 this.booting = false;
               }
             });
           } catch (error) {
-            this.authError = error.message || 'Mushavo could not finish loading. Please refresh once or sign in again.';
+            this.authError = this.friendlyErrorMessage(error, 'Mushavo could not finish loading. Please refresh once or sign in again.');
             this.currentShell = 'login';
             this.booting = false;
           }
@@ -4921,7 +4921,7 @@
           });
 
           if (error) {
-            this.invite.error = error.message || 'This invite link is invalid or expired.';
+            this.invite.error = this.friendlyErrorMessage(error, 'This invite link is invalid or expired.');
             this.invite.loading = false;
             return;
           }
@@ -5000,7 +5000,7 @@
 
               if (existingProfileError) {
                 await supabaseClient.auth.signOut();
-                this.invite.submitError = existingProfileError.message;
+                this.invite.submitError = this.friendlyErrorMessage(existingProfileError);
                 this.invite.submitting = false;
                 return;
               }
@@ -5012,7 +5012,7 @@
 
                 if (profileRepairError) {
                   await supabaseClient.auth.signOut();
-                  this.invite.submitError = profileRepairError.message;
+                  this.invite.submitError = this.friendlyErrorMessage(profileRepairError);
                   this.invite.submitting = false;
                   return;
                 }
@@ -5029,7 +5029,7 @@
 
               if (tenantLinkError) {
                 await supabaseClient.auth.signOut();
-                this.invite.submitError = tenantLinkError.message;
+                this.invite.submitError = this.friendlyErrorMessage(tenantLinkError);
                 this.invite.submitting = false;
                 return;
               }
@@ -5069,7 +5069,7 @@
             if (!alreadyRegistered) {
               this.invite.submitError = signUpError.message.includes('Signups not allowed')
                 ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
-                : signUpError.message;
+                : this.friendlyErrorMessage(signUpError);
               this.invite.submitting = false;
               return;
             }
@@ -5097,7 +5097,7 @@
 
             if (profileCheckError) {
               await supabaseClient.auth.signOut();
-              this.invite.submitError = profileCheckError.message;
+              this.invite.submitError = this.friendlyErrorMessage(profileCheckError);
               this.invite.submitting = false;
               return;
             }
@@ -5127,7 +5127,7 @@
             .insert(profilePayload);
 
           if (profileError) {
-            this.invite.submitError = profileError.message;
+            this.invite.submitError = this.friendlyErrorMessage(profileError);
             this.invite.submitting = false;
             return;
           }
@@ -5175,7 +5175,7 @@
               });
 
             if (permissionsError) {
-              this.invite.submitError = permissionsError.message;
+              this.invite.submitError = this.friendlyErrorMessage(permissionsError);
               this.invite.submitting = false;
               return;
             }
@@ -5225,7 +5225,7 @@
               });
 
             if (managementStaffError) {
-              this.invite.submitError = managementStaffError.message;
+              this.invite.submitError = this.friendlyErrorMessage(managementStaffError);
               this.invite.submitting = false;
               return;
             }
@@ -5239,7 +5239,7 @@
             });
 
             if (tenantError) {
-              this.invite.submitError = tenantError.message;
+              this.invite.submitError = this.friendlyErrorMessage(tenantError);
               this.invite.submitting = false;
               return;
             }
@@ -5255,7 +5255,7 @@
               .eq('id', tokenRow.id);
 
           if (tokenError) {
-            this.invite.submitError = tokenError.message;
+            this.invite.submitError = this.friendlyErrorMessage(tokenError);
             this.invite.submitting = false;
             return;
           }
@@ -5787,7 +5787,7 @@
 
           const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
-            this.admin.error = firstError.message;
+            this.admin.error = this.friendlyErrorMessage(firstError);
             this.admin.loading = false;
             return;
           }
@@ -5795,7 +5795,7 @@
           this.admin.countries = countriesResult.data || [];
           this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
           if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
-            this.admin.error = enquiriesResult.error.message;
+            this.admin.error = this.friendlyErrorMessage(enquiriesResult.error);
           }
           this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
@@ -6126,7 +6126,7 @@
             .single();
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6255,7 +6255,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6298,7 +6298,7 @@
               .eq('role', 'admin_staff');
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -6310,7 +6310,7 @@
               .eq('role', 'admin_staff');
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -6337,7 +6337,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6362,7 +6362,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6386,7 +6386,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6403,7 +6403,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6427,7 +6427,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -6494,7 +6494,7 @@
               .eq('id', row.invite_id);
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -6507,7 +6507,7 @@
               .eq('staff_type', 'freelancer');
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -6589,7 +6589,7 @@
           const { error } = await query;
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6640,7 +6640,7 @@
             .eq('id', payment.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6675,13 +6675,13 @@
           this.admin.formError = '';
           this.admin.selectedRow = row;
           this.admin.subscriptionForm = {
-            plan: row.subscription?.subscription_plan || 'standard',
-            status: row.subscription?.status || 'trial',
+            plan: row.subscription?.subscription_plan || 'free',
+            status: row.subscription?.status || 'active',
             expiresAt: this.toDateInputValue(expiresAt),
-            propertyLimit: Number(row.subscription?.property_limit ?? 5),
-            unitLimit: Number(row.subscription?.unit_limit ?? 25),
-            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 1),
-            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 2),
+            propertyLimit: Number(row.subscription?.property_limit ?? 1),
+            unitLimit: Number(row.subscription?.unit_limit ?? 1),
+            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 0),
+            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 1),
             notes: row.subscription?.notes || ''
           };
           this.admin.modal = 'subscription';
@@ -6720,7 +6720,7 @@
             .single();
 
           if (inviteError) {
-            this.admin.formError = inviteError.message;
+            this.admin.formError = this.friendlyErrorMessage(inviteError);
             this.admin.saving = false;
             return;
           }
@@ -6738,7 +6738,7 @@
             });
 
           if (subscriptionError) {
-            this.admin.formError = subscriptionError.message;
+            this.admin.formError = this.friendlyErrorMessage(subscriptionError);
             this.admin.saving = false;
             return;
           }
@@ -6766,7 +6766,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6815,7 +6815,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6865,7 +6865,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -6911,7 +6911,7 @@
               .eq('id', row.id);
 
             if (companyError) {
-              this.admin.formError = companyError.message;
+              this.admin.formError = this.friendlyErrorMessage(companyError);
               this.admin.saving = false;
               return;
             }
@@ -6929,7 +6929,7 @@
                 .eq('role', 'management_leader');
 
               if (profileError) {
-                this.admin.formError = profileError.message;
+                this.admin.formError = this.friendlyErrorMessage(profileError);
                 this.admin.saving = false;
                 return;
               }
@@ -6945,7 +6945,7 @@
               .eq('id', row.invite_id);
 
             if (inviteError) {
-              this.admin.formError = inviteError.message;
+              this.admin.formError = this.friendlyErrorMessage(inviteError);
               this.admin.saving = false;
               return;
             }
@@ -6990,7 +6990,7 @@
             .eq('id', this.admin.selectedRow.id);
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7017,7 +7017,7 @@
             .eq('id', company.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7047,7 +7047,7 @@
             .eq('id', company.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7063,7 +7063,7 @@
               .eq('role', 'management_leader');
 
             if (profileError) {
-              this.admin.error = profileError.message;
+              this.admin.error = this.friendlyErrorMessage(profileError);
               this.admin.saving = false;
               return;
             }
@@ -7092,7 +7092,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7119,7 +7119,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7168,7 +7168,7 @@
               .eq('id', this.admin.selectedRow.invite_id);
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -7190,7 +7190,7 @@
             .eq('role', 'staff');
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7219,7 +7219,7 @@
             .eq('staff_type', 'freelancer');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7249,7 +7249,7 @@
             .eq('role', 'staff');
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7277,7 +7277,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7309,7 +7309,7 @@
               .eq('id', staffRow.invite_id);
 
             if (error) {
-              this.admin.error = error.message;
+              this.admin.error = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -7325,7 +7325,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7357,7 +7357,7 @@
             .eq('id', tenantRow.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7373,7 +7373,7 @@
               .eq('role', 'tenant');
 
             if (profileError) {
-              this.admin.error = profileError.message;
+              this.admin.error = this.friendlyErrorMessage(profileError);
               this.admin.saving = false;
               return;
             }
@@ -7406,7 +7406,7 @@
             .eq('id', tenantRow.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7422,7 +7422,7 @@
               .eq('role', 'tenant');
 
             if (profileError) {
-              this.admin.error = profileError.message;
+              this.admin.error = this.friendlyErrorMessage(profileError);
               this.admin.saving = false;
               return;
             }
@@ -7450,7 +7450,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7476,7 +7476,7 @@
               .eq('id', this.admin.selectedRow.profile_id);
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -7488,7 +7488,7 @@
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
-                this.admin.formError = subscriptionCountryError.message;
+                this.admin.formError = this.friendlyErrorMessage(subscriptionCountryError);
                 this.admin.saving = false;
                 return;
               }
@@ -7502,7 +7502,7 @@
                 .is('country_id', null);
 
               if (paymentCountryError) {
-                this.admin.formError = paymentCountryError.message;
+                this.admin.formError = this.friendlyErrorMessage(paymentCountryError);
                 this.admin.saving = false;
                 return;
               }
@@ -7525,7 +7525,7 @@
               .eq('id', this.admin.selectedRow.invite_id);
 
             if (error) {
-              this.admin.formError = error.message;
+              this.admin.formError = this.friendlyErrorMessage(error);
               this.admin.saving = false;
               return;
             }
@@ -7537,7 +7537,7 @@
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
-                this.admin.formError = subscriptionCountryError.message;
+                this.admin.formError = this.friendlyErrorMessage(subscriptionCountryError);
                 this.admin.saving = false;
                 return;
               }
@@ -7574,7 +7574,7 @@
             .eq('id', this.admin.selectedRow.subscription.id);
 
           if (error) {
-            this.admin.formError = error.message;
+            this.admin.formError = this.friendlyErrorMessage(error);
             this.admin.saving = false;
             return;
           }
@@ -7607,7 +7607,7 @@
             .eq('id', row.subscription.id);
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7631,7 +7631,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7656,7 +7656,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7680,7 +7680,7 @@
           });
 
           if (error) {
-            this.admin.error = error.message;
+            this.admin.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -7982,7 +7982,7 @@
           const firstError = propertiesResult.error || unitsResult.error || pendingResult.error || paymentsResult.error || leasesResult.error || maintenanceResult.error;
 
           if (firstError) {
-            this.dashboard.error = firstError.message;
+            this.dashboard.error = this.friendlyErrorMessage(firstError);
           }
 
           const units = unitsResult.data || [];
@@ -8063,6 +8063,7 @@
 
         subscriptionExpiringSoon() {
           if (!this.subscription?.expires_at) return false;
+          if (this.subscription?.subscription_plan === 'free') return false;
           const days = this.daysUntil(this.subscription.expires_at.slice(0, 10));
           return days >= 0 && days <= 7 && this.subscription.status !== 'suspended';
         },
@@ -8070,7 +8071,14 @@
         subscriptionDashboardBadgeClass() {
           if (this.subscription?.status === 'suspended') return 'bg-red-100 text-red-700';
           if (this.subscriptionExpiringSoon()) return 'bg-yellow-100 text-amber-700';
-          return this.statusBadgeClass(this.subscription?.status || 'trial');
+          return this.statusBadgeClass(this.subscription?.status || 'active');
+        },
+
+        subscriptionExpiryLabel(subscription = this.subscription) {
+          if (!subscription?.expires_at) return '-';
+          if (subscription.subscription_plan === 'free') return 'No expiry';
+          if (String(subscription.expires_at).startsWith('2099-12-31')) return 'No expiry';
+          return this.formatDate(subscription.expires_at);
         },
 
         formatCurrency(value) {
@@ -8078,6 +8086,64 @@
             style: 'currency',
             currency: 'USD'
           }).format(Number(value || 0));
+        },
+
+        friendlyErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
+          const raw = typeof error === 'string'
+            ? error
+            : (error?.message || error?.details || error?.hint || '');
+          const message = String(raw || '').trim();
+          const lower = message.toLowerCase();
+
+          if (!message) return fallback;
+
+          if (/row-level security|violates row-level|permission denied|not allowed|not authorized|forbidden|42501/.test(lower)) {
+            return 'You do not have permission to do this. Please check the access settings or contact support.';
+          }
+          if (/property limit|reached the property limit|landlord_can_add_property/.test(lower)) {
+            return 'Property limit reached. Your current plan does not allow adding more properties.';
+          }
+          if (/unit limit|reached the unit limit|landlord_can_add_unit/.test(lower)) {
+            return 'Unit limit reached. Your current plan does not allow adding more units.';
+          }
+          if (/personal staff limit|staff limit|reached.*staff|landlord_can_invite_personal_staff/.test(lower)) {
+            return 'Staff limit reached. Your current plan does not allow adding more staff members.';
+          }
+          if (/partner connection limit|connection limit|ipm\/pmc|portfolio manager|management company/.test(lower) && /limit|reached/.test(lower)) {
+            return 'Connection limit reached. Your current plan does not allow adding another IPM or PMC connection.';
+          }
+          if (/landlord limit|reached their landlord limit|reached your landlord limit|maximum landlords/.test(lower)) {
+            return 'Landlord limit reached. This account cannot connect to more landlords on the current plan.';
+          }
+          if (/duplicate key|already exists|unique constraint|23505/.test(lower)) {
+            return 'This record already exists. Refresh the page and check the existing list before adding it again.';
+          }
+          if (/check constraint|violates check constraint|23514/.test(lower)) {
+            return 'Some details are missing or outside the allowed range. Please review the form and try again.';
+          }
+          if (/foreign key|violates foreign key|23503/.test(lower)) {
+            return 'The selected item is no longer available. Refresh the page and try again.';
+          }
+          if (/invalid input syntax|invalid uuid|22p02/.test(lower)) {
+            return 'One of the selected values is invalid. Refresh the page and try again.';
+          }
+          if (/bucket|storage|file size|payload too large|mime|413/.test(lower)) {
+            return 'The file could not be uploaded. Check the file type and size, then try again.';
+          }
+          if (/failed to fetch|network|timeout|taking too long/.test(lower)) {
+            return 'The request took too long. Check your connection, refresh, and try again.';
+          }
+          if (/jwt|refresh token|session|invalid login|invalid credentials|email not confirmed/.test(lower)) {
+            return 'Your session could not be verified. Please sign in again.';
+          }
+          if (/on conflict specification|no unique or exclusion constraint/.test(lower)) {
+            return 'This account setup needs the latest database update before it can continue.';
+          }
+          if (/function .* does not exist|column .* does not exist|schema cache|pgrst/.test(lower)) {
+            return 'This feature needs the latest database update before it can continue.';
+          }
+
+          return message;
         },
 
         currentLandlordId() {
@@ -8136,7 +8202,7 @@
             p_landlord_id: landlordId
           });
           if (error) {
-            this.staffContext.error = error.message;
+            this.staffContext.error = this.friendlyErrorMessage(error);
             return;
           }
           this.profile.landlord_id = landlordId;
@@ -8163,7 +8229,7 @@
           });
 
           if (error) {
-            this.staffContext.error = error.message;
+            this.staffContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8182,7 +8248,7 @@
           });
 
           if (error) {
-            this.staffContext.error = error.message;
+            this.staffContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8199,7 +8265,7 @@
           });
 
           if (error) {
-            this.staffContext.error = error.message;
+            this.staffContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8217,7 +8283,7 @@
           });
 
           if (error) {
-            this.staffContext.error = error.message;
+            this.staffContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8273,7 +8339,7 @@
           });
 
           if (error) {
-            this.managementContext.error = error.message;
+            this.managementContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8293,7 +8359,7 @@
           });
 
           if (error) {
-            this.managementContext.error = error.message;
+            this.managementContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8310,7 +8376,7 @@
           });
 
           if (error) {
-            this.managementContext.error = error.message;
+            this.managementContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8328,7 +8394,7 @@
           });
 
           if (error) {
-            this.managementContext.error = error.message;
+            this.managementContext.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8340,7 +8406,7 @@
           this.staff.error = '';
           const { data, error } = await supabaseClient.rpc('regenerate_landlord_code');
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyErrorMessage(error);
             return;
           }
           this.profile.landlord_code = data;
@@ -8538,7 +8604,7 @@
           const firstError = propertiesResult.error || unitsResult.error || tenantsResult.error || leasesResult.error;
 
           if (firstError) {
-            this.propertyUnit.error = firstError.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(firstError);
           }
 
           this.propertyUnit.properties = propertiesResult.data || [];
@@ -8578,7 +8644,7 @@
           this.propertyUnit.saving = true;
 
           if (this.profile?.role === 'landlord') {
-            const propertyLimit = Number(this.subscription?.property_limit || 5);
+            const propertyLimit = Number(this.subscription?.property_limit || 1);
             const activeCount = this.propertyUnit.properties.filter(property => property.landlord_id === this.currentLandlordId()).length;
             if (activeCount >= propertyLimit) {
               this.propertyUnit.error = `Property limit reached. Your current subscription allows ${propertyLimit} properties.`;
@@ -8597,7 +8663,7 @@
             });
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             this.propertyUnit.saving = false;
             return;
           }
@@ -8648,7 +8714,7 @@
             .eq('id', propertyId);
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             this.propertyUnit.saving = false;
             return;
           }
@@ -8685,7 +8751,7 @@
               .eq('status', 'active');
 
             if (leaseError) {
-              this.propertyUnit.error = leaseError.message;
+              this.propertyUnit.error = this.friendlyErrorMessage(leaseError);
               return;
             }
           }
@@ -8700,7 +8766,7 @@
             .eq('property_id', property.id);
 
           if (unitError) {
-            this.propertyUnit.error = unitError.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(unitError);
             return;
           }
 
@@ -8713,7 +8779,7 @@
             .eq('id', property.id);
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8751,7 +8817,7 @@
             });
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             this.propertyUnit.saving = false;
             return;
           }
@@ -8789,7 +8855,7 @@
             .eq('status', 'active');
 
           if (leaseError) {
-            this.propertyUnit.error = leaseError.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(leaseError);
             return;
           }
 
@@ -8803,7 +8869,7 @@
             .eq('id', unit.id);
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -8837,7 +8903,7 @@
               .eq('id', activeLease.id);
 
             if (error) {
-              this.propertyUnit.error = error.message;
+              this.propertyUnit.error = this.friendlyErrorMessage(error);
               return;
             }
           } else {
@@ -8847,7 +8913,7 @@
               .eq('id', unit.id);
 
             if (error) {
-              this.propertyUnit.error = error.message;
+              this.propertyUnit.error = this.friendlyErrorMessage(error);
               return;
             }
           }
@@ -9010,7 +9076,7 @@
           ]);
 
           const firstError = paymentsResult.error || maintenanceResult.error || assignedStaffResult.error;
-          if (firstError) this.propertyUnit.error = firstError.message;
+          if (firstError) this.propertyUnit.error = this.friendlyErrorMessage(firstError);
 
           this.propertyUnit.payments = paymentsResult.data || [];
           this.propertyUnit.maintenance = maintenanceResult.data || [];
@@ -9053,7 +9119,7 @@
             .eq('id', unit.id);
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -9117,7 +9183,7 @@
             await this.loadPropertyUnitData();
             await this.loadDashboardData();
           } catch (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
           }
         },
 
@@ -9176,7 +9242,7 @@
             .limit(1);
 
           if (error) {
-            this.propertyUnit.error = error.message;
+            this.propertyUnit.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -9188,7 +9254,7 @@
               this.propertyUnit.detailMode = '';
               await this.loadUnitDetail(this.propertyUnit.selectedUnit);
               await this.loadDashboardData();
-              this.propertyUnit.error = `Payment saved, but proof upload failed: ${proofError.message}`;
+              this.propertyUnit.error = `Payment saved, but proof upload failed: ${this.friendlyErrorMessage(proofError)}`;
               return;
             }
           }
@@ -9250,7 +9316,7 @@
 
           const firstError = pendingResult.error || verifiedResult.error || leasesResult.error;
           if (firstError) {
-            this.payments.error = firstError.message;
+            this.payments.error = this.friendlyErrorMessage(firstError);
             this.payments.loading = false;
             return;
           }
@@ -9284,7 +9350,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.finance.error = error.message;
+            this.finance.error = this.friendlyErrorMessage(error);
             this.finance.loading = false;
             return;
           }
@@ -9701,7 +9767,7 @@
             .limit(1);
 
           if (error) {
-            this.payments.error = error.message;
+            this.payments.error = this.friendlyErrorMessage(error);
             this.payments.saving = false;
             return;
           }
@@ -9715,7 +9781,7 @@
               this.closePaymentModal();
               await this.loadPaymentsData();
               await this.loadDashboardData();
-              this.payments.error = `Payment saved, but proof upload failed: ${proofError.message}`;
+              this.payments.error = `Payment saved, but proof upload failed: ${this.friendlyErrorMessage(proofError)}`;
               return;
             }
           }
@@ -9737,7 +9803,7 @@
           });
 
           if (error) {
-            this.payments.error = error.message;
+            this.payments.error = this.friendlyErrorMessage(error);
             this.payments.saving = false;
             return;
           }
@@ -9773,7 +9839,7 @@
             .eq('id', this.payments.selectedSubmission.id);
 
           if (error) {
-            this.payments.error = error.message;
+            this.payments.error = this.friendlyErrorMessage(error);
             this.payments.saving = false;
             return;
           }
@@ -9880,7 +9946,7 @@
             doc.text('Thank you for your payment', 20, 280);
             doc.save(`${receiptNumber}.pdf`);
           } catch (error) {
-            const message = error.message || 'Receipt could not be generated.';
+            const message = this.friendlyErrorMessage(error, 'Receipt could not be generated.');
             this.payments.error = message;
             this.propertyUnit.error = message;
             this.tenant.error = message;
@@ -9932,7 +9998,7 @@
 
           const firstError = requestsResult.error || propertiesResult.error || unitsResult.error || leasesResult.error || staffResult.error || assignableUnitsResult.error;
           if (firstError) {
-            this.maintenance.error = firstError.message;
+            this.maintenance.error = this.friendlyErrorMessage(firstError);
             this.maintenance.loading = false;
             return;
           }
@@ -10084,7 +10150,7 @@
             .single();
 
           if (error) {
-            this.maintenance.error = error.message;
+            this.maintenance.error = this.friendlyErrorMessage(error);
             this.maintenance.saving = false;
             return;
           }
@@ -10093,7 +10159,7 @@
             try {
               await this.attachMaintenancePhoto(requestRow, photoFile);
             } catch (error) {
-              this.maintenance.error = `Request was saved, but the photo upload failed: ${error.message}`;
+              this.maintenance.error = `Request was saved, but the photo upload failed: ${this.friendlyErrorMessage(error)}`;
               this.maintenance.saving = false;
               await this.loadMaintenanceData();
               return;
@@ -10150,7 +10216,7 @@
             .eq('id', this.maintenance.selectedRequest.id);
 
           if (error) {
-            this.maintenance.error = error.message;
+            this.maintenance.error = this.friendlyErrorMessage(error);
             this.maintenance.saving = false;
             return;
           }
@@ -10186,7 +10252,7 @@
             .eq('id', request.id);
 
           if (error) {
-            this.maintenance.error = error.message;
+            this.maintenance.error = this.friendlyErrorMessage(error);
             this.maintenance.saving = false;
             return;
           }
@@ -10393,7 +10459,7 @@
         },
 
         personalStaffLimit() {
-          return Number(this.subscription?.personal_staff_limit ?? 1);
+          return Number(this.subscription?.personal_staff_limit ?? 0);
         },
 
         personalStaffUsage() {
@@ -10441,7 +10507,7 @@
 
           const firstError = propertiesResult.error || permissionsResult.error || requestsResult.error || inviteTokensResult.error || managementPermissionsResult.error || managementRequestsResult.error;
           if (firstError) {
-            this.staff.error = firstError.message;
+            this.staff.error = this.friendlyErrorMessage(firstError);
             this.staff.loading = false;
             return;
           }
@@ -10561,7 +10627,7 @@
             ]);
 
             if (propertiesResult.error || tenantsResult.error || leasesResult.error || staffResult.error || inviteTokensResult.error) {
-              this.managementContext.error = propertiesResult.error?.message || tenantsResult.error?.message || leasesResult.error?.message || staffResult.error?.message || inviteTokensResult.error?.message;
+              this.managementContext.error = this.friendlyErrorMessage(propertiesResult.error || tenantsResult.error || leasesResult.error || staffResult.error || inviteTokensResult.error);
             } else {
               const activeRelationship = this.managementContext.relationships.find(row => row.landlord_id === this.managementContext.activeLandlordId) || null;
               const allowedPropertyIds = new Set(activeRelationship?.property_ids || []);
@@ -10727,7 +10793,7 @@
                 ? 'Supabase is still blocking this invite because the database is counting an old pending staff invite. Run the updated SQL in Supabase, refresh this page, and try again.'
                 : this.personalStaffLimitMessage();
             } else {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
             }
             this.staff.saving = false;
             return;
@@ -10769,7 +10835,7 @@
             });
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10781,7 +10847,7 @@
               .eq('landlord_id', this.currentLandlordId());
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10820,7 +10886,7 @@
               .eq('management_company_id', this.managementContext.company?.id);
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10844,7 +10910,7 @@
             const { error } = await saveQuery;
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10855,7 +10921,7 @@
             });
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10873,7 +10939,7 @@
               .eq('id', member.invite_id);
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -10902,7 +10968,7 @@
           });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyErrorMessage(error);
             this.staff.saving = false;
             return;
           }
@@ -10927,7 +10993,7 @@
           });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyErrorMessage(error);
             this.staff.saving = false;
             return;
           }
@@ -10956,7 +11022,7 @@
           });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyErrorMessage(error);
             this.staff.saving = false;
             return;
           }
@@ -10981,7 +11047,7 @@
           });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyErrorMessage(error);
             this.staff.saving = false;
             return;
           }
@@ -11014,7 +11080,7 @@
               .eq('id', member.invite_id);
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -11030,7 +11096,7 @@
             });
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -11046,7 +11112,7 @@
             });
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyErrorMessage(error);
               this.staff.saving = false;
               return;
             }
@@ -11105,7 +11171,7 @@
           const { error: linkError } = await supabaseClient.rpc('link_current_tenant_account');
 
           if (linkError) {
-            this.tenant.error = linkError.message;
+            this.tenant.error = this.friendlyErrorMessage(linkError);
             this.tenant.loading = false;
             return;
           }
@@ -11118,7 +11184,7 @@
             .order('created_at', { ascending: false });
 
           if (tenantError) {
-            this.tenant.error = tenantError.message;
+            this.tenant.error = this.friendlyErrorMessage(tenantError);
             this.tenant.loading = false;
             return;
           }
@@ -11146,7 +11212,7 @@
             .order('created_at', { ascending: false });
 
           if (leaseError) {
-            this.tenant.error = leaseError.message;
+            this.tenant.error = this.friendlyErrorMessage(leaseError);
             this.tenant.loading = false;
             return;
           }
@@ -11193,7 +11259,7 @@
 
           const firstError = paymentsResult.error || submissionsResult.error || maintenanceResult.error;
           if (firstError) {
-            this.tenant.error = firstError.message;
+            this.tenant.error = this.friendlyErrorMessage(firstError);
             this.tenant.loading = false;
             return;
           }
@@ -11311,7 +11377,7 @@
             .single();
 
           if (error) {
-            this.tenant.error = error.message;
+            this.tenant.error = this.friendlyErrorMessage(error);
             this.tenant.saving = false;
             return;
           }
@@ -11320,7 +11386,7 @@
             try {
               await this.attachPaymentProof(submissionRow, proofFile, lease.landlord_id);
             } catch (error) {
-              this.tenant.error = `Payment was submitted, but the proof upload failed: ${error.message}`;
+              this.tenant.error = `Payment was submitted, but the proof upload failed: ${this.friendlyErrorMessage(error)}`;
               this.tenant.saving = false;
               await this.loadTenantData();
               return;
@@ -11359,7 +11425,7 @@
             .single();
 
           if (error) {
-            this.tenant.error = error.message;
+            this.tenant.error = this.friendlyErrorMessage(error);
             this.tenant.saving = false;
             return;
           }
@@ -11368,7 +11434,7 @@
             try {
               await this.attachMaintenancePhoto(requestRow, photoFile);
             } catch (error) {
-              this.tenant.error = `Request was submitted, but the photo upload failed: ${error.message}`;
+              this.tenant.error = `Request was submitted, but the photo upload failed: ${this.friendlyErrorMessage(error)}`;
               this.tenant.saving = false;
               await this.loadTenantData();
               return;
@@ -11404,7 +11470,7 @@
 
           const [propertiesResult, unitsResult, tenantsResult, leasesResult] = results;
           const firstError = propertiesResult.error || unitsResult.error || tenantsResult.error || leasesResult.error;
-          if (firstError) this.tenantLease.error = firstError.message;
+          if (firstError) this.tenantLease.error = this.friendlyErrorMessage(firstError);
 
           this.tenantLease.properties = propertiesResult.data || [];
           this.tenantLease.units = (unitsResult.data || []).map(unit => ({ ...unit, property: unit.properties || null }));
@@ -11458,7 +11524,7 @@
           });
 
           if (tenantError) {
-            this.tenantLease.error = tenantError.message;
+            this.tenantLease.error = this.friendlyErrorMessage(tenantError);
             this.tenantLease.saving = false;
             return;
           }
@@ -11490,7 +11556,7 @@
           });
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -11552,7 +11618,7 @@
           });
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -11614,7 +11680,7 @@
             .eq('id', tenantId);
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             this.tenantLease.saving = false;
             return;
           }
@@ -11645,7 +11711,7 @@
             .eq('id', lease.id);
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -11656,7 +11722,7 @@
               .eq('id', lease.unit_id);
 
             if (unitError) {
-              this.tenantLease.error = unitError.message;
+              this.tenantLease.error = this.friendlyErrorMessage(unitError);
               return;
             }
           }
@@ -11788,7 +11854,7 @@
             } else {
               this.tenantLease.leaseForm.documentFile = null;
             }
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
           }
         },
 
@@ -11869,7 +11935,7 @@
 
           if (error) {
             if (documentWindow) documentWindow.close();
-            this.setLeaseDocumentError(error.message);
+            this.setLeaseDocumentError(this.friendlyErrorMessage(error));
             return;
           }
 
@@ -11897,7 +11963,7 @@
             await this.loadTenantLeaseData();
             await this.loadPropertyUnitData();
           } catch (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
           }
 
           this.tenantLease.saving = false;
@@ -11965,7 +12031,7 @@
           } catch (error) {
             event.target.value = '';
             targetConfig.form[fieldName] = null;
-            this.setImageUploadError(targetConfig.errorScope, error.message);
+            this.setImageUploadError(targetConfig.errorScope, this.friendlyErrorMessage(error));
           }
         },
 
@@ -12054,7 +12120,7 @@
 
           if (error) {
             if (imageWindow) imageWindow.close();
-            this.setImageUploadError(errorScope, error.message);
+            this.setImageUploadError(errorScope, this.friendlyErrorMessage(error));
             return;
           }
 
@@ -12155,7 +12221,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -12204,7 +12270,7 @@
               try {
                 await this.uploadLeaseDocument(lease, documentFile);
               } catch (error) {
-                uploadWarning = `Lease was created, but the PDF upload failed: ${error.message}`;
+                uploadWarning = `Lease was created, but the PDF upload failed: ${this.friendlyErrorMessage(error)}`;
               }
             }
 
@@ -12225,7 +12291,7 @@
             await this.loadDashboardData();
             if (uploadWarning) this.tenantLease.error = uploadWarning;
           } catch (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
           }
 
           this.tenantLease.saving = false;
@@ -12242,7 +12308,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.tenantLease.error = error.message;
+            this.tenantLease.error = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -12299,11 +12365,23 @@
               .maybeSingle();
 
             error = result.error;
-            data = result.data || null;
+            data = result.data || {
+              landlord_id: this.profile.id,
+              subscription_plan: 'free',
+              status: 'active',
+              expires_at: '2099-12-31 23:59:59+00',
+              property_limit: 1,
+              unit_limit: 1,
+              personal_staff_limit: 0,
+              partner_connection_limit: 1,
+              notes: 'Free landlord plan: 1 property, 1 unit, 0 personal staff, and 1 IPM or PMC connection.',
+              updated_at: null,
+              created_at: this.profile.created_at
+            };
           }
 
           if (error) {
-            this.account.error = error.message;
+            this.account.error = this.friendlyErrorMessage(error);
           }
 
           this.account.subscription = data || null;
@@ -12312,6 +12390,8 @@
 
         accountDaysRemaining() {
           if (!this.account.subscription?.expires_at) return '-';
+          if (this.account.subscription?.subscription_plan === 'free') return 'No expiry';
+          if (String(this.account.subscription.expires_at).startsWith('2099-12-31')) return 'No expiry';
           const days = this.daysUntil(this.account.subscription.expires_at.slice(0, 10));
           if (days < 0) return 'Expired';
           if (days === 0) return 'Expires today';
@@ -12350,7 +12430,7 @@
             .single();
 
           if (error) {
-            this.settings.error = error.message;
+            this.settings.error = this.friendlyErrorMessage(error);
             this.settings.savingProfile = false;
             return;
           }
@@ -12381,7 +12461,7 @@
           });
 
           if (error) {
-            this.settings.error = error.message;
+            this.settings.error = this.friendlyErrorMessage(error);
             this.settings.savingPassword = false;
             return;
           }
@@ -12408,7 +12488,7 @@
             .limit(80);
 
           if (error) {
-            this.notifications.error = error.message;
+            this.notifications.error = this.friendlyErrorMessage(error);
             this.notifications.loading = false;
             return;
           }
@@ -12430,7 +12510,7 @@
             .eq('is_read', false);
 
           if (error) {
-            this.notifications.error = error.message;
+            this.notifications.error = this.friendlyErrorMessage(error);
             this.notifications.saving = false;
             return;
           }
@@ -12558,7 +12638,7 @@
           this.authLoading = false;
 
           if (error) {
-            this.authError = error.message;
+            this.authError = this.friendlyErrorMessage(error);
             return;
           }
 
@@ -12597,7 +12677,7 @@
           });
 
           if (error) {
-            this.authError = error.message;
+            this.authError = this.friendlyErrorMessage(error);
             this.authLoading = false;
             return;
           }
@@ -12615,7 +12695,7 @@
           });
 
           if (registerError) {
-            this.authError = registerError.message;
+            this.authError = this.friendlyErrorMessage(registerError);
             this.authLoading = false;
             return;
           }
@@ -12656,7 +12736,7 @@
           });
 
           if (codeError || !codeValid) {
-            this.authError = codeError?.message || 'Landlord code not found.';
+            this.authError = codeError ? this.friendlyErrorMessage(codeError, 'Landlord code not found.') : 'Landlord code not found.';
             this.authLoading = false;
             return;
           }
@@ -12667,7 +12747,7 @@
           });
 
           if (error) {
-            this.authError = error.message;
+            this.authError = this.friendlyErrorMessage(error);
             this.authLoading = false;
             return;
           }
@@ -12686,7 +12766,7 @@
           });
 
           if (registerError) {
-            this.authError = registerError.message;
+            this.authError = this.friendlyErrorMessage(registerError);
             this.authLoading = false;
             return;
           }
@@ -12754,7 +12834,7 @@
           if (profileError || !profile) {
             await supabaseClient.auth.signOut();
             this.authError = profileError?.message
-              ? `Your login exists, but Mushavo could not load your profile: ${profileError.message}`
+              ? `Your login exists, but Mushavo could not load your profile: ${this.friendlyErrorMessage(profileError)}`
               : 'Your account does not exist or has been removed. Please contact your landlord or Mushavo administrator.';
             this.currentShell = 'login';
             this.booting = false;
@@ -12930,19 +13010,45 @@
         },
 
         async checkLandlordSubscription(landlordId) {
-          const { data, error } = await supabaseClient
+          let { data, error } = await supabaseClient
             .from('landlord_subscriptions')
             .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
             .eq('landlord_id', landlordId)
             .maybeSingle();
 
           if (error || !data) {
-            this.subscription = null;
-            this.markSubscriptionPaused();
-            return false;
+            const { error: repairError } = await supabaseClient.rpc('register_free_landlord', {
+              p_full_name: this.profile?.full_name || this.user?.email || 'Landlord',
+              p_phone: this.profile?.phone || ''
+            });
+
+            if (!repairError) {
+              const retry = await supabaseClient
+                .from('landlord_subscriptions')
+                .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
+                .eq('landlord_id', landlordId)
+                .maybeSingle();
+              data = retry.data;
+              error = retry.error;
+            }
+
+            if (error || !data) {
+              this.subscription = {
+                status: 'active',
+                expires_at: '2099-12-31 23:59:59+00',
+                notes: 'Free landlord plan: 1 property, 1 unit, 0 personal staff, and 1 IPM or PMC connection.',
+                subscription_plan: 'free',
+                property_limit: 1,
+                unit_limit: 1,
+                personal_staff_limit: 0,
+                partner_connection_limit: 1
+              };
+              return true;
+            }
           }
 
           this.subscription = data;
+          if (data.subscription_plan === 'free') return data.status === 'active';
           const expiresAt = new Date(data.expires_at);
           const activeStatus = data.status === 'active' || data.status === 'trial';
           const hasAccess = activeStatus && expiresAt.getTime() > Date.now();
