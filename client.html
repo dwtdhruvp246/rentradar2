@@ -8238,7 +8238,41 @@
         currentLandlordId() {
           if (this.profile?.role === 'landlord') return this.profile.id;
           if (this.profile?.role === 'management_leader') return this.managementContext.activeLandlordId || null;
+          if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') return this.staffContext.activeLandlordId || this.profile?.landlord_id || null;
           return this.profile?.landlord_id || null;
+        },
+
+        clearPartnerLandlordWorkspace() {
+          this.propertyUnit.selectedPropertyId = '';
+          this.propertyUnit.selectedUnit = null;
+          this.propertyUnit.currentLease = null;
+          this.propertyUnit.assignedStaff = [];
+          this.propertyUnit.selectedMaintenanceRequest = null;
+          this.propertyUnit.payments = [];
+          this.propertyUnit.maintenance = [];
+          this.propertyUnit.properties = [];
+          this.propertyUnit.units = [];
+          this.propertyUnit.tenants = [];
+          this.propertyUnit.leases = [];
+          this.propertyUnit.detailMode = '';
+          this.payments.pendingSubmissions = [];
+          this.payments.verifiedPayments = [];
+          this.payments.leases = [];
+          this.maintenance.requests = [];
+          this.maintenance.units = [];
+          this.maintenance.leases = [];
+          this.maintenance.properties = [];
+          this.maintenance.staff = [];
+          this.tenantLease.properties = [];
+          this.tenantLease.units = [];
+          this.tenantLease.tenants = [];
+          this.tenantLease.leases = [];
+          this.tenantLease.selectedTenant = null;
+          this.tenantLease.selectedTenantLeases = [];
+          this.tenantLease.selectedTenantPayments = [];
+          this.finance.payments = [];
+          this.finance.byProperty = [];
+          this.finance.stats = { totalRevenue: 0, monthRevenue: 0, yearRevenue: 0, averagePayment: 0 };
         },
 
         activeStaffLandlordName() {
@@ -8514,7 +8548,7 @@
           const label = relationship?.landlord?.full_name || relationship?.landlord?.email || 'this landlord';
           const confirmed = await this.requestConfirm({
             title: 'Drop landlord',
-            message: `Stop serving ${label}? Their data will stay with the landlord account, but this connection will be removed from your account.`,
+            message: `Stop serving ${label}? Your access to this landlord's properties, tenants, leases, payments, maintenance, and files will be removed. The landlord's own account and records will stay safely stored.`,
             confirmText: 'Drop Landlord',
             tone: 'danger'
           });
@@ -8539,6 +8573,7 @@
           } else {
             await this.loadStaffPermissions(this.profile.id);
           }
+          this.clearPartnerLandlordWorkspace();
           if (this.currentPage === 'finance') await this.loadPartnerFinanceData();
         },
 
@@ -13396,7 +13431,9 @@
           if (this.staffContext.relationships.length === 0) {
             if (this.profile?.staff_type === 'freelancer') {
               this.staffContext.activeLandlordId = '';
+              this.profile.landlord_id = '';
               this.permissions = this.permissionStateFromRow({});
+              this.clearPartnerLandlordWorkspace();
               return true;
             }
 
@@ -13473,7 +13510,9 @@
 
           if (this.managementContext.relationships.length === 0) {
             this.managementContext.activeLandlordId = '';
+            localStorage.removeItem('mushavo_management_landlord_id');
             this.permissions = this.permissionStateFromRow({});
+            this.clearPartnerLandlordWorkspace();
             return true;
           }
 
