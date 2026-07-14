@@ -1315,6 +1315,7 @@
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>
                     <th class="px-4 py-3 font-semibold">IPM</th>
+                    <th class="px-4 py-3 font-semibold">Country</th>
                     <th class="px-4 py-3 font-semibold">Email</th>
                     <th class="px-4 py-3 font-semibold">Phone</th>
                     <th class="px-4 py-3 font-semibold">Account Status</th>
@@ -1328,11 +1329,12 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No IPM accounts yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No IPM accounts yet.</td></tr>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Account active')"></p></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.country_name || adminCountryName(adminStaffCountryId(staffRow))"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
@@ -5535,7 +5537,7 @@
         },
 
         adminStaffCountryId(staffRow) {
-          return staffRow?.country_id || staffRow?.primary_country_id || null;
+          return staffRow?.country_id || staffRow?.primary_country_id || staffRow?.metadata?.country_id || null;
         },
 
         adminSelectedStats() {
@@ -5893,16 +5895,21 @@
 
           const acceptedFreelancerStaff = (staffProfilesResult.data || [])
           .filter(profile => (profile.staff_type || 'landlord') === 'freelancer')
-          .map(profile => ({
-            ...profile,
-            rowKey: `staff-profile-${profile.id}`,
-            accepted: true,
-            profile_id: profile.id,
-            invite_id: null,
-            invite_link: '',
-            primary_country_id: profile.country_id || staffCountryById.get(profile.id) || null,
-            landlord_count: staffLandlordCounts.get(profile.id) || 0
-          }));
+          .map(profile => {
+            const countryId = profile.country_id || staffCountryById.get(profile.id) || null;
+            return {
+              ...profile,
+              rowKey: `staff-profile-${profile.id}`,
+              accepted: true,
+              profile_id: profile.id,
+              invite_id: null,
+              invite_link: '',
+              country_id: countryId,
+              primary_country_id: countryId,
+              country_name: this.adminCountryName(countryId),
+              landlord_count: staffLandlordCounts.get(profile.id) || 0
+            };
+          });
 
           const acceptedFreelancerEmails = new Set(acceptedFreelancerStaff.map(row => String(row.email || '').toLowerCase()).filter(Boolean));
           const pendingFreelancerStaff = (staffInvitesResult.data || [])
@@ -6461,6 +6468,11 @@
           this.admin.saving = true;
 
           const countryId = this.admin.freelancerForm.countryId || null;
+          if (!countryId) {
+            this.admin.formError = 'Select the country this IPM belongs to.';
+            this.admin.saving = false;
+            return;
+          }
           const payload = {
             full_name: this.admin.freelancerForm.fullName,
             email: this.admin.freelancerForm.email,
@@ -8133,7 +8145,10 @@
           if (/failed to fetch|network|timeout|taking too long/.test(lower)) {
             return 'The request took too long. Check your connection, refresh, and try again.';
           }
-          if (/jwt|refresh token|session|invalid login|invalid credentials|email not confirmed/.test(lower)) {
+          if (/invalid login credentials|invalid credentials|invalid email or password|email or password is incorrect/.test(lower)) {
+            return 'The email or password is incorrect. Please check your credentials and try again.';
+          }
+          if (/jwt|refresh token|session|email not confirmed/.test(lower)) {
             return 'Your session could not be verified. Please sign in again.';
           }
           if (/on conflict specification|no unique or exclusion constraint/.test(lower)) {
