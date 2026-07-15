@@ -8890,8 +8890,26 @@
           return 'Your Mushavo subscription has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to renew your subscription and restore access.';
         },
 
-        markSubscriptionPaused() {
+        subscriptionSuspendedMessage() {
+          return 'Your Mushavo account access is currently paused by the administrator. Your data is still safely stored.\n\nPlease contact support to restore access.';
+        },
+
+        trialExpiredMessage() {
+          return 'Your Mushavo trial has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to continue using Mushavo.';
+        },
+
+        markSubscriptionPaused(reason = 'expired') {
           this.accessPaused = true;
+          if (reason === 'suspended') {
+            this.suspendedTitle = 'Account Paused';
+            this.suspendedMessage = this.subscriptionSuspendedMessage();
+            return;
+          }
+          if (reason === 'trial_expired') {
+            this.suspendedTitle = 'Trial Expired';
+            this.suspendedMessage = this.trialExpiredMessage();
+            return;
+          }
           this.suspendedTitle = 'Subscription Expired';
           this.suspendedMessage = this.subscriptionExpiredMessage();
         },
@@ -13769,12 +13787,28 @@
           }
 
           this.subscription = data;
-          if (data.subscription_plan === 'free') return data.status === 'active';
-          const expiresAt = new Date(data.expires_at);
-          const activeStatus = data.status === 'active' || data.status === 'trial';
-          const hasAccess = activeStatus && expiresAt.getTime() > Date.now();
-          if (!hasAccess) this.markSubscriptionPaused();
-          return hasAccess;
+          const status = data.status || 'active';
+          const plan = data.subscription_plan || 'free';
+          if (status === 'suspended') {
+            this.markSubscriptionPaused('suspended');
+            return false;
+          }
+          if (plan === 'free') return true;
+
+          const activeStatus = status === 'active' || status === 'trial';
+          if (!activeStatus) {
+            this.markSubscriptionPaused();
+            return false;
+          }
+
+          const expiresAt = data.expires_at ? new Date(data.expires_at) : null;
+          const hasExpiry = expiresAt && !Number.isNaN(expiresAt.getTime());
+          const expired = hasExpiry && expiresAt.getTime() <= Date.now();
+          if (expired) {
+            this.markSubscriptionPaused(status === 'trial' ? 'trial_expired' : 'expired');
+            return false;
+          }
+          return true;
         },
 
         async loadStaffPermissions(staffProfileId) {
