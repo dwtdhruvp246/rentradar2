@@ -5719,6 +5719,13 @@
           return true;
         },
 
+        adminScopedCountryId(fallback = '') {
+          if (this.profile?.role === 'admin_staff') {
+            return this.profile.country_id || '';
+          }
+          return fallback || '';
+        },
+
         adminCountryCurrency(countryId) {
           if (!countryId) return '';
           return this.admin.countries.find(country => country.id === countryId)?.currency_code || '';
@@ -6496,14 +6503,15 @@
           this.admin.modal = modalName;
 
           if (modalName === 'add') {
-            if (this.admin.selectedCountryId === 'all' || this.admin.selectedCountryId === 'unassigned') {
+            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
+            if (!countryId) {
               this.admin.formError = 'Select a country before adding a landlord.';
             }
             this.admin.addForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : ''
+              countryId
             };
           }
 
@@ -6516,12 +6524,13 @@
           }
 
           if (modalName === 'management-add') {
+            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
             this.admin.managementAddForm = {
               companyName: '',
               leaderName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
+              countryId,
               maxLandlords: 2,
               maxProperties: 10,
               maxStaff: 3,
@@ -6540,11 +6549,12 @@
           }
 
           if (modalName === 'freelancer-add') {
+            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
             this.admin.freelancerForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
+              countryId,
               maxLandlords: 2,
               subscriptionStatus: 'free',
               expiresAt: ''
@@ -6799,7 +6809,7 @@
             fullName: staffRow.full_name || '',
             email: staffRow.email || '',
             phone: staffRow.phone || '',
-            countryId: this.adminStaffCountryId(staffRow) || '',
+            countryId: this.adminScopedCountryId(this.adminStaffCountryId(staffRow) || ''),
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
             subscriptionStatus: staffRow.staff_subscription_status || 'free',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
@@ -6813,7 +6823,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.freelancerForm.countryId || null;
+          const countryId = this.adminScopedCountryId(this.admin.freelancerForm.countryId || '') || null;
           if (!countryId) {
             this.admin.formError = 'Select the country this IPM belongs to.';
             this.admin.saving = false;
@@ -6888,7 +6898,7 @@
             leaderName: company.leader_name || '',
             email: company.email || '',
             phone: company.phone || company.leader?.phone || '',
-            countryId: company.country_id || '',
+            countryId: this.adminScopedCountryId(company.country_id || ''),
             maxLandlords: Number(company.max_landlords || 0),
             maxProperties: Number(company.max_properties || 0),
             maxStaff: Number(company.max_staff || 0),
@@ -6932,7 +6942,7 @@
             landlord_id: payerType === 'landlord' ? accountId : null,
             staff_id: payerType === 'staff' ? accountId : null,
             management_company_id: payerType === 'management' ? accountId : null,
-            country_id: landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || null,
+            country_id: this.adminScopedCountryId(landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || '') || null,
             amount_paid: Number(this.admin.financeForm.amount || 0),
             paid_at: this.admin.financeForm.paidAt,
             period_start: this.admin.financeForm.periodStart,
@@ -7021,7 +7031,7 @@
           this.admin.editForm = {
             fullName: row.full_name || '',
             phone: row.phone || '',
-            countryId: country
+            countryId: this.adminScopedCountryId(country)
           };
           this.admin.modal = 'edit';
         },
@@ -7049,7 +7059,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.addForm.countryId || this.admin.selectedCountryId;
+          const countryId = this.adminScopedCountryId(this.admin.addForm.countryId || this.admin.selectedCountryId);
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this landlord belongs to.';
             this.admin.saving = false;
@@ -7140,7 +7150,7 @@
           this.admin.generatedInviteLink = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.freelancerForm.countryId || this.admin.selectedCountryId;
+          const countryId = this.adminScopedCountryId(this.admin.freelancerForm.countryId || this.admin.selectedCountryId);
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this IPM belongs to.';
             this.admin.saving = false;
@@ -7188,7 +7198,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.managementAddForm.countryId || this.admin.selectedCountryId;
+          const countryId = this.adminScopedCountryId(this.admin.managementAddForm.countryId || this.admin.selectedCountryId);
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this Property Management Company (PMC) belongs to.';
             this.admin.saving = false;
@@ -7240,7 +7250,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.managementAddForm.countryId || row.country_id || null;
+          const countryId = this.adminScopedCountryId(this.admin.managementAddForm.countryId || row.country_id || '') || null;
           const metadata = {
             company_name: this.admin.managementAddForm.companyName,
             full_name: this.admin.managementAddForm.leaderName,
@@ -7822,6 +7832,7 @@
           if (!this.admin.selectedRow) return;
           this.admin.formError = '';
           this.admin.saving = true;
+          const countryId = this.adminScopedCountryId(this.admin.editForm.countryId || '') || null;
 
           if (this.admin.selectedRow.accepted) {
             const { error } = await supabaseClient
@@ -7829,7 +7840,7 @@
               .update({
                 full_name: this.admin.editForm.fullName,
                 phone: this.admin.editForm.phone || null,
-                country_id: this.admin.editForm.countryId || null
+                country_id: countryId
               })
               .eq('id', this.admin.selectedRow.profile_id);
 
@@ -7842,7 +7853,7 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: this.admin.editForm.countryId || null })
+                .update({ country_id: countryId })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
@@ -7852,10 +7863,10 @@
               }
             }
 
-            if (this.admin.editForm.countryId) {
+            if (countryId) {
               const { error: paymentCountryError } = await supabaseClient
                 .from('platform_payments')
-                .update({ country_id: this.admin.editForm.countryId })
+                .update({ country_id: countryId })
                 .eq('landlord_id', this.admin.selectedRow.profile_id)
                 .is('country_id', null);
 
@@ -7871,13 +7882,13 @@
               ...currentMetadata,
               full_name: this.admin.editForm.fullName,
               phone: this.admin.editForm.phone || '',
-              country_id: this.admin.editForm.countryId || null
+              country_id: countryId
             };
 
             const { error } = await supabaseClient
               .from('invite_tokens')
               .update({
-                country_id: this.admin.editForm.countryId || null,
+                country_id: countryId,
                 metadata: nextMetadata
               })
               .eq('id', this.admin.selectedRow.invite_id);
@@ -7891,7 +7902,7 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: this.admin.editForm.countryId || null })
+                .update({ country_id: countryId })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
