@@ -902,11 +902,11 @@
                     </select>
                   </label>
                   <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-700">Subscription</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.subscriptionStatus">
-                      <option value="trial">Trial</option>
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspended</option>
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.planStatus" @change="applyManagementAddPlanStatusSelection">
+                      <template x-for="option in planStatusOptions('pmc')" :key="`management-add-plan-status-${option.value}`">
+                        <option :value="option.value" x-text="option.label"></option>
+                      </template>
                     </select>
                   </label>
                 </div>
@@ -955,11 +955,11 @@
               <form class="space-y-4" @submit.prevent="saveManagementLimit">
                 <div class="grid gap-3 sm:grid-cols-2">
                   <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.subscriptionStatus">
-                      <option value="trial">Trial</option>
-                      <option value="active">Active</option>
-                      <option value="suspended">Suspended</option>
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.planStatus" @change="applyManagementPlanStatusSelection">
+                      <template x-for="option in planStatusOptions('pmc')" :key="`pmc-plan-status-${option.value}`">
+                        <option :value="option.value" x-text="option.label"></option>
+                      </template>
                     </select>
                   </label>
                   <label class="block">
@@ -1475,11 +1475,11 @@
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="1" step="1" x-model.number="admin.freelancerForm.maxLandlords" required>
                 </label>
                 <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Subscription</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.subscriptionStatus" required>
-                    <option value="free">Free</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection" required>
+                    <template x-for="option in planStatusOptions('ipm')" :key="`freelancer-plan-status-${option.value}`">
+                      <option :value="option.value" x-text="option.label"></option>
+                    </template>
                   </select>
                 </label>
                 <label class="block">
@@ -1598,11 +1598,11 @@
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.staffLimitForm.maxLandlords" required>
                 </label>
                 <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Subscription status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.subscriptionStatus" required>
-                    <option value="free">Free</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.planStatus" @change="applyStaffPlanStatusSelection" required>
+                    <template x-for="option in planStatusOptions('ipm')" :key="`ipm-plan-status-${option.value}`">
+                      <option :value="option.value" x-text="option.label"></option>
+                    </template>
                   </select>
                 </label>
                 <label class="block">
@@ -1749,15 +1749,9 @@
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection" required>
-                    <option value="free:active">Active - Free</option>
-                    <option value="starter:trial">Starter - Trial</option>
-                    <option value="starter:active">Starter - Active</option>
-                    <option value="growth:trial">Growth - Trial</option>
-                    <option value="growth:active">Growth - Active</option>
-                    <option value="portfolio:trial">Portfolio - Trial</option>
-                    <option value="portfolio:active">Portfolio - Active</option>
-                    <option value="custom:trial">Custom - Trial</option>
-                    <option value="custom:active">Custom - Active</option>
+                    <template x-for="option in planStatusOptions('landlord')" :key="`landlord-plan-status-${option.value}`">
+                      <option :value="option.value" x-text="option.label"></option>
+                    </template>
                   </select>
                 </label>
                 <label class="block">
@@ -4445,8 +4439,9 @@
             email: '',
             phone: '',
             countryId: '',
-            maxLandlords: 2,
-            subscriptionStatus: 'free',
+            maxLandlords: 5,
+            planStatus: 'pro:active',
+            subscriptionStatus: 'active',
             expiresAt: ''
           },
           countryForm: {
@@ -4477,6 +4472,7 @@
           },
           staffLimitForm: {
             maxLandlords: 2,
+            planStatus: 'pro:active',
             subscriptionStatus: 'free',
             expiresAt: ''
           },
@@ -4486,9 +4482,10 @@
             email: '',
             phone: '',
             countryId: '',
-            maxLandlords: 2,
-            maxProperties: 10,
-            maxStaff: 3,
+            maxLandlords: 3,
+            maxProperties: 15,
+            maxStaff: 5,
+            planStatus: 'starter:trial',
             subscriptionStatus: 'trial',
             expiresAt: ''
           },
@@ -4503,6 +4500,7 @@
             maxLandlords: 2,
             maxProperties: 10,
             maxStaff: 3,
+            planStatus: 'starter:trial',
             subscriptionStatus: 'trial',
             expiresAt: '',
             notes: ''
@@ -6117,9 +6115,10 @@
               email: '',
               phone: '',
               countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
-              maxLandlords: 2,
-              maxProperties: 10,
-              maxStaff: 3,
+              maxLandlords: 3,
+              maxProperties: 15,
+              maxStaff: 5,
+              planStatus: 'starter:trial',
               subscriptionStatus: 'trial',
               expiresAt: this.toDateInputValue(this.addDaysIso(30))
             };
@@ -6140,8 +6139,9 @@
               email: '',
               phone: '',
               countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
-              maxLandlords: 2,
-              subscriptionStatus: 'free',
+              maxLandlords: 5,
+              planStatus: 'pro:active',
+              subscriptionStatus: 'active',
               expiresAt: ''
             };
           }
@@ -6390,13 +6390,15 @@
           this.admin.formError = '';
           this.admin.generatedInviteLink = '';
           this.admin.selectedRow = staffRow;
+          const planStatus = this.inferIpmPlanStatus(staffRow);
           this.admin.freelancerForm = {
             fullName: staffRow.full_name || '',
             email: staffRow.email || '',
             phone: staffRow.phone || '',
             countryId: this.adminStaffCountryId(staffRow) || '',
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
-            subscriptionStatus: staffRow.staff_subscription_status || 'free',
+            planStatus,
+            subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
           };
           this.admin.modal = 'freelancer-edit';
@@ -6473,6 +6475,7 @@
           this.admin.formError = '';
           this.admin.generatedInviteLink = '';
           this.admin.selectedRow = company;
+          const planStatus = this.inferPmcPlanStatus(company);
           this.admin.managementAddForm = {
             companyName: company.company_name || '',
             leaderName: company.leader_name || '',
@@ -6482,7 +6485,8 @@
             maxLandlords: Number(company.max_landlords || 0),
             maxProperties: Number(company.max_properties || 0),
             maxStaff: Number(company.max_staff || 0),
-            subscriptionStatus: company.subscription_status || 'trial',
+            planStatus,
+            subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(company.subscription_expires_at || '')
           };
           this.admin.modal = 'management-edit';
@@ -6625,7 +6629,7 @@
           this.admin.formError = '';
           this.admin.selectedRow = row;
           this.admin.subscriptionForm = {
-            planStatus: this.subscriptionPlanStatusValue(plan, status),
+            planStatus: this.subscriptionPlanStatusValue(plan, status, 'landlord'),
             plan: plan === 'standard' ? 'custom' : plan,
             status: status === 'suspended' ? 'active' : status,
             expiresAt: this.toDateInputValue(expiresAt),
@@ -6638,32 +6642,125 @@
           this.admin.modal = 'subscription';
         },
 
-        subscriptionPlanStatusValue(plan, status) {
+        planStatusOptions(accountType = 'landlord') {
+          const plans = {
+            landlord: [
+              ['free', 'Free', ['active']],
+              ['starter', 'Starter', ['trial', 'active']],
+              ['growth', 'Growth', ['trial', 'active']],
+              ['portfolio', 'Portfolio', ['trial', 'active']],
+              ['custom', 'Custom', ['trial', 'active']]
+            ],
+            ipm: [
+              ['pro', 'Pro', ['trial', 'active']],
+              ['growth', 'Growth', ['trial', 'active']],
+              ['portfolio', 'Portfolio', ['trial', 'active']],
+              ['custom', 'Custom', ['trial', 'active']]
+            ],
+            pmc: [
+              ['starter', 'Starter', ['trial', 'active']],
+              ['growth', 'Growth', ['trial', 'active']],
+              ['business', 'Business', ['trial', 'active']],
+              ['custom', 'Custom', ['trial', 'active']]
+            ]
+          };
+          return (plans[accountType] || plans.landlord).flatMap(([plan, label, statuses]) => statuses.map(status => ({
+            value: `${plan}:${status}`,
+            label: `${label} - ${this.titleCase(status)}`
+          })));
+        },
+
+        subscriptionPlanDefaults(accountType = 'landlord', plan = 'custom') {
+          const defaults = {
+            landlord: {
+              free: { propertyLimit: 1, unitLimit: 1, personalStaffLimit: 0, partnerConnectionLimit: 1 },
+              starter: { propertyLimit: 2, unitLimit: 8, personalStaffLimit: 1, partnerConnectionLimit: 1 },
+              growth: { propertyLimit: 6, unitLimit: 35, personalStaffLimit: 3, partnerConnectionLimit: 2 },
+              portfolio: { propertyLimit: 20, unitLimit: 120, personalStaffLimit: 8, partnerConnectionLimit: 5 }
+            },
+            ipm: {
+              pro: { maxLandlords: 5 },
+              growth: { maxLandlords: 15 },
+              portfolio: { maxLandlords: 40 }
+            },
+            pmc: {
+              starter: { maxLandlords: 3, maxProperties: 15, maxStaff: 5 },
+              growth: { maxLandlords: 12, maxProperties: 75, maxStaff: 15 },
+              business: { maxLandlords: 35, maxProperties: 250, maxStaff: 40 }
+            }
+          };
+          return defaults[accountType]?.[plan] || {};
+        },
+
+        subscriptionPlanStatusValue(plan, status, accountType = 'landlord') {
           const normalizedPlan = String(plan || 'free').toLowerCase() === 'standard'
             ? 'custom'
             : String(plan || 'free').toLowerCase();
           const normalizedStatus = String(status || 'active').toLowerCase() === 'suspended'
             ? 'active'
             : String(status || 'active').toLowerCase();
-          const allowed = new Set([
-            'free:active',
-            'starter:trial',
-            'starter:active',
-            'growth:trial',
-            'growth:active',
-            'portfolio:trial',
-            'portfolio:active',
-            'custom:trial',
-            'custom:active'
-          ]);
+          const allowed = new Set(this.planStatusOptions(accountType).map(option => option.value));
           const value = `${normalizedPlan}:${normalizedStatus}`;
-          return allowed.has(value) ? value : 'free:active';
+          const fallback = accountType === 'ipm'
+            ? 'pro:active'
+            : accountType === 'pmc'
+              ? 'starter:active'
+              : 'free:active';
+          return allowed.has(value) ? value : fallback;
         },
 
         applySubscriptionPlanStatusSelection() {
           const [plan = 'free', status = 'active'] = String(this.admin.subscriptionForm.planStatus || 'free:active').split(':');
           this.admin.subscriptionForm.plan = plan;
           this.admin.subscriptionForm.status = status;
+          Object.assign(this.admin.subscriptionForm, this.subscriptionPlanDefaults('landlord', plan));
+        },
+
+        inferIpmPlanStatus(staffRow) {
+          const status = ['trial', 'active'].includes(String(staffRow?.staff_subscription_status || '').toLowerCase())
+            ? String(staffRow.staff_subscription_status).toLowerCase()
+            : 'active';
+          const landlords = Number(staffRow?.staff_max_landlords || 0);
+          const plan = landlords <= 5 ? 'pro' : landlords <= 15 ? 'growth' : landlords <= 40 ? 'portfolio' : 'custom';
+          return this.subscriptionPlanStatusValue(plan, status, 'ipm');
+        },
+
+        inferPmcPlanStatus(company) {
+          const status = ['trial', 'active'].includes(String(company?.subscription_status || '').toLowerCase())
+            ? String(company.subscription_status).toLowerCase()
+            : 'active';
+          const landlords = Number(company?.max_landlords || 0);
+          const properties = Number(company?.max_properties || 0);
+          const staff = Number(company?.max_staff || 0);
+          let plan = 'custom';
+          if (landlords <= 3 && properties <= 15 && staff <= 5) plan = 'starter';
+          else if (landlords <= 12 && properties <= 75 && staff <= 15) plan = 'growth';
+          else if (landlords <= 35 && properties <= 250 && staff <= 40) plan = 'business';
+          return this.subscriptionPlanStatusValue(plan, status, 'pmc');
+        },
+
+        applyStaffPlanStatusSelection() {
+          const [plan = 'pro', status = 'active'] = String(this.admin.staffLimitForm.planStatus || 'pro:active').split(':');
+          this.admin.staffLimitForm.subscriptionStatus = status;
+          Object.assign(this.admin.staffLimitForm, this.subscriptionPlanDefaults('ipm', plan));
+        },
+
+        applyFreelancerPlanStatusSelection() {
+          const [plan = 'pro', status = 'active'] = String(this.admin.freelancerForm.planStatus || 'pro:active').split(':');
+          this.admin.freelancerForm.subscriptionStatus = status;
+          Object.assign(this.admin.freelancerForm, this.subscriptionPlanDefaults('ipm', plan));
+        },
+
+        applyManagementPlanStatusSelection() {
+          const [plan = 'starter', status = 'active'] = String(this.admin.managementLimitForm.planStatus || 'starter:active').split(':');
+          this.admin.managementLimitForm.subscriptionStatus = status;
+          Object.assign(this.admin.managementLimitForm, this.subscriptionPlanDefaults('pmc', plan));
+        },
+
+        applyManagementAddPlanStatusSelection() {
+          const [plan = 'starter', status = 'trial'] = String(this.admin.managementAddForm.planStatus || 'starter:trial').split(':');
+          this.admin.managementAddForm.subscriptionStatus = status;
+          Object.assign(this.admin.managementAddForm, this.subscriptionPlanDefaults('pmc', plan));
         },
 
         async createLandlordInvite() {
@@ -6940,11 +7037,13 @@
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = company;
+          const planStatus = this.inferPmcPlanStatus(company);
           this.admin.managementLimitForm = {
             maxLandlords: Number(company.max_landlords || 0),
             maxProperties: Number(company.max_properties || 0),
             maxStaff: Number(company.max_staff || 0),
-            subscriptionStatus: company.subscription_status || 'trial',
+            planStatus,
+            subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(company.subscription_expires_at || ''),
             notes: company.notes || ''
           };
@@ -7113,9 +7212,11 @@
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = staffRow;
+          const planStatus = this.inferIpmPlanStatus(staffRow);
           this.admin.staffLimitForm = {
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
-            subscriptionStatus: staffRow.staff_subscription_status || 'free',
+            planStatus,
+            subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
           };
           this.admin.modal = 'staff-limit';
@@ -7709,6 +7810,26 @@
           return String(value || '')
             .replace(/_/g, ' ')
             .replace(/\b\w/g, letter => letter.toUpperCase());
+        },
+
+        friendlyDatabaseError(error, fallback = 'Something went wrong. Please try again.') {
+          const message = String(error?.message || error || '').trim();
+          const lower = message.toLowerCase();
+
+          if (!message) return fallback;
+          if (lower.includes('row-level security') || lower.includes('violates row-level security policy')) {
+            return 'You do not have permission to do this action, or your current plan does not allow it.';
+          }
+          if (lower.includes('duplicate key') || lower.includes('already exists') || lower.includes('unique constraint')) {
+            return 'This record already exists. Please refresh and check the list before trying again.';
+          }
+          if (lower.includes('check constraint') || lower.includes('violates check constraint')) {
+            return 'This action is not allowed with the current account settings.';
+          }
+          if (lower.includes('personal staff') || lower.includes('staff limit') || lower.includes('subscription allows')) {
+            return message;
+          }
+          return fallback;
         },
 
         statusBadgeClass(status) {
@@ -10630,6 +10751,22 @@
           this.staff.saving = false;
         },
 
+        personalStaffUsageCount() {
+          return (this.staff.members || []).filter(member => {
+            const staffType = member.staff_type || 'landlord';
+            return staffType === 'landlord'
+              && (member.accepted || member.invite_id)
+              && !member.archived_at;
+          }).length;
+        },
+
+        landlordPersonalStaffLimitMessage(limit, currentCount) {
+          if (limit <= 0) {
+            return 'Your current plan does not include personal staff members. Upgrade your plan or ask admin to increase your personal staff limit.';
+          }
+          return `Personal staff limit reached. Your current plan allows ${limit} personal staff member${limit === 1 ? '' : 's'}, and you already have ${currentCount}. Upgrade your plan or ask admin to increase your personal staff limit.`;
+        },
+
         async createStaffInvite() {
           this.staff.error = '';
           this.staff.saving = true;
@@ -10639,6 +10776,16 @@
             this.staff.error = 'PMC record not found.';
             this.staff.saving = false;
             return;
+          }
+
+          if (this.profile?.role === 'landlord') {
+            const personalStaffLimit = Number(this.subscription?.personal_staff_limit ?? 0);
+            const currentPersonalStaff = this.personalStaffUsageCount();
+            if (currentPersonalStaff >= personalStaffLimit) {
+              this.staff.error = this.landlordPersonalStaffLimitMessage(personalStaffLimit, currentPersonalStaff);
+              this.staff.saving = false;
+              return;
+            }
           }
 
           const token = this.generateSecureToken();
@@ -10670,7 +10817,7 @@
             });
 
           if (error) {
-            this.staff.error = error.message;
+            this.staff.error = this.friendlyDatabaseError(error, 'Staff invite could not be created. Check your plan limits and permissions, then try again.');
             this.staff.saving = false;
             return;
           }

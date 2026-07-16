@@ -147,27 +147,31 @@
         plans: {
           landlord: [
             { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
-            { name: 'Starter', monthly: 5, yearly: 50, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord who needs extra units or personal staff.' },
-            { name: 'Growth', monthly: 12, yearly: 120, limits: '5 properties, 25 units, 3 staff', description: 'For growing owners with multiple units.' },
-            { name: 'Portfolio', monthly: 25, yearly: 250, limits: '15 properties, 100 units, 8 staff', description: 'For larger private portfolios.' }
+            { name: 'Starter', monthly: 4, yearly: 40, limits: '2 properties, 8 units, 1 staff, 1 IPM or PMC connection', description: 'For a small landlord who needs more than the free single-unit account.' },
+            { name: 'Growth', monthly: 10, yearly: 100, limits: '6 properties, 35 units, 3 staff, 2 IPM or PMC connections', description: 'For growing owners with multiple units.' },
+            { name: 'Portfolio', monthly: 22, yearly: 220, limits: '20 properties, 120 units, 8 staff, 5 IPM or PMC connections', description: 'For larger private portfolios.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom properties, units, staff, and partner connections', description: 'For large or special portfolios needing negotiated limits.', customPrice: 'From $50' }
           ],
           ipm: [
-            { name: 'Pro', monthly: 12, yearly: 120, limits: '10 landlord connections', description: 'For active independent managers. IPM accounts are paid and admin-created.' },
-            { name: 'Business', monthly: 25, yearly: 250, limits: '25 landlord connections', description: 'For larger IPM operations.' },
-            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlord limits', description: 'For IPMs needing larger country-specific limits.', customPrice: 'Custom' }
+            { name: 'Pro', monthly: 15, yearly: 150, limits: '5 landlords, 20 properties, 80 units', description: 'For small Individual Portfolio Managers. IPM accounts have no free plan.' },
+            { name: 'Growth', monthly: 35, yearly: 350, limits: '15 landlords, 60 properties, 250 units', description: 'For larger IPM operations.' },
+            { name: 'Portfolio', monthly: 70, yearly: 700, limits: '40 landlords, 180 properties, 750 units', description: 'For established IPMs managing many landlords.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlords, properties, and units', description: 'For IPMs needing larger country-specific limits.', customPrice: 'From $100' }
           ],
           pmc: [
-            { name: 'Starter', monthly: 25, yearly: 250, limits: '2 landlords, 10 properties, 3 staff', description: 'For a small property management company.' },
-            { name: 'Growth', monthly: 60, yearly: 600, limits: '10 landlords, 50 properties, 10 staff', description: 'For a growing PMC team.' },
-            { name: 'Business', monthly: 120, yearly: 1200, limits: '25 landlords, 150 properties, 25 staff', description: 'For established companies.' }
+            { name: 'Starter', monthly: 30, yearly: 300, limits: '3 landlords, 15 properties, 75 units, 5 staff', description: 'For a small Property Management Company.' },
+            { name: 'Growth', monthly: 75, yearly: 750, limits: '12 landlords, 75 properties, 400 units, 15 staff', description: 'For a growing PMC team.' },
+            { name: 'Business', monthly: 150, yearly: 1500, limits: '35 landlords, 250 properties, 1,500 units, 40 staff', description: 'For established companies.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlords, properties, units, and staff', description: 'For larger property management companies needing custom limits.', customPrice: 'From $250' }
           ]
         },
         addons: [
-          ['Extra 10 units', '$3/mo'],
-          ['Extra property', '$2/mo'],
-          ['Extra staff seat', '$3-4/mo'],
+          ['Extra 5 units', '$2/mo'],
+          ['Extra property', '$1.50/mo'],
+          ['Extra staff seat', '$3/mo'],
           ['Extra 5GB storage', '$2/mo'],
-          ['Extra 1,000 email alerts', '$1/mo'],
+          ['Extra IPM / PMC connection', '$3/mo'],
+          ['Extra 50 PMC units', '$5/mo'],
           ['Setup or import help', '$25-$100 once-off']
         ]
       },
@@ -177,27 +181,31 @@
         plans: {
           landlord: [
             { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
-            { name: 'Starter', monthly: 29, yearly: 290, limits: '1 property, 5 units, 1 staff', description: 'For a small landlord who needs extra units or personal staff.' },
-            { name: 'Growth', monthly: 79, yearly: 790, limits: '5 properties, 25 units, 3 staff', description: 'For growing owners with multiple units.' },
-            { name: 'Portfolio', monthly: 179, yearly: 1790, limits: '15 properties, 100 units, 8 staff', description: 'For larger private portfolios.' }
+            { name: 'Starter', monthly: 19, yearly: 190, limits: '2 properties, 8 units, 1 staff, 1 IPM or PMC connection', description: 'For a small landlord who needs more than the free single-unit account.' },
+            { name: 'Growth', monthly: 59, yearly: 590, limits: '6 properties, 35 units, 3 staff, 2 IPM or PMC connections', description: 'For growing owners with multiple units.' },
+            { name: 'Portfolio', monthly: 149, yearly: 1490, limits: '20 properties, 120 units, 8 staff, 5 IPM or PMC connections', description: 'For larger private portfolios.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom properties, units, staff, and partner connections', description: 'For large or special portfolios needing negotiated limits.', customPrice: 'From RM349' }
           ],
           ipm: [
-            { name: 'Pro', monthly: 79, yearly: 790, limits: '10 landlord connections', description: 'For active independent managers. IPM accounts are paid and admin-created.' },
-            { name: 'Business', monthly: 179, yearly: 1790, limits: '25 landlord connections', description: 'For larger IPM operations.' },
-            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlord limits', description: 'For IPMs needing larger country-specific limits.', customPrice: 'Custom' }
+            { name: 'Pro', monthly: 129, yearly: 1290, limits: '5 landlords, 20 properties, 80 units', description: 'For small Individual Portfolio Managers. IPM accounts have no free plan.' },
+            { name: 'Growth', monthly: 299, yearly: 2990, limits: '15 landlords, 60 properties, 250 units', description: 'For larger IPM operations.' },
+            { name: 'Portfolio', monthly: 599, yearly: 5990, limits: '40 landlords, 180 properties, 750 units', description: 'For established IPMs managing many landlords.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlords, properties, and units', description: 'For IPMs needing larger country-specific limits.', customPrice: 'From RM899' }
           ],
           pmc: [
-            { name: 'Starter', monthly: 199, yearly: 1990, limits: '2 landlords, 10 properties, 3 staff', description: 'For a small property management company.' },
-            { name: 'Growth', monthly: 499, yearly: 4990, limits: '10 landlords, 50 properties, 10 staff', description: 'For a growing PMC team.' },
-            { name: 'Business', monthly: 999, yearly: 9990, limits: '25 landlords, 150 properties, 25 staff', description: 'For established companies.' }
+            { name: 'Starter', monthly: 249, yearly: 2490, limits: '3 landlords, 15 properties, 75 units, 5 staff', description: 'For a small Property Management Company.' },
+            { name: 'Growth', monthly: 649, yearly: 6490, limits: '12 landlords, 75 properties, 400 units, 15 staff', description: 'For a growing PMC team.' },
+            { name: 'Business', monthly: 1299, yearly: 12990, limits: '35 landlords, 250 properties, 1,500 units, 40 staff', description: 'For established companies.' },
+            { name: 'Custom', monthly: 0, yearly: 0, limits: 'Custom landlords, properties, units, and staff', description: 'For larger property management companies needing custom limits.', customPrice: 'From RM1,999' }
           ]
         },
         addons: [
-          ['Extra 10 units', 'RM20/mo'],
-          ['Extra property', 'RM10/mo'],
-          ['Extra staff seat', 'RM15-20/mo'],
+          ['Extra 5 units', 'RM10/mo'],
+          ['Extra property', 'RM8/mo'],
+          ['Extra staff seat', 'RM18/mo'],
           ['Extra 5GB storage', 'RM10/mo'],
-          ['Extra 1,000 email alerts', 'RM5/mo'],
+          ['Extra IPM / PMC connection', 'RM15/mo'],
+          ['Extra 50 PMC units', 'RM25/mo'],
           ['Setup or import help', 'RM150-RM600 once-off']
         ]
       }
