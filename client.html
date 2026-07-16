@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -147,23 +147,8 @@
     td, p, a, span {
       overflow-wrap: anywhere;
     }
-    .fixed.inset-0.flex {
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
-    .fixed.inset-0.flex > section {
+    .fixed.inset-0 section {
       max-width: min(100%, var(--modal-max, 56rem));
-      max-height: calc(100vh - 2rem) !important;
-      max-height: calc(100dvh - 2rem) !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch;
-    }
-    @media (min-width: 640px) {
-      .fixed.inset-0.flex > section {
-        max-height: calc(100vh - 4rem) !important;
-        max-height: calc(100dvh - 4rem) !important;
-      }
     }
     @media (max-width: 640px) {
       h1 { line-height: 1.15; }
@@ -213,244 +198,6 @@
   </style>
 </head>
 <body class="min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 antialiased">
-  <datalist id="countryDialCodes">
-    <option value="+93">Afghanistan +93</option>
-    <option value="+355">Albania +355</option>
-    <option value="+213">Algeria +213</option>
-    <option value="+1">American Samoa +1</option>
-    <option value="+376">Andorra +376</option>
-    <option value="+244">Angola +244</option>
-    <option value="+1">Anguilla +1</option>
-    <option value="+1">Antigua and Barbuda +1</option>
-    <option value="+54">Argentina +54</option>
-    <option value="+374">Armenia +374</option>
-    <option value="+297">Aruba +297</option>
-    <option value="+61">Australia +61</option>
-    <option value="+43">Austria +43</option>
-    <option value="+994">Azerbaijan +994</option>
-    <option value="+1">Bahamas +1</option>
-    <option value="+973">Bahrain +973</option>
-    <option value="+880">Bangladesh +880</option>
-    <option value="+1">Barbados +1</option>
-    <option value="+375">Belarus +375</option>
-    <option value="+32">Belgium +32</option>
-    <option value="+501">Belize +501</option>
-    <option value="+229">Benin +229</option>
-    <option value="+1">Bermuda +1</option>
-    <option value="+975">Bhutan +975</option>
-    <option value="+591">Bolivia +591</option>
-    <option value="+387">Bosnia and Herzegovina +387</option>
-    <option value="+267">Botswana +267</option>
-    <option value="+55">Brazil +55</option>
-    <option value="+246">British Indian Ocean Territory +246</option>
-    <option value="+1">British Virgin Islands +1</option>
-    <option value="+673">Brunei +673</option>
-    <option value="+359">Bulgaria +359</option>
-    <option value="+226">Burkina Faso +226</option>
-    <option value="+257">Burundi +257</option>
-    <option value="+855">Cambodia +855</option>
-    <option value="+237">Cameroon +237</option>
-    <option value="+1">Canada +1</option>
-    <option value="+238">Cape Verde +238</option>
-    <option value="+1">Cayman Islands +1</option>
-    <option value="+236">Central African Republic +236</option>
-    <option value="+235">Chad +235</option>
-    <option value="+56">Chile +56</option>
-    <option value="+86">China +86</option>
-    <option value="+57">Colombia +57</option>
-    <option value="+269">Comoros +269</option>
-    <option value="+242">Congo +242</option>
-    <option value="+243">Congo DR +243</option>
-    <option value="+682">Cook Islands +682</option>
-    <option value="+506">Costa Rica +506</option>
-    <option value="+385">Croatia +385</option>
-    <option value="+53">Cuba +53</option>
-    <option value="+599">Curacao +599</option>
-    <option value="+357">Cyprus +357</option>
-    <option value="+420">Czech Republic +420</option>
-    <option value="+45">Denmark +45</option>
-    <option value="+253">Djibouti +253</option>
-    <option value="+1">Dominica +1</option>
-    <option value="+1">Dominican Republic +1</option>
-    <option value="+593">Ecuador +593</option>
-    <option value="+20">Egypt +20</option>
-    <option value="+503">El Salvador +503</option>
-    <option value="+240">Equatorial Guinea +240</option>
-    <option value="+291">Eritrea +291</option>
-    <option value="+372">Estonia +372</option>
-    <option value="+268">Eswatini +268</option>
-    <option value="+251">Ethiopia +251</option>
-    <option value="+500">Falkland Islands +500</option>
-    <option value="+298">Faroe Islands +298</option>
-    <option value="+679">Fiji +679</option>
-    <option value="+358">Finland +358</option>
-    <option value="+33">France +33</option>
-    <option value="+594">French Guiana +594</option>
-    <option value="+689">French Polynesia +689</option>
-    <option value="+241">Gabon +241</option>
-    <option value="+220">Gambia +220</option>
-    <option value="+995">Georgia +995</option>
-    <option value="+49">Germany +49</option>
-    <option value="+233">Ghana +233</option>
-    <option value="+350">Gibraltar +350</option>
-    <option value="+30">Greece +30</option>
-    <option value="+299">Greenland +299</option>
-    <option value="+1">Grenada +1</option>
-    <option value="+590">Guadeloupe +590</option>
-    <option value="+1">Guam +1</option>
-    <option value="+502">Guatemala +502</option>
-    <option value="+44">Guernsey +44</option>
-    <option value="+224">Guinea +224</option>
-    <option value="+245">Guinea-Bissau +245</option>
-    <option value="+592">Guyana +592</option>
-    <option value="+509">Haiti +509</option>
-    <option value="+504">Honduras +504</option>
-    <option value="+852">Hong Kong +852</option>
-    <option value="+36">Hungary +36</option>
-    <option value="+354">Iceland +354</option>
-    <option value="+91">India +91</option>
-    <option value="+62">Indonesia +62</option>
-    <option value="+98">Iran +98</option>
-    <option value="+964">Iraq +964</option>
-    <option value="+353">Ireland +353</option>
-    <option value="+44">Isle of Man +44</option>
-    <option value="+972">Israel +972</option>
-    <option value="+39">Italy +39</option>
-    <option value="+225">Ivory Coast +225</option>
-    <option value="+1">Jamaica +1</option>
-    <option value="+81">Japan +81</option>
-    <option value="+44">Jersey +44</option>
-    <option value="+962">Jordan +962</option>
-    <option value="+7">Kazakhstan +7</option>
-    <option value="+254">Kenya +254</option>
-    <option value="+686">Kiribati +686</option>
-    <option value="+383">Kosovo +383</option>
-    <option value="+965">Kuwait +965</option>
-    <option value="+996">Kyrgyzstan +996</option>
-    <option value="+856">Laos +856</option>
-    <option value="+371">Latvia +371</option>
-    <option value="+961">Lebanon +961</option>
-    <option value="+266">Lesotho +266</option>
-    <option value="+231">Liberia +231</option>
-    <option value="+218">Libya +218</option>
-    <option value="+423">Liechtenstein +423</option>
-    <option value="+370">Lithuania +370</option>
-    <option value="+352">Luxembourg +352</option>
-    <option value="+853">Macau +853</option>
-    <option value="+261">Madagascar +261</option>
-    <option value="+265">Malawi +265</option>
-    <option value="+60">Malaysia +60</option>
-    <option value="+960">Maldives +960</option>
-    <option value="+223">Mali +223</option>
-    <option value="+356">Malta +356</option>
-    <option value="+692">Marshall Islands +692</option>
-    <option value="+596">Martinique +596</option>
-    <option value="+222">Mauritania +222</option>
-    <option value="+230">Mauritius +230</option>
-    <option value="+262">Mayotte +262</option>
-    <option value="+52">Mexico +52</option>
-    <option value="+691">Micronesia +691</option>
-    <option value="+373">Moldova +373</option>
-    <option value="+377">Monaco +377</option>
-    <option value="+976">Mongolia +976</option>
-    <option value="+382">Montenegro +382</option>
-    <option value="+1">Montserrat +1</option>
-    <option value="+212">Morocco +212</option>
-    <option value="+258">Mozambique +258</option>
-    <option value="+95">Myanmar +95</option>
-    <option value="+264">Namibia +264</option>
-    <option value="+674">Nauru +674</option>
-    <option value="+977">Nepal +977</option>
-    <option value="+31">Netherlands +31</option>
-    <option value="+687">New Caledonia +687</option>
-    <option value="+64">New Zealand +64</option>
-    <option value="+505">Nicaragua +505</option>
-    <option value="+227">Niger +227</option>
-    <option value="+234">Nigeria +234</option>
-    <option value="+683">Niue +683</option>
-    <option value="+850">North Korea +850</option>
-    <option value="+389">North Macedonia +389</option>
-    <option value="+1">Northern Mariana Islands +1</option>
-    <option value="+47">Norway +47</option>
-    <option value="+968">Oman +968</option>
-    <option value="+92">Pakistan +92</option>
-    <option value="+680">Palau +680</option>
-    <option value="+970">Palestine +970</option>
-    <option value="+507">Panama +507</option>
-    <option value="+675">Papua New Guinea +675</option>
-    <option value="+595">Paraguay +595</option>
-    <option value="+51">Peru +51</option>
-    <option value="+63">Philippines +63</option>
-    <option value="+48">Poland +48</option>
-    <option value="+351">Portugal +351</option>
-    <option value="+1">Puerto Rico +1</option>
-    <option value="+974">Qatar +974</option>
-    <option value="+262">Reunion +262</option>
-    <option value="+40">Romania +40</option>
-    <option value="+7">Russia +7</option>
-    <option value="+250">Rwanda +250</option>
-    <option value="+590">Saint Barthelemy +590</option>
-    <option value="+290">Saint Helena +290</option>
-    <option value="+1">Saint Kitts and Nevis +1</option>
-    <option value="+1">Saint Lucia +1</option>
-    <option value="+590">Saint Martin +590</option>
-    <option value="+508">Saint Pierre and Miquelon +508</option>
-    <option value="+1">Saint Vincent and the Grenadines +1</option>
-    <option value="+685">Samoa +685</option>
-    <option value="+378">San Marino +378</option>
-    <option value="+239">Sao Tome and Principe +239</option>
-    <option value="+966">Saudi Arabia +966</option>
-    <option value="+221">Senegal +221</option>
-    <option value="+381">Serbia +381</option>
-    <option value="+248">Seychelles +248</option>
-    <option value="+232">Sierra Leone +232</option>
-    <option value="+65">Singapore +65</option>
-    <option value="+1">Sint Maarten +1</option>
-    <option value="+421">Slovakia +421</option>
-    <option value="+386">Slovenia +386</option>
-    <option value="+677">Solomon Islands +677</option>
-    <option value="+252">Somalia +252</option>
-    <option value="+27">South Africa +27</option>
-    <option value="+82">South Korea +82</option>
-    <option value="+211">South Sudan +211</option>
-    <option value="+34">Spain +34</option>
-    <option value="+94">Sri Lanka +94</option>
-    <option value="+249">Sudan +249</option>
-    <option value="+597">Suriname +597</option>
-    <option value="+46">Sweden +46</option>
-    <option value="+41">Switzerland +41</option>
-    <option value="+963">Syria +963</option>
-    <option value="+886">Taiwan +886</option>
-    <option value="+992">Tajikistan +992</option>
-    <option value="+255">Tanzania +255</option>
-    <option value="+66">Thailand +66</option>
-    <option value="+670">Timor-Leste +670</option>
-    <option value="+228">Togo +228</option>
-    <option value="+690">Tokelau +690</option>
-    <option value="+676">Tonga +676</option>
-    <option value="+1">Trinidad and Tobago +1</option>
-    <option value="+216">Tunisia +216</option>
-    <option value="+90">Turkey +90</option>
-    <option value="+993">Turkmenistan +993</option>
-    <option value="+1">Turks and Caicos Islands +1</option>
-    <option value="+688">Tuvalu +688</option>
-    <option value="+1">US Virgin Islands +1</option>
-    <option value="+256">Uganda +256</option>
-    <option value="+380">Ukraine +380</option>
-    <option value="+971">United Arab Emirates +971</option>
-    <option value="+44">United Kingdom +44</option>
-    <option value="+1">United States +1</option>
-    <option value="+598">Uruguay +598</option>
-    <option value="+998">Uzbekistan +998</option>
-    <option value="+678">Vanuatu +678</option>
-    <option value="+379">Vatican City +379</option>
-    <option value="+58">Venezuela +58</option>
-    <option value="+84">Vietnam +84</option>
-    <option value="+681">Wallis and Futuna +681</option>
-    <option value="+967">Yemen +967</option>
-    <option value="+260">Zambia +260</option>
-    <option value="+263">Zimbabwe +263</option>
-  </datalist>
   <div x-data="mushavoApp()" x-init="init()" x-cloak>
     <template x-if="booting">
       <div class="flex min-h-screen items-center justify-center bg-slate-50 px-6">
@@ -519,7 +266,7 @@
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="landlordSignupForm.phone">
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="landlordSignupForm.phone">
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -552,7 +299,7 @@
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="staffSignupForm.phone">
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="staffSignupForm.phone">
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -639,12 +386,10 @@
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                 <input
-                  class="w-full rounded-lg border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
-                  :class="inviteNameLocked() ? 'bg-slate-100 text-slate-600' : 'bg-white text-slate-900'"
+                  class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600 outline-none"
                   type="text"
                   x-model="invite.form.fullName"
-                  :readonly="inviteNameLocked()"
-                  required>
+                  readonly>
               </label>
 
               <label class="block">
@@ -832,7 +577,7 @@
                     <th class="px-4 py-3 font-semibold">Tenants</th>
                     <th class="px-4 py-3 font-semibold">Staff</th>
                     <th class="px-4 py-3 font-semibold">Date Added</th>
-                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
                   </tr>
@@ -858,7 +603,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="row.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.created_at)"></td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="landlordPlanStatusBadgeClass(row.subscription, row.archived_at)" x-text="landlordPlanStatusLabel(row.subscription, row.archived_at)"></span>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(row.archived_at ? 'archived' : (row.subscription?.status || 'trial'))" x-text="row.archived_at ? 'Archived' : titleCase(row.subscription?.status || 'trial')"></span>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.subscription?.expires_at)"></td>
                       <td class="px-4 py-3">
@@ -1133,7 +878,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="admin.managementAddForm.phone">
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.managementAddForm.phone">
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
@@ -1303,7 +1048,7 @@
                     <th class="px-4 py-3 font-semibold">Tenants</th>
                     <th class="px-4 py-3 font-semibold">Staff</th>
                     <th class="px-4 py-3 font-semibold">Limits</th>
-                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
+                    <th class="px-4 py-3 font-semibold">Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
                   </tr>
@@ -1322,7 +1067,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="company.tenant_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="`${company.max_landlords || 0} landlords / ${company.max_properties || 0} properties / ${company.max_staff || 0} staff`"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="managementPlanStatusBadgeClass(company)" x-text="managementPlanStatusLabel(company)"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(company.archived_at ? 'archived' : (company.subscription_status || 'trial'))" x-text="company.archived_at ? 'Archived' : (company.accepted ? titleCase(company.subscription_status || 'trial') : 'Pending')"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(company.subscription_expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
@@ -1568,13 +1313,12 @@
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>
                     <th class="px-4 py-3 font-semibold">IPM</th>
-                    <th class="px-4 py-3 font-semibold">Country</th>
                     <th class="px-4 py-3 font-semibold">Email</th>
                     <th class="px-4 py-3 font-semibold">Phone</th>
                     <th class="px-4 py-3 font-semibold">Account Status</th>
                     <th class="px-4 py-3 font-semibold">Landlords</th>
                     <th class="px-4 py-3 font-semibold">Limit</th>
-                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
+                    <th class="px-4 py-3 font-semibold">Subscription</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Joined</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
@@ -1582,18 +1326,17 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No IPM accounts yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No IPM accounts yet.</td></tr>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Account active')"></p></td>
-                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.country_name || adminCountryName(adminStaffCountryId(staffRow))"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.landlord_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_max_landlords"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffSubscriptionBadgeClass(staffRow)" x-text="staffSubscriptionPlanStatusLabel(staffRow)"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffSubscriptionBadgeClass(staffRow)" x-text="staffSubscriptionLabel(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_subscription_expires_at ? formatDate(staffRow.staff_subscription_expires_at) : '-'"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
@@ -1647,7 +1390,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="admin.adminTeamForm.phone">
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.adminTeamForm.phone">
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
@@ -1704,7 +1447,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="admin.freelancerForm.phone">
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.freelancerForm.phone">
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
@@ -1902,7 +1645,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="admin.addForm.phone">
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.addForm.phone">
                 </label>
 
                 <template x-if="admin.generatedInviteLink">
@@ -1951,7 +1694,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="admin.editForm.phone">
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.editForm.phone">
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
@@ -1992,22 +1735,17 @@
 
               <form class="space-y-4" @submit.prevent="saveSubscription">
                 <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Plan</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.plan" required>
-                    <option value="free">Free</option>
-                    <option value="starter">Starter</option>
-                    <option value="growth">Growth</option>
-                    <option value="portfolio">Portfolio</option>
-                    <option value="custom">Custom</option>
-                    <option value="standard">Standard</option>
-                  </select>
-                </label>
-                <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.status" required>
-                    <option value="trial">Trial</option>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection" required>
+                    <option value="free:active">Active - Free</option>
+                    <option value="starter:trial">Starter - Trial</option>
+                    <option value="starter:active">Starter - Active</option>
+                    <option value="growth:trial">Growth - Trial</option>
+                    <option value="growth:active">Growth - Active</option>
+                    <option value="portfolio:trial">Portfolio - Trial</option>
+                    <option value="portfolio:active">Portfolio - Active</option>
+                    <option value="custom:trial">Custom - Trial</option>
+                    <option value="custom:active">Custom - Active</option>
                   </select>
                 </label>
                 <label class="block">
@@ -2810,7 +2548,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="tenantLease.tenantForm.phone">
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="tenantLease.tenantForm.phone">
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -2901,7 +2639,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Phone</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="tenantLease.editTenantForm.phone">
+                        <input class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500" type="tel" x-model.trim="tenantLease.editTenantForm.phone">
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-xs font-semibold uppercase tracking-wide text-slate-500">Email</span>
@@ -3275,7 +3013,7 @@
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                       <div>
                         <h1 class="text-xl font-bold text-slate-900">Finance</h1>
-                        <p class="mt-1 text-sm text-slate-500" x-text="isPartnerFinanceAccount() ? 'Track payments received from connected landlords.' : 'Track revenue generated from verified rent payments. Refundable deposits are not counted as revenue.'"></p>
+                        <p class="mt-1 text-sm text-slate-500">Track revenue generated from verified rent payments. Refundable deposits are not counted as revenue.</p>
                       </div>
                       <div class="flex flex-wrap gap-2">
                         <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadFinanceCsv" :disabled="filteredFinancePayments().length === 0">Download CSV</button>
@@ -3287,52 +3025,13 @@
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="finance.error"></div>
                     </template>
 
-                    <form x-show="canRecordPartnerPayments()" class="mt-5 grid gap-3 lg:grid-cols-6" @submit.prevent="recordPartnerPayment">
-                      <label class="block lg:col-span-2">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">Landlord</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.partnerForm.landlordId" required>
-                          <option value="">Select landlord</option>
-                          <template x-for="relationship in partnerFinanceLandlordOptions()" :key="`partner-finance-landlord-${relationship.landlord_id}`">
-                            <option :value="relationship.landlord_id" x-text="`${relationship.landlord?.full_name || 'Landlord'} - ${relationship.landlord?.email || ''}`"></option>
-                          </template>
-                        </select>
-                      </label>
-                      <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">Amount</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="finance.partnerForm.amount" required>
-                      </label>
-                      <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">Paid date</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.paidAt" required>
-                      </label>
-                      <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">From</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.periodStart" required>
-                      </label>
-                      <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">To</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="finance.partnerForm.periodEnd" required>
-                      </label>
-                      <label class="block lg:col-span-5">
-                        <span class="mb-2 block text-sm font-medium text-slate-700">Notes</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="finance.partnerForm.notes" placeholder="Subscription, management fee, service fee">
-                      </label>
-                      <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="finance.saving">Record Payment</button>
-                    </form>
-
                     <div class="mt-5 grid gap-3 lg:grid-cols-4">
                       <label class="block">
-                        <span class="mb-2 block text-sm font-medium text-slate-700" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Property'"></span>
-                        <select x-show="!isPartnerFinanceAccount()" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property">
+                        <span class="mb-2 block text-sm font-medium text-slate-700">Property</span>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property">
                           <option value="">All properties</option>
-                          <template x-for="option in financePrimaryOptions()" :key="`property-filter-${option}`">
-                            <option :value="option" x-text="option"></option>
-                          </template>
-                        </select>
-                        <select x-show="isPartnerFinanceAccount()" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.landlord">
-                          <option value="">All landlords</option>
-                          <template x-for="option in financePrimaryOptions()" :key="`landlord-filter-${option}`">
-                            <option :value="option" x-text="option"></option>
+                          <template x-for="property in financePropertyOptions()" :key="property">
+                            <option :value="property" x-text="property"></option>
                           </template>
                         </select>
                       </label>
@@ -3346,7 +3045,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Search</span>
-                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="finance.filters.search" :placeholder="isPartnerFinanceAccount() ? 'Landlord, notes' : 'Tenant, unit, receipt'">
+                        <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="finance.filters.search" placeholder="Tenant, unit, receipt">
                       </label>
                     </div>
                   </section>
@@ -3391,12 +3090,12 @@
 
                     <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="border-b border-slate-200 px-4 py-3">
-                        <h2 class="text-sm font-semibold text-slate-900" x-text="isPartnerFinanceAccount() ? 'Revenue by Landlord' : 'Revenue by Property'"></h2>
+                        <h2 class="text-sm font-semibold text-slate-900">Revenue by Property</h2>
                       </div>
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Property'"></th><th class="px-4 py-3 font-semibold">Payments</th><th class="px-4 py-3 font-semibold">Revenue</th></tr>
+                            <tr><th class="px-4 py-3 font-semibold">Property</th><th class="px-4 py-3 font-semibold">Payments</th><th class="px-4 py-3 font-semibold">Revenue</th></tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
                             <template x-if="!finance.loading && filteredFinanceByProperty().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="3">No revenue yet.</td></tr></template>
@@ -3415,12 +3114,12 @@
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Landlord' : 'Tenant'"></th><th class="px-4 py-3 font-semibold" x-text="isPartnerFinanceAccount() ? 'Email' : 'Unit'"></th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th></tr>
+                            <tr><th class="px-4 py-3 font-semibold">Tenant</th><th class="px-4 py-3 font-semibold">Unit</th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th></tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
                             <template x-if="!finance.loading && filteredFinancePayments().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No verified payments.</td></tr></template>
                             <template x-for="payment in filteredFinancePayments().slice(0, 20)" :key="payment.id">
-                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="isPartnerFinanceAccount() ? payment.landlord : payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="isPartnerFinanceAccount() ? payment.landlordEmail : payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td></tr>
+                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -3669,29 +3368,17 @@
                         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                           <tr>
                             <th class="px-4 py-3 font-semibold">Landlord</th>
-                            <th class="px-4 py-3 font-semibold">Phone</th>
-                            <th class="px-4 py-3 font-semibold">Properties</th>
-                            <th class="px-4 py-3 font-semibold">Tenants</th>
-                            <th class="px-4 py-3 font-semibold">Permissions</th>
-                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
-                            <th class="px-4 py-3 font-semibold">Expiry Date</th>
-                            <th class="px-4 py-3 font-semibold">Partnership Status</th>
+                            <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="staffContext.relationships.length === 0 && staffContext.requests.length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No landlord connections yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="3">No landlord connections yet.</td></tr>
                           </template>
                           <template x-for="request in staffContext.requests" :key="`ipm-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.landlord?.email || ''"></p></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="request.landlord?.phone || '-'"></td>
-                              <td class="px-4 py-3 text-slate-700">Pending review</td>
-                              <td class="px-4 py-3 text-slate-700">-</td>
-                              <td class="px-4 py-3 text-slate-700">-</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
                               <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
                             </tr>
@@ -3699,18 +3386,8 @@
                           <template x-for="relationship in staffContext.relationships" :key="`ipm-relationship-${relationship.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="relationship.landlord?.full_name || 'Landlord'"></p><p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord?.email || ''"></p></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="relationship.landlord?.phone || '-'"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="partnerPropertyScopeLabel(relationship)"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="partnerTenantCountLabel(relationship)"></td>
-                              <td class="px-4 py-3"><div class="flex max-w-md flex-wrap gap-1.5"><template x-for="badge in staffPermissionBadges(relationship)" :key="badge"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700" x-text="badge"></span></template></div></td>
-                              <td class="px-4 py-3">
-                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_start_date || ''" @change="updatePartnerContractDate('ipm', relationship, 'contract_start_date', $event.target.value)">
-                              </td>
-                              <td class="px-4 py-3">
-                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_end_date || ''" @change="updatePartnerContractDate('ipm', relationship, 'contract_end_date', $event.target.value)">
-                              </td>
-                              <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="partnershipStatusBadgeClass(relationship)" x-text="partnershipStatusLabel(relationship)"></span></td>
-                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchStaffLandlord(relationship.landlord_id)">Open</button><button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropPartnerLandlord('ipm', relationship)">Drop Landlord</button></div></td>
+                              <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
+                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="switchStaffLandlord(relationship.landlord_id)">Open</button></td>
                             </tr>
                           </template>
                         </tbody>
@@ -3769,15 +3446,13 @@
                             <th class="px-4 py-3 font-semibold">Properties</th>
                             <th class="px-4 py-3 font-semibold">Tenants</th>
                             <th class="px-4 py-3 font-semibold">Permissions</th>
-                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
-                            <th class="px-4 py-3 font-semibold">Expiry Date</th>
-                            <th class="px-4 py-3 font-semibold">Partnership Status</th>
+                            <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!managementContext.loading && filteredManagementRequests().length === 0 && filteredManagementRelationships().length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No landlord connections yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No landlord connections yet.</td></tr>
                           </template>
                           <template x-for="request in filteredManagementRequests()" :key="`mgmt-request-${request.id}`">
                             <tr class="odd:bg-white even:bg-slate-50/60">
@@ -3786,8 +3461,6 @@
                               <td class="px-4 py-3 text-slate-700">Pending review</td>
                               <td class="px-4 py-3 text-slate-700">-</td>
                               <td class="px-4 py-3 text-slate-700">-</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
                               <td class="px-4 py-3 text-slate-500">Waiting for landlord</td>
                             </tr>
@@ -3799,14 +3472,8 @@
                               <td class="px-4 py-3 text-slate-700"><p x-text="relationship.all_properties ? `${managementLandlordProperties(relationship.landlord_id).length} properties` : `${(relationship.property_ids || []).length} selected`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordPropertyNames(relationship.landlord_id) || '-'"></p></td>
                               <td class="px-4 py-3 text-slate-700"><p x-text="`${managementLandlordTenants(relationship.landlord_id).length} tenants`"></p><p class="mt-1 max-w-56 truncate text-xs text-slate-500" x-text="managementLandlordTenantNames(relationship.landlord_id) || '-'"></p></td>
                               <td class="px-4 py-3"><div class="flex max-w-md flex-wrap gap-1.5"><template x-for="badge in staffPermissionBadges(relationship)" :key="badge"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700" x-text="badge"></span></template></div></td>
-                              <td class="px-4 py-3">
-                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_start_date || ''" @change="updatePartnerContractDate('pmc', relationship, 'contract_start_date', $event.target.value)">
-                              </td>
-                              <td class="px-4 py-3">
-                                <input class="w-40 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs outline-none focus:border-emerald-500" type="date" :value="relationship.contract_end_date || ''" @change="updatePartnerContractDate('pmc', relationship, 'contract_end_date', $event.target.value)">
-                              </td>
-                              <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="partnershipStatusBadgeClass(relationship)" x-text="partnershipStatusLabel(relationship)"></span></td>
-                              <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlordProperties(relationship.landlord_id)">View</button><button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropPartnerLandlord('pmc', relationship)">Drop Landlord</button></div></td>
+                              <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
+                              <td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLandlordProperties(relationship.landlord_id)">View</button></td>
                             </tr>
                           </template>
                         </tbody>
@@ -3830,14 +3497,11 @@
                         </div>
                       </div>
                       <div class="flex flex-wrap gap-2">
-                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="button" @click="openStaffInviteModal" :disabled="profile?.role === 'landlord' && !canInvitePersonalStaff()">Invite Staff</button>
+                        <button x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openStaffInviteModal">Invite Staff</button>
                         <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                       </div>
                     </div>
 
-                    <template x-if="profile?.role === 'landlord' && !canInvitePersonalStaff()">
-                      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800" x-text="personalStaffLimitMessage()"></div>
-                    </template>
                     <template x-if="staff.error">
                       <div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="staff.error"></div>
                     </template>
@@ -3866,9 +3530,7 @@
                             <th class="px-4 py-3 font-semibold">Company</th>
                             <th class="px-4 py-3 font-semibold">Leader</th>
                             <th class="px-4 py-3 font-semibold">Properties</th>
-                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
-                            <th class="px-4 py-3 font-semibold">Expiry Date</th>
-                            <th class="px-4 py-3 font-semibold">Partnership Status</th>
+                            <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
@@ -3878,8 +3540,6 @@
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.company?.company_name || 'PMC'"></p></td>
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="request.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="request.leader?.email || ''"></p></td>
                               <td class="px-4 py-3 text-slate-700">Choose on approval</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
-                              <td class="px-4 py-3 text-slate-500">-</td>
                               <td class="px-4 py-3"><span class="rounded-full bg-yellow-100 px-2.5 py-1 text-xs font-semibold text-amber-700">Pending</span></td>
                               <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="openManagementPermissionsModal(request, 'request')">Approve</button><button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectManagementRequest(request)">Reject</button></div></td>
                             </tr>
@@ -3889,9 +3549,7 @@
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.company?.company_name || 'PMC'"></p></td>
                               <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="partner.leader?.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="partner.leader?.email || ''"></p></td>
                               <td class="px-4 py-3 text-slate-700" x-text="partner.all_properties ? 'All properties' : `${(partner.property_ids || []).length} selected`"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="formatDate(partner.contract_start_date) || '-'"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="formatDate(partner.contract_end_date) || '-'"></td>
-                              <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="partnershipStatusBadgeClass(partner)" x-text="partnershipStatusLabel(partner)"></span></td>
+                              <td class="px-4 py-3"><span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">Approved</span></td>
                               <td class="px-4 py-3"><div class="flex flex-wrap gap-2"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementPermissionsModal(partner, 'edit')">Edit</button><button class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="unassignManagementPartner(partner)">Unassign</button></div></td>
                             </tr>
                           </template>
@@ -3912,16 +3570,13 @@
                             <th class="px-4 py-3 font-semibold">Status</th>
                             <th class="px-4 py-3 font-semibold">Properties</th>
                             <th class="px-4 py-3 font-semibold">Permissions</th>
-                            <th class="px-4 py-3 font-semibold">Partnered Date</th>
-                            <th class="px-4 py-3 font-semibold">Expiry Date</th>
-                            <th class="px-4 py-3 font-semibold">Partnership Status</th>
                             <th class="px-4 py-3 font-semibold">Invited</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!staff.loading && staff.members.length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No staff invited yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No staff invited yet.</td></tr>
                           </template>
                           <template x-for="member in staff.members" :key="member.rowKey">
                             <tr class="odd:bg-white even:bg-slate-50/60">
@@ -3940,14 +3595,11 @@
                                   </template>
                                 </div>
                               </td>
-                              <td class="px-4 py-3 text-slate-700" x-text="member.staff_type === 'freelancer' ? (formatDate(member.contract_start_date) || '-') : '-'"></td>
-                              <td class="px-4 py-3 text-slate-700" x-text="member.staff_type === 'freelancer' ? (formatDate(member.contract_end_date) || '-') : '-'"></td>
-                              <td class="px-4 py-3"><template x-if="member.staff_type === 'freelancer'"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="partnershipStatusBadgeClass(member)" x-text="partnershipStatusLabel(member)"></span></template><template x-if="member.staff_type !== 'freelancer'"><span class="text-slate-500">-</span></template></td>
                               <td class="px-4 py-3 text-slate-700" x-text="formatDate(member.invited_at || member.created_at)"></td>
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                   <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openStaffPermissionsModal(member)">Edit</button>
-                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="openStaffPermissionsModal(member)">Approve</button>
+                                  <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="approveStaffRequest(member)">Approve</button>
                                   <button x-show="!member.accepted && member.request_id" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="rejectStaffRequest(member)">Reject</button>
                                   <button x-show="!member.accepted && member.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(member.invite_link)">Copy Link</button>
                                   <button x-show="member.accepted || member.invite_id" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="removeStaff(member)">Delete</button>
@@ -3964,7 +3616,7 @@
                     <section class="flex max-h-[88vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                       <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
                         <div>
-                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'PMC Permissions' : (staff.selectedMember?.request_id && !staff.selectedMember?.accepted ? 'Approve Staff Request' : 'Edit Staff Permissions'))"></h2>
+                          <h2 class="text-lg font-bold text-slate-900" x-text="staff.modal === 'invite' ? 'Invite Staff' : (staff.modal === 'management-permissions' ? 'PMC Permissions' : 'Edit Staff Permissions')"></h2>
                           <p class="mt-1 text-sm text-slate-500" x-text="staff.modal === 'management-permissions' ? managementPermissionTargetLabel() : (staff.selectedMember?.email || 'Create a single-use invite that expires in 48 hours.')"></p>
                         </div>
                         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeStaffModal" aria-label="Close modal">
@@ -3985,7 +3637,7 @@
                           </label>
                           <label class="block">
                             <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="staff.form.phone">
+                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="staff.form.phone">
                           </label>
                         </div>
 
@@ -4056,7 +3708,7 @@
 
                         <div class="flex justify-end gap-3 border-t border-slate-200 bg-white px-5 py-4">
                           <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeStaffModal">Cancel</button>
-                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : ((staff.modal === 'management-permissions' && staff.selectedMember?.managementMode === 'request') || (staff.selectedMember?.request_id && !staff.selectedMember?.accepted) ? 'Accept' : 'Save Permissions')"></button>
+                          <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="staff.saving" x-text="staff.modal === 'invite' ? 'Create Invite' : (staff.modal === 'management-permissions' && staff.selectedMember?.managementMode === 'request' ? 'Accept' : 'Save Permissions')"></button>
                         </div>
                       </form>
                     </section>
@@ -4135,7 +3787,7 @@
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="settings.profileForm.phone">
+                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="settings.profileForm.phone">
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -4182,12 +3834,12 @@
 
                     <div class="grid gap-4 lg:grid-cols-3">
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-sm font-medium text-slate-500">Plan / Status</p>
-                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="accountPlanStatusBadgeClass()" x-text="accountPlanStatusLabel()"></span>
+                        <p class="text-sm font-medium text-slate-500">Subscription Status</p>
+                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'trial')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.subscription_plan === 'free' && account.subscription?.status === 'active' ? 'free' : (account.subscription?.status || 'trial'))"></span>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Account Expires</p>
-                        <p class="mt-3 text-xl font-bold text-slate-900" x-text="subscriptionExpiryLabel(account.subscription)"></p>
+                        <p class="mt-3 text-xl font-bold text-slate-900" x-text="formatDate(account.subscription?.expires_at)"></p>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Days Remaining</p>
@@ -4210,7 +3862,7 @@
                       <section class="rounded-lg border border-slate-200 p-4">
                         <h2 class="text-sm font-semibold text-slate-900">Subscription Details</h2>
                         <dl class="mt-4 space-y-3 text-sm">
-                          <div class="flex justify-between gap-4"><dt class="text-slate-500">Plan / Status</dt><dd class="font-medium text-slate-900" x-text="accountPlanStatusLabel()"></dd></div>
+                          <div x-show="account.subscription?.subscription_plan" class="flex justify-between gap-4"><dt class="text-slate-500">Plan</dt><dd class="font-medium text-slate-900" x-text="titleCase(account.subscription?.subscription_plan || '-')"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Started</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.created_at)"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Last Updated</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.updated_at)"></dd></div>
                           <div x-show="account.subscription?.property_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Property Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.property_limit ?? '-'"></dd></div>
@@ -4527,7 +4179,7 @@
                 <h2 class="text-sm font-semibold text-slate-900">Profile</h2>
                 <form class="mt-4 space-y-4" @submit.prevent="saveProfileSettings">
                   <label class="block"><span class="mb-2 block text-sm font-medium text-slate-700">Full name</span><input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="settings.profileForm.fullName" required></label>
-                  <label class="block"><span class="mb-2 block text-sm font-medium text-slate-700">Phone</span><input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" list="countryDialCodes" inputmode="tel" placeholder="+263 77 123 4567" x-model.trim="settings.profileForm.phone"></label>
+                  <label class="block"><span class="mb-2 block text-sm font-medium text-slate-700">Phone</span><input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="settings.profileForm.phone"></label>
                   <button class="w-full rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="settings.savingProfile">Save Profile</button>
                 </form>
               </section>
@@ -4801,8 +4453,9 @@
             countryId: ''
           },
           subscriptionForm: {
-            plan: 'standard',
-            status: 'trial',
+            planStatus: 'free:active',
+            plan: 'free',
+            status: 'active',
             expiresAt: '',
             propertyLimit: 5,
             unitLimit: 25,
@@ -4933,24 +4586,14 @@
         },
         finance: {
           loading: false,
-          saving: false,
           error: '',
           payments: [],
           byProperty: [],
           filters: {
             property: '',
-            landlord: '',
             startDate: '',
             endDate: '',
             search: ''
-          },
-          partnerForm: {
-            landlordId: '',
-            amount: 0,
-            paidAt: '',
-            periodStart: '',
-            periodEnd: '',
-            notes: ''
           },
           stats: {
             totalRevenue: 0,
@@ -5181,7 +4824,7 @@
             );
 
             if (error) {
-              this.authError = this.friendlyErrorMessage(error);
+              this.authError = error.message;
               this.currentShell = 'login';
               this.booting = false;
               return;
@@ -5220,13 +4863,13 @@
                   await this.loadAuthenticatedUser(session.user);
                 }
               } catch (error) {
-                this.authError = this.friendlyErrorMessage(error, 'Authentication state could not be restored.');
+                this.authError = error.message || 'Authentication state could not be restored.';
                 this.currentShell = 'login';
                 this.booting = false;
               }
             });
           } catch (error) {
-            this.authError = this.friendlyErrorMessage(error, 'Mushavo could not finish loading. Please refresh once or sign in again.');
+            this.authError = error.message || 'Mushavo could not finish loading. Please refresh once or sign in again.';
             this.currentShell = 'login';
             this.booting = false;
           }
@@ -5269,7 +4912,7 @@
           });
 
           if (error) {
-            this.invite.error = this.friendlyErrorMessage(error, 'This invite link is invalid or expired.');
+            this.invite.error = error.message || 'This invite link is invalid or expired.';
             this.invite.loading = false;
             return;
           }
@@ -5290,21 +4933,11 @@
           this.invite.loading = false;
         },
 
-        inviteNameLocked() {
-          const metadata = this.invite.tokenRow?.metadata || {};
-          return Boolean(metadata.full_name || metadata.fullName);
-        },
-
         async acceptInvite() {
           this.invite.submitError = '';
 
           if (!this.invite.tokenRow) {
             this.invite.submitError = 'Invite details are not loaded yet.';
-            return;
-          }
-
-          if (!String(this.invite.form.fullName || '').trim()) {
-            this.invite.submitError = 'Enter your full name to create this account.';
             return;
           }
 
@@ -5348,7 +4981,7 @@
 
               if (existingProfileError) {
                 await supabaseClient.auth.signOut();
-                this.invite.submitError = this.friendlyErrorMessage(existingProfileError);
+                this.invite.submitError = existingProfileError.message;
                 this.invite.submitting = false;
                 return;
               }
@@ -5360,7 +4993,7 @@
 
                 if (profileRepairError) {
                   await supabaseClient.auth.signOut();
-                  this.invite.submitError = this.friendlyErrorMessage(profileRepairError);
+                  this.invite.submitError = profileRepairError.message;
                   this.invite.submitting = false;
                   return;
                 }
@@ -5377,7 +5010,7 @@
 
               if (tenantLinkError) {
                 await supabaseClient.auth.signOut();
-                this.invite.submitError = this.friendlyErrorMessage(tenantLinkError);
+                this.invite.submitError = tenantLinkError.message;
                 this.invite.submitting = false;
                 return;
               }
@@ -5389,8 +5022,30 @@
             }
           }
 
-          const invitedProfilePayload = userId => ({
-            id: userId,
+          const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+            email: inviteEmail,
+            password: this.invite.form.password
+          });
+
+          if (signUpError) {
+            const alreadyRegistered = /already registered|already exists|user exists/i.test(signUpError.message);
+            this.invite.submitError = signUpError.message.includes('Signups not allowed')
+              ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
+              : alreadyRegistered && tokenRow.role === 'tenant'
+                ? 'This tenant email already has a Mushavo login. Enter the existing password to accept this invite, or reset the password first.'
+                : signUpError.message;
+            this.invite.submitting = false;
+            return;
+          }
+
+          if (!signUpData.session || !signUpData.user) {
+            this.invite.submitError = 'Account created, but Supabase did not start a session. Disable email confirmation for invite-only accounts, then retry with a fresh invite.';
+            this.invite.submitting = false;
+            return;
+          }
+
+          const profilePayload = {
+            id: signUpData.user.id,
             landlord_id: ['staff', 'management_staff'].includes(tokenRow.role) ? tokenRow.landlord_id : null,
             country_id: ['landlord', 'management_leader', 'admin_staff'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
@@ -5401,81 +5056,14 @@
             staff_max_landlords: tokenRow.role === 'staff' ? Number(metadata.staff_max_landlords || (metadata.staff_type === 'freelancer' ? 2 : 1)) : 2,
             staff_subscription_status: tokenRow.role === 'staff' ? (metadata.staff_subscription_status || (metadata.staff_type === 'freelancer' ? 'free' : 'active')) : 'free',
             staff_subscription_expires_at: tokenRow.role === 'staff' ? (metadata.staff_subscription_expires_at || null) : null
-          });
+          };
 
-          let invitedUser = null;
-          let existingProfile = null;
-
-          const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-            email: inviteEmail,
-            password: this.invite.form.password
-          });
-
-          if (signUpError) {
-            const alreadyRegistered = /already registered|already exists|user exists/i.test(signUpError.message);
-
-            if (!alreadyRegistered) {
-              this.invite.submitError = signUpError.message.includes('Signups not allowed')
-                ? 'Supabase Auth signups are disabled for this project. Enable Email signups in Supabase Auth settings, then retry this invite link.'
-                : this.friendlyErrorMessage(signUpError);
-              this.invite.submitting = false;
-              return;
-            }
-
-            const { data: invitedSignInData, error: invitedSignInError } = await supabaseClient.auth.signInWithPassword({
-              email: inviteEmail,
-              password: this.invite.form.password
-            });
-
-            if (invitedSignInError || !invitedSignInData?.user) {
-              this.invite.submitError = tokenRow.role === 'tenant'
-                ? 'This tenant email already has a Mushavo login. Enter the existing password to accept this invite, or reset the password first.'
-                : 'This email already has a Mushavo login. Enter the password used before, or ask support to remove the incomplete account.';
-              this.invite.submitting = false;
-              return;
-            }
-
-            invitedUser = invitedSignInData.user;
-
-            const { data: profileCheck, error: profileCheckError } = await supabaseClient
-              .from('profiles')
-              .select('id, role, email')
-              .eq('id', invitedUser.id)
-              .maybeSingle();
-
-            if (profileCheckError) {
-              await supabaseClient.auth.signOut();
-              this.invite.submitError = this.friendlyErrorMessage(profileCheckError);
-              this.invite.submitting = false;
-              return;
-            }
-
-            if (profileCheck && profileCheck.role !== tokenRow.role) {
-              await supabaseClient.auth.signOut();
-              this.invite.submitError = 'This email is already used by a different Mushavo account type.';
-              this.invite.submitting = false;
-              return;
-            }
-
-            existingProfile = profileCheck;
-          } else {
-            if (!signUpData.session || !signUpData.user) {
-              this.invite.submitError = 'Account created, but Supabase did not start a session. Disable email confirmation for invite-only accounts, then retry with a fresh invite.';
-              this.invite.submitting = false;
-              return;
-            }
-
-            invitedUser = signUpData.user;
-          }
-
-          const profilePayload = invitedProfilePayload(invitedUser.id);
-
-          const { error: profileError } = existingProfile ? { error: null } : await supabaseClient
+          const { error: profileError } = await supabaseClient
             .from('profiles')
             .insert(profilePayload);
 
           if (profileError) {
-            this.invite.submitError = this.friendlyErrorMessage(profileError);
+            this.invite.submitError = profileError.message;
             this.invite.submitting = false;
             return;
           }
@@ -5485,7 +5073,7 @@
               .from('staff_permissions')
               .insert({
                 landlord_id: tokenRow.landlord_id,
-                staff_profile_id: invitedUser.id,
+                staff_profile_id: signUpData.user.id,
                 all_properties: Boolean(metadata.all_properties),
                 property_ids: metadata.property_ids || [],
                 can_view_properties: metadata.can_view_properties !== false,
@@ -5523,7 +5111,7 @@
               });
 
             if (permissionsError) {
-              this.invite.submitError = this.friendlyErrorMessage(permissionsError);
+              this.invite.submitError = permissionsError.message;
               this.invite.submitting = false;
               return;
             }
@@ -5534,7 +5122,7 @@
               .from('management_staff_permissions')
               .insert({
                 management_company_id: metadata.management_company_id,
-                staff_profile_id: invitedUser.id,
+                staff_profile_id: signUpData.user.id,
                 all_properties: Boolean(metadata.all_properties ?? true),
                 property_ids: metadata.property_ids || [],
                 can_view_properties: metadata.can_view_properties !== false,
@@ -5573,7 +5161,7 @@
               });
 
             if (managementStaffError) {
-              this.invite.submitError = this.friendlyErrorMessage(managementStaffError);
+              this.invite.submitError = managementStaffError.message;
               this.invite.submitting = false;
               return;
             }
@@ -5587,7 +5175,7 @@
             });
 
             if (tenantError) {
-              this.invite.submitError = this.friendlyErrorMessage(tenantError);
+              this.invite.submitError = tenantError.message;
               this.invite.submitting = false;
               return;
             }
@@ -5603,7 +5191,7 @@
               .eq('id', tokenRow.id);
 
           if (tokenError) {
-            this.invite.submitError = this.friendlyErrorMessage(tokenError);
+            this.invite.submitError = tokenError.message;
             this.invite.submitting = false;
             return;
           }
@@ -5673,7 +5261,7 @@
 
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
           if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role) || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
-          if (page === 'finance') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || this.profile?.staff_type === 'freelancer' || Boolean(this.permissions.can_view_finance);
+          if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
           if (page === 'management-landlords') return this.profile?.role === 'management_leader' || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
           if (page === 'staff') return this.profile?.role === 'landlord' || this.profile?.role === 'management_leader' || Boolean(this.permissions.can_manage_staff);
           return this.canShowAppPage(page);
@@ -5717,13 +5305,6 @@
           }
           this.admin.selectedCountryId = countryId;
           return true;
-        },
-
-        adminScopedCountryId(fallback = '') {
-          if (this.profile?.role === 'admin_staff') {
-            return this.profile.country_id || '';
-          }
-          return fallback || '';
         },
 
         adminCountryCurrency(countryId) {
@@ -5890,7 +5471,7 @@
         },
 
         adminStaffCountryId(staffRow) {
-          return staffRow?.country_id || staffRow?.primary_country_id || staffRow?.metadata?.country_id || null;
+          return staffRow?.country_id || staffRow?.primary_country_id || null;
         },
 
         adminSelectedStats() {
@@ -6142,7 +5723,7 @@
 
           const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
-            this.admin.error = this.friendlyErrorMessage(firstError);
+            this.admin.error = firstError.message;
             this.admin.loading = false;
             return;
           }
@@ -6150,7 +5731,7 @@
           this.admin.countries = countriesResult.data || [];
           this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
           if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
-            this.admin.error = this.friendlyErrorMessage(enquiriesResult.error);
+            this.admin.error = enquiriesResult.error.message;
           }
           this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
@@ -6248,21 +5829,16 @@
 
           const acceptedFreelancerStaff = (staffProfilesResult.data || [])
           .filter(profile => (profile.staff_type || 'landlord') === 'freelancer')
-          .map(profile => {
-            const countryId = profile.country_id || staffCountryById.get(profile.id) || null;
-            return {
-              ...profile,
-              rowKey: `staff-profile-${profile.id}`,
-              accepted: true,
-              profile_id: profile.id,
-              invite_id: null,
-              invite_link: '',
-              country_id: countryId,
-              primary_country_id: countryId,
-              country_name: this.adminCountryName(countryId),
-              landlord_count: staffLandlordCounts.get(profile.id) || 0
-            };
-          });
+          .map(profile => ({
+            ...profile,
+            rowKey: `staff-profile-${profile.id}`,
+            accepted: true,
+            profile_id: profile.id,
+            invite_id: null,
+            invite_link: '',
+            primary_country_id: profile.country_id || staffCountryById.get(profile.id) || null,
+            landlord_count: staffLandlordCounts.get(profile.id) || 0
+          }));
 
           const acceptedFreelancerEmails = new Set(acceptedFreelancerStaff.map(row => String(row.email || '').toLowerCase()).filter(Boolean));
           const pendingFreelancerStaff = (staffInvitesResult.data || [])
@@ -6486,7 +6062,7 @@
             .single();
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6503,15 +6079,14 @@
           this.admin.modal = modalName;
 
           if (modalName === 'add') {
-            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
-            if (!countryId) {
+            if (this.admin.selectedCountryId === 'all' || this.admin.selectedCountryId === 'unassigned') {
               this.admin.formError = 'Select a country before adding a landlord.';
             }
             this.admin.addForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId
+              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : ''
             };
           }
 
@@ -6524,13 +6099,12 @@
           }
 
           if (modalName === 'management-add') {
-            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
             this.admin.managementAddForm = {
               companyName: '',
               leaderName: '',
               email: '',
               phone: '',
-              countryId,
+              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
               maxLandlords: 2,
               maxProperties: 10,
               maxStaff: 3,
@@ -6549,12 +6123,11 @@
           }
 
           if (modalName === 'freelancer-add') {
-            const countryId = this.adminScopedCountryId(this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '');
             this.admin.freelancerForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId,
+              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
               maxLandlords: 2,
               subscriptionStatus: 'free',
               expiresAt: ''
@@ -6618,7 +6191,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -6661,7 +6234,7 @@
               .eq('role', 'admin_staff');
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -6673,7 +6246,7 @@
               .eq('role', 'admin_staff');
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -6700,7 +6273,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6725,7 +6298,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6749,7 +6322,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6766,7 +6339,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6790,7 +6363,7 @@
             .eq('role', 'admin_staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -6809,7 +6382,7 @@
             fullName: staffRow.full_name || '',
             email: staffRow.email || '',
             phone: staffRow.phone || '',
-            countryId: this.adminScopedCountryId(this.adminStaffCountryId(staffRow) || ''),
+            countryId: this.adminStaffCountryId(staffRow) || '',
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
             subscriptionStatus: staffRow.staff_subscription_status || 'free',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
@@ -6823,12 +6396,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.adminScopedCountryId(this.admin.freelancerForm.countryId || '') || null;
-          if (!countryId) {
-            this.admin.formError = 'Select the country this IPM belongs to.';
-            this.admin.saving = false;
-            return;
-          }
+          const countryId = this.admin.freelancerForm.countryId || null;
           const payload = {
             full_name: this.admin.freelancerForm.fullName,
             email: this.admin.freelancerForm.email,
@@ -6862,7 +6430,7 @@
               .eq('id', row.invite_id);
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -6875,7 +6443,7 @@
               .eq('staff_type', 'freelancer');
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -6898,7 +6466,7 @@
             leaderName: company.leader_name || '',
             email: company.email || '',
             phone: company.phone || company.leader?.phone || '',
-            countryId: this.adminScopedCountryId(company.country_id || ''),
+            countryId: company.country_id || '',
             maxLandlords: Number(company.max_landlords || 0),
             maxProperties: Number(company.max_properties || 0),
             maxStaff: Number(company.max_staff || 0),
@@ -6942,7 +6510,7 @@
             landlord_id: payerType === 'landlord' ? accountId : null,
             staff_id: payerType === 'staff' ? accountId : null,
             management_company_id: payerType === 'management' ? accountId : null,
-            country_id: this.adminScopedCountryId(landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || '') || null,
+            country_id: landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || null,
             amount_paid: Number(this.admin.financeForm.amount || 0),
             paid_at: this.admin.financeForm.paidAt,
             period_start: this.admin.financeForm.periodStart,
@@ -6957,7 +6525,7 @@
           const { error } = await query;
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7008,7 +6576,7 @@
             .eq('id', payment.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7031,35 +6599,66 @@
           this.admin.editForm = {
             fullName: row.full_name || '',
             phone: row.phone || '',
-            countryId: this.adminScopedCountryId(country)
+            countryId: country
           };
           this.admin.modal = 'edit';
         },
 
         openSubscriptionModal(row) {
           const expiresAt = row.subscription?.expires_at || this.addDaysIso(30);
+          const plan = row.subscription?.subscription_plan || 'free';
+          const status = row.subscription?.status || 'active';
           this.admin.error = '';
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = row;
           this.admin.subscriptionForm = {
-            plan: row.subscription?.subscription_plan || 'free',
-            status: row.subscription?.status || 'active',
+            planStatus: this.subscriptionPlanStatusValue(plan, status),
+            plan: plan === 'standard' ? 'custom' : plan,
+            status: status === 'suspended' ? 'active' : status,
             expiresAt: this.toDateInputValue(expiresAt),
-            propertyLimit: Number(row.subscription?.property_limit ?? 1),
-            unitLimit: Number(row.subscription?.unit_limit ?? 1),
-            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 0),
-            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 1),
+            propertyLimit: Number(row.subscription?.property_limit ?? 5),
+            unitLimit: Number(row.subscription?.unit_limit ?? 25),
+            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 1),
+            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 2),
             notes: row.subscription?.notes || ''
           };
           this.admin.modal = 'subscription';
+        },
+
+        subscriptionPlanStatusValue(plan, status) {
+          const normalizedPlan = String(plan || 'free').toLowerCase() === 'standard'
+            ? 'custom'
+            : String(plan || 'free').toLowerCase();
+          const normalizedStatus = String(status || 'active').toLowerCase() === 'suspended'
+            ? 'active'
+            : String(status || 'active').toLowerCase();
+          const allowed = new Set([
+            'free:active',
+            'starter:trial',
+            'starter:active',
+            'growth:trial',
+            'growth:active',
+            'portfolio:trial',
+            'portfolio:active',
+            'custom:trial',
+            'custom:active'
+          ]);
+          const value = `${normalizedPlan}:${normalizedStatus}`;
+          return allowed.has(value) ? value : 'free:active';
+        },
+
+        applySubscriptionPlanStatusSelection() {
+          const [plan = 'free', status = 'active'] = String(this.admin.subscriptionForm.planStatus || 'free:active').split(':');
+          this.admin.subscriptionForm.plan = plan;
+          this.admin.subscriptionForm.status = status;
         },
 
         async createLandlordInvite() {
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.adminScopedCountryId(this.admin.addForm.countryId || this.admin.selectedCountryId);
+          const countryId = this.admin.addForm.countryId || this.admin.selectedCountryId;
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this landlord belongs to.';
             this.admin.saving = false;
@@ -7070,14 +6669,7 @@
           const metadata = {
             full_name: this.admin.addForm.fullName,
             phone: this.admin.addForm.phone || '',
-            country_id: countryId,
-            subscription_plan: 'free',
-            subscription_status: 'active',
-            property_limit: 1,
-            unit_limit: 1,
-            personal_staff_limit: 0,
-            partner_connection_limit: 1,
-            subscription_expires_at: '2099-12-31 23:59:59+00'
+            country_id: countryId
           };
 
           const { data: inviteRow, error: inviteError } = await supabaseClient
@@ -7095,7 +6687,7 @@
             .single();
 
           if (inviteError) {
-            this.admin.formError = this.friendlyErrorMessage(inviteError);
+            this.admin.formError = inviteError.message;
             this.admin.saving = false;
             return;
           }
@@ -7105,20 +6697,15 @@
             .insert({
               landlord_id: null,
               country_id: countryId,
-              subscription_plan: 'free',
-              property_limit: 1,
-              unit_limit: 1,
-              personal_staff_limit: 0,
-              partner_connection_limit: 1,
-              status: 'active',
-              expires_at: '2099-12-31 23:59:59+00',
-              notes: 'Free landlord plan created from admin invite.',
+              status: 'trial',
+              expires_at: this.addDaysIso(30),
+              notes: '',
               invite_token_id: inviteRow.id,
               updated_by: this.profile.id
             });
 
           if (subscriptionError) {
-            this.admin.formError = this.friendlyErrorMessage(subscriptionError);
+            this.admin.formError = subscriptionError.message;
             this.admin.saving = false;
             return;
           }
@@ -7146,7 +6733,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7162,7 +6749,7 @@
           this.admin.generatedInviteLink = '';
           this.admin.saving = true;
 
-          const countryId = this.adminScopedCountryId(this.admin.freelancerForm.countryId || this.admin.selectedCountryId);
+          const countryId = this.admin.freelancerForm.countryId || this.admin.selectedCountryId;
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this IPM belongs to.';
             this.admin.saving = false;
@@ -7195,7 +6782,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7210,7 +6797,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.adminScopedCountryId(this.admin.managementAddForm.countryId || this.admin.selectedCountryId);
+          const countryId = this.admin.managementAddForm.countryId || this.admin.selectedCountryId;
           if (!countryId || countryId === 'all' || countryId === 'unassigned') {
             this.admin.formError = 'Select the country this Property Management Company (PMC) belongs to.';
             this.admin.saving = false;
@@ -7245,7 +6832,7 @@
             .single();
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7262,7 +6849,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.adminScopedCountryId(this.admin.managementAddForm.countryId || row.country_id || '') || null;
+          const countryId = this.admin.managementAddForm.countryId || row.country_id || null;
           const metadata = {
             company_name: this.admin.managementAddForm.companyName,
             full_name: this.admin.managementAddForm.leaderName,
@@ -7291,7 +6878,7 @@
               .eq('id', row.id);
 
             if (companyError) {
-              this.admin.formError = this.friendlyErrorMessage(companyError);
+              this.admin.formError = companyError.message;
               this.admin.saving = false;
               return;
             }
@@ -7309,7 +6896,7 @@
                 .eq('role', 'management_leader');
 
               if (profileError) {
-                this.admin.formError = this.friendlyErrorMessage(profileError);
+                this.admin.formError = profileError.message;
                 this.admin.saving = false;
                 return;
               }
@@ -7325,7 +6912,7 @@
               .eq('id', row.invite_id);
 
             if (inviteError) {
-              this.admin.formError = this.friendlyErrorMessage(inviteError);
+              this.admin.formError = inviteError.message;
               this.admin.saving = false;
               return;
             }
@@ -7370,7 +6957,7 @@
             .eq('id', this.admin.selectedRow.id);
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7397,7 +6984,7 @@
             .eq('id', company.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -7427,7 +7014,7 @@
             .eq('id', company.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7443,7 +7030,7 @@
               .eq('role', 'management_leader');
 
             if (profileError) {
-              this.admin.error = this.friendlyErrorMessage(profileError);
+              this.admin.error = profileError.message;
               this.admin.saving = false;
               return;
             }
@@ -7472,7 +7059,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7499,7 +7086,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7548,7 +7135,7 @@
               .eq('id', this.admin.selectedRow.invite_id);
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -7570,7 +7157,7 @@
             .eq('role', 'staff');
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7599,7 +7186,7 @@
             .eq('staff_type', 'freelancer');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -7629,7 +7216,7 @@
             .eq('role', 'staff');
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7657,7 +7244,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7689,7 +7276,7 @@
               .eq('id', staffRow.invite_id);
 
             if (error) {
-              this.admin.error = this.friendlyErrorMessage(error);
+              this.admin.error = error.message;
               this.admin.saving = false;
               return;
             }
@@ -7705,7 +7292,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7737,7 +7324,7 @@
             .eq('id', tenantRow.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7753,7 +7340,7 @@
               .eq('role', 'tenant');
 
             if (profileError) {
-              this.admin.error = this.friendlyErrorMessage(profileError);
+              this.admin.error = profileError.message;
               this.admin.saving = false;
               return;
             }
@@ -7786,7 +7373,7 @@
             .eq('id', tenantRow.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7802,7 +7389,7 @@
               .eq('role', 'tenant');
 
             if (profileError) {
-              this.admin.error = this.friendlyErrorMessage(profileError);
+              this.admin.error = profileError.message;
               this.admin.saving = false;
               return;
             }
@@ -7830,7 +7417,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7844,7 +7431,6 @@
           if (!this.admin.selectedRow) return;
           this.admin.formError = '';
           this.admin.saving = true;
-          const countryId = this.adminScopedCountryId(this.admin.editForm.countryId || '') || null;
 
           if (this.admin.selectedRow.accepted) {
             const { error } = await supabaseClient
@@ -7852,12 +7438,12 @@
               .update({
                 full_name: this.admin.editForm.fullName,
                 phone: this.admin.editForm.phone || null,
-                country_id: countryId
+                country_id: this.admin.editForm.countryId || null
               })
               .eq('id', this.admin.selectedRow.profile_id);
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -7865,25 +7451,25 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: countryId })
+                .update({ country_id: this.admin.editForm.countryId || null })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
-                this.admin.formError = this.friendlyErrorMessage(subscriptionCountryError);
+                this.admin.formError = subscriptionCountryError.message;
                 this.admin.saving = false;
                 return;
               }
             }
 
-            if (countryId) {
+            if (this.admin.editForm.countryId) {
               const { error: paymentCountryError } = await supabaseClient
                 .from('platform_payments')
-                .update({ country_id: countryId })
+                .update({ country_id: this.admin.editForm.countryId })
                 .eq('landlord_id', this.admin.selectedRow.profile_id)
                 .is('country_id', null);
 
               if (paymentCountryError) {
-                this.admin.formError = this.friendlyErrorMessage(paymentCountryError);
+                this.admin.formError = paymentCountryError.message;
                 this.admin.saving = false;
                 return;
               }
@@ -7894,19 +7480,19 @@
               ...currentMetadata,
               full_name: this.admin.editForm.fullName,
               phone: this.admin.editForm.phone || '',
-              country_id: countryId
+              country_id: this.admin.editForm.countryId || null
             };
 
             const { error } = await supabaseClient
               .from('invite_tokens')
               .update({
-                country_id: countryId,
+                country_id: this.admin.editForm.countryId || null,
                 metadata: nextMetadata
               })
               .eq('id', this.admin.selectedRow.invite_id);
 
             if (error) {
-              this.admin.formError = this.friendlyErrorMessage(error);
+              this.admin.formError = error.message;
               this.admin.saving = false;
               return;
             }
@@ -7914,11 +7500,11 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: countryId })
+                .update({ country_id: this.admin.editForm.countryId || null })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
-                this.admin.formError = this.friendlyErrorMessage(subscriptionCountryError);
+                this.admin.formError = subscriptionCountryError.message;
                 this.admin.saving = false;
                 return;
               }
@@ -7938,6 +7524,7 @@
 
           this.admin.formError = '';
           this.admin.saving = true;
+          this.applySubscriptionPlanStatusSelection();
 
           const { error } = await supabaseClient
             .from('landlord_subscriptions')
@@ -7955,7 +7542,7 @@
             .eq('id', this.admin.selectedRow.subscription.id);
 
           if (error) {
-            this.admin.formError = this.friendlyErrorMessage(error);
+            this.admin.formError = error.message;
             this.admin.saving = false;
             return;
           }
@@ -7988,7 +7575,7 @@
             .eq('id', row.subscription.id);
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -8012,7 +7599,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -8037,7 +7624,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -8061,7 +7648,7 @@
           });
 
           if (error) {
-            this.admin.error = this.friendlyErrorMessage(error);
+            this.admin.error = error.message;
             return;
           }
 
@@ -8176,7 +7763,6 @@
         staffSubscriptionLabel(staffRow) {
           const status = staffRow?.staff_subscription_status || 'free';
           const expiry = staffRow?.staff_subscription_expires_at ? new Date(staffRow.staff_subscription_expires_at) : null;
-          if (status === 'free') return 'Active';
           if (status === 'suspended') return 'Suspended';
           if (status === 'active' && expiry && !Number.isNaN(expiry.getTime())) {
             const today = new Date();
@@ -8364,7 +7950,7 @@
           const firstError = propertiesResult.error || unitsResult.error || pendingResult.error || paymentsResult.error || leasesResult.error || maintenanceResult.error;
 
           if (firstError) {
-            this.dashboard.error = this.friendlyErrorMessage(firstError);
+            this.dashboard.error = firstError.message;
           }
 
           const units = unitsResult.data || [];
@@ -8438,159 +8024,21 @@
           this.dashboard.selectedLease = lease;
         },
 
-        planDisplayName(plan, fallback = 'Free') {
-          const value = String(plan || '').trim().toLowerCase();
-          const labels = {
-            free: 'Free',
-            starter: 'Starter',
-            growth: 'Growth',
-            portfolio: 'Portfolio',
-            standard: 'Standard',
-            custom: 'Custom',
-            ipm: 'IPM',
-            pmc: 'PMC'
-          };
-          return labels[value] || (value ? this.titleCase(value) : fallback);
-        },
-
-        statusDisplayName(status) {
-          const value = String(status || '').trim().toLowerCase();
-          const labels = {
-            active: 'Active',
-            trial: 'Trial',
-            suspended: 'Suspended',
-            expired: 'Expired',
-            trial_expired: 'Trial Expired',
-            archived: 'Archived',
-            pending: 'Pending'
-          };
-          return labels[value] || (value ? this.titleCase(value) : 'Active');
-        },
-
-        effectiveSubscriptionStatus(subscription = this.subscription) {
-          if (!subscription) return 'active';
-          const status = String(subscription.status || subscription.subscription_status || 'active').toLowerCase();
-          const plan = String(subscription.subscription_plan || subscription.plan || 'free').toLowerCase();
-          if (status === 'suspended') return 'suspended';
-          if (plan === 'free') return 'active';
-          if (subscription.expires_at) {
-            const days = this.daysUntil(String(subscription.expires_at).slice(0, 10));
-            if (days < 0) return status === 'trial' ? 'trial_expired' : 'expired';
-          }
-          return status || 'active';
-        },
-
-        planStatusLabel(plan, status) {
-          const normalizedPlan = String(plan || 'free').toLowerCase();
-          const displayStatus = this.statusDisplayName(status || 'active');
-          const displayPlan = this.planDisplayName(normalizedPlan);
-          if (normalizedPlan === 'free') return `${displayStatus} - ${displayPlan}`;
-          return `${displayPlan} - ${displayStatus}`;
-        },
-
-        landlordPlanStatusLabel(subscription = this.subscription, archived = false) {
-          if (archived) return 'Archived';
-          const plan = subscription?.subscription_plan || 'free';
-          const status = this.effectiveSubscriptionStatus(subscription || { subscription_plan: plan, status: 'active' });
-          return this.planStatusLabel(plan, status);
-        },
-
-        landlordPlanStatusBadgeClass(subscription = this.subscription, archived = false) {
-          if (archived) return this.statusBadgeClass('archived');
-          const status = this.effectiveSubscriptionStatus(subscription);
-          if (['suspended', 'expired', 'trial_expired'].includes(status)) return 'bg-red-100 text-red-700';
-          if (this.subscriptionExpiringSoon(subscription) || status === 'trial') return 'bg-yellow-100 text-amber-700';
-          return 'bg-emerald-100 text-emerald-700';
-        },
-
-        managementPlanStatusLabel(companyOrSubscription) {
-          if (companyOrSubscription?.archived_at) return 'Archived';
-          if (companyOrSubscription?.accepted === false) return 'Pending';
-          const plan = companyOrSubscription?.subscription_plan || companyOrSubscription?.plan || 'pmc';
-          const status = companyOrSubscription?.subscription_status || companyOrSubscription?.status || 'trial';
-          return this.planStatusLabel(plan, status);
-        },
-
-        managementPlanStatusBadgeClass(companyOrSubscription) {
-          if (companyOrSubscription?.archived_at) return this.statusBadgeClass('archived');
-          if (companyOrSubscription?.accepted === false) return this.statusBadgeClass('trial');
-          const status = String(companyOrSubscription?.subscription_status || companyOrSubscription?.status || 'trial').toLowerCase();
-          if (status === 'suspended') return 'bg-red-100 text-red-700';
-          if (status === 'trial') return 'bg-yellow-100 text-amber-700';
-          return 'bg-emerald-100 text-emerald-700';
-        },
-
-        staffSubscriptionPlanStatusLabel(staffRow) {
-          if (staffRow?.archived_at) return 'Archived';
-          if (staffRow?.accepted === false) return 'Pending';
-          const status = String(staffRow?.staff_subscription_status || 'free').toLowerCase();
-          if (status === 'free') return 'Active - Free';
-          if (status === 'suspended') return 'IPM - Suspended';
-          const expiryLabel = this.staffSubscriptionLabel(staffRow);
-          if (expiryLabel === 'Expired') return 'IPM - Expired';
-          if (expiryLabel === 'Expiring Soon') return 'IPM - Active - Expiring soon';
-          return 'IPM - Active';
-        },
-
-        accountPlanStatusLabel() {
-          if (this.profile?.staff_type === 'freelancer') {
-            return this.staffSubscriptionPlanStatusLabel({
-              accepted: true,
-              staff_subscription_status: this.profile?.staff_subscription_status || 'free',
-              staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null
-            });
-          }
-          if (this.profile?.role === 'management_leader') {
-            return this.managementPlanStatusLabel({
-              accepted: true,
-              subscription_status: this.account.subscription?.status || 'trial',
-              subscription_expires_at: this.account.subscription?.expires_at || null
-            });
-          }
-          return this.landlordPlanStatusLabel(this.account.subscription || this.subscription);
-        },
-
-        accountPlanStatusBadgeClass() {
-          if (this.profile?.staff_type === 'freelancer') return this.staffProfileSubscriptionBadgeClass();
-          if (this.profile?.role === 'management_leader') {
-            return this.managementPlanStatusBadgeClass({
-              accepted: true,
-              subscription_status: this.account.subscription?.status || 'trial',
-              subscription_expires_at: this.account.subscription?.expires_at || null
-            });
-          }
-          return this.landlordPlanStatusBadgeClass(this.account.subscription || this.subscription);
-        },
-
         subscriptionDashboardLabel() {
-          const label = this.profile?.role === 'management_leader'
-            ? this.managementPlanStatusLabel({ accepted: true, status: this.subscription?.status || 'trial', subscription_plan: this.subscription?.subscription_plan || 'pmc' })
-            : this.landlordPlanStatusLabel(this.subscription);
-          return this.subscriptionExpiringSoon() ? `${label} - Expiring soon` : label;
+          const status = this.subscription?.subscription_plan === 'free' && this.subscription?.status === 'active' ? 'free' : (this.subscription?.status || 'trial');
+          return this.subscriptionExpiringSoon() ? `${this.titleCase(status)} - Expiring soon` : this.titleCase(status);
         },
 
-        subscriptionExpiringSoon(subscription = this.subscription) {
-          if (!subscription?.expires_at) return false;
-          if (subscription?.subscription_plan === 'free') return false;
-          const days = this.daysUntil(String(subscription.expires_at).slice(0, 10));
-          const status = subscription.status || subscription.subscription_status;
-          return days >= 0 && days <= 7 && status !== 'suspended';
+        subscriptionExpiringSoon() {
+          if (!this.subscription?.expires_at) return false;
+          const days = this.daysUntil(this.subscription.expires_at.slice(0, 10));
+          return days >= 0 && days <= 7 && this.subscription.status !== 'suspended';
         },
 
         subscriptionDashboardBadgeClass() {
-          if (this.profile?.role === 'management_leader') {
-            return this.managementPlanStatusBadgeClass({ accepted: true, status: this.subscription?.status || 'trial', subscription_status: this.subscription?.status || 'trial' });
-          }
           if (this.subscription?.status === 'suspended') return 'bg-red-100 text-red-700';
           if (this.subscriptionExpiringSoon()) return 'bg-yellow-100 text-amber-700';
-          return this.landlordPlanStatusBadgeClass(this.subscription);
-        },
-
-        subscriptionExpiryLabel(subscription = this.subscription) {
-          if (!subscription?.expires_at) return '-';
-          if (subscription.subscription_plan === 'free') return 'No expiry';
-          if (String(subscription.expires_at).startsWith('2099-12-31')) return 'No expiry';
-          return this.formatDate(subscription.expires_at);
+          return this.statusBadgeClass(this.subscription?.status || 'trial');
         },
 
         formatCurrency(value) {
@@ -8600,108 +8048,10 @@
           }).format(Number(value || 0));
         },
 
-        friendlyErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
-          const raw = typeof error === 'string'
-            ? error
-            : (error?.message || error?.details || error?.hint || '');
-          const message = String(raw || '').trim();
-          const lower = message.toLowerCase();
-
-          if (!message) return fallback;
-
-          if (/row-level security|violates row-level|permission denied|not allowed|not authorized|forbidden|42501/.test(lower)) {
-            return 'You do not have permission to do this. Please check the access settings or contact support.';
-          }
-          if (/property limit|reached the property limit|landlord_can_add_property/.test(lower)) {
-            return 'Property limit reached. Your current plan does not allow adding more properties.';
-          }
-          if (/unit limit|reached the unit limit|landlord_can_add_unit/.test(lower)) {
-            return 'Unit limit reached. Your current plan does not allow adding more units.';
-          }
-          if (/personal staff limit|staff limit|reached.*staff|landlord_can_invite_personal_staff/.test(lower)) {
-            return 'Staff limit reached. Your current plan does not allow adding more staff members.';
-          }
-          if (/partner connection limit|connection limit|ipm\/pmc|portfolio manager|management company/.test(lower) && /limit|reached/.test(lower)) {
-            return 'Connection limit reached. Your current plan does not allow adding another IPM or PMC connection.';
-          }
-          if (/landlord limit|reached their landlord limit|reached your landlord limit|maximum landlords/.test(lower)) {
-            return 'Landlord limit reached. This account cannot connect to more landlords on the current plan.';
-          }
-          if (/mushavo account already exists|account already exists|already exists for this email|already exists for this phone/.test(lower)) {
-            return 'Your account already exists. Please contact Mushavo support.';
-          }
-          if (/duplicate key|already exists|unique constraint|23505/.test(lower)) {
-            return 'This record already exists. Refresh the page and check the existing list before adding it again.';
-          }
-          if (/check constraint|violates check constraint|23514/.test(lower)) {
-            return 'Some details are missing or outside the allowed range. Please review the form and try again.';
-          }
-          if (/foreign key|violates foreign key|23503/.test(lower)) {
-            return 'The selected item is no longer available. Refresh the page and try again.';
-          }
-          if (/invalid input syntax|invalid uuid|22p02/.test(lower)) {
-            return 'One of the selected values is invalid. Refresh the page and try again.';
-          }
-          if (/bucket|storage|file size|payload too large|mime|413/.test(lower)) {
-            return 'The file could not be uploaded. Check the file type and size, then try again.';
-          }
-          if (/failed to fetch|network|timeout|taking too long/.test(lower)) {
-            return 'The request took too long. Check your connection, refresh, and try again.';
-          }
-          if (/invalid login credentials|invalid credentials|invalid email or password|email or password is incorrect/.test(lower)) {
-            return 'The email or password is incorrect. Please check your credentials and try again.';
-          }
-          if (/jwt|refresh token|session|email not confirmed/.test(lower)) {
-            return 'Your session could not be verified. Please sign in again.';
-          }
-          if (/on conflict specification|no unique or exclusion constraint/.test(lower)) {
-            return 'This account setup needs the latest database update before it can continue.';
-          }
-          if (/function .* does not exist|column .* does not exist|schema cache|pgrst/.test(lower)) {
-            return 'This feature needs the latest database update before it can continue.';
-          }
-
-          return message;
-        },
-
         currentLandlordId() {
           if (this.profile?.role === 'landlord') return this.profile.id;
           if (this.profile?.role === 'management_leader') return this.managementContext.activeLandlordId || null;
-          if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') return this.staffContext.activeLandlordId || this.profile?.landlord_id || null;
           return this.profile?.landlord_id || null;
-        },
-
-        clearPartnerLandlordWorkspace() {
-          this.propertyUnit.selectedPropertyId = '';
-          this.propertyUnit.selectedUnit = null;
-          this.propertyUnit.currentLease = null;
-          this.propertyUnit.assignedStaff = [];
-          this.propertyUnit.selectedMaintenanceRequest = null;
-          this.propertyUnit.payments = [];
-          this.propertyUnit.maintenance = [];
-          this.propertyUnit.properties = [];
-          this.propertyUnit.units = [];
-          this.propertyUnit.tenants = [];
-          this.propertyUnit.leases = [];
-          this.propertyUnit.detailMode = '';
-          this.payments.pendingSubmissions = [];
-          this.payments.verifiedPayments = [];
-          this.payments.leases = [];
-          this.maintenance.requests = [];
-          this.maintenance.units = [];
-          this.maintenance.leases = [];
-          this.maintenance.properties = [];
-          this.maintenance.staff = [];
-          this.tenantLease.properties = [];
-          this.tenantLease.units = [];
-          this.tenantLease.tenants = [];
-          this.tenantLease.leases = [];
-          this.tenantLease.selectedTenant = null;
-          this.tenantLease.selectedTenantLeases = [];
-          this.tenantLease.selectedTenantPayments = [];
-          this.finance.payments = [];
-          this.finance.byProperty = [];
-          this.finance.stats = { totalRevenue: 0, monthRevenue: 0, yearRevenue: 0, averagePayment: 0 };
         },
 
         activeStaffLandlordName() {
@@ -8754,7 +8104,7 @@
             p_landlord_id: landlordId
           });
           if (error) {
-            this.staffContext.error = this.friendlyErrorMessage(error);
+            this.staffContext.error = error.message;
             return;
           }
           this.profile.landlord_id = landlordId;
@@ -8781,7 +8131,7 @@
           });
 
           if (error) {
-            this.staffContext.error = this.friendlyErrorMessage(error);
+            this.staffContext.error = error.message;
             return;
           }
 
@@ -8800,7 +8150,7 @@
           });
 
           if (error) {
-            this.staffContext.error = this.friendlyErrorMessage(error);
+            this.staffContext.error = error.message;
             return;
           }
 
@@ -8817,7 +8167,7 @@
           });
 
           if (error) {
-            this.staffContext.error = this.friendlyErrorMessage(error);
+            this.staffContext.error = error.message;
             return;
           }
 
@@ -8835,7 +8185,7 @@
           });
 
           if (error) {
-            this.staffContext.error = this.friendlyErrorMessage(error);
+            this.staffContext.error = error.message;
             return;
           }
 
@@ -8891,7 +8241,7 @@
           });
 
           if (error) {
-            this.managementContext.error = this.friendlyErrorMessage(error);
+            this.managementContext.error = error.message;
             return;
           }
 
@@ -8911,7 +8261,7 @@
           });
 
           if (error) {
-            this.managementContext.error = this.friendlyErrorMessage(error);
+            this.managementContext.error = error.message;
             return;
           }
 
@@ -8928,7 +8278,7 @@
           });
 
           if (error) {
-            this.managementContext.error = this.friendlyErrorMessage(error);
+            this.managementContext.error = error.message;
             return;
           }
 
@@ -8946,7 +8296,7 @@
           });
 
           if (error) {
-            this.managementContext.error = this.friendlyErrorMessage(error);
+            this.managementContext.error = error.message;
             return;
           }
 
@@ -8954,71 +8304,11 @@
           this.managementContext.message = 'Free landlord invite link created.';
         },
 
-        async updatePartnerContractDate(partnerType, relationship, field, value) {
-          const errorTarget = partnerType === 'pmc' ? this.managementContext : this.staffContext;
-          errorTarget.error = '';
-          errorTarget.message = '';
-          const startDate = field === 'contract_start_date' ? (value || null) : (relationship.contract_start_date || null);
-          const endDate = field === 'contract_end_date' ? (value || null) : (relationship.contract_end_date || null);
-          if (startDate && endDate && endDate < startDate) {
-            errorTarget.error = 'The contract expiry date cannot be before the partnered date.';
-            return;
-          }
-          const { error } = await supabaseClient.rpc('update_partner_landlord_contract', {
-            p_partner_type: partnerType,
-            p_permission_id: relationship.id,
-            p_contract_start_date: startDate,
-            p_contract_end_date: endDate
-          });
-
-          if (error) {
-            errorTarget.error = this.friendlyErrorMessage(error);
-            return;
-          }
-
-          relationship.contract_start_date = startDate;
-          relationship.contract_end_date = endDate;
-          errorTarget.message = 'Contract dates updated.';
-        },
-
-        async dropPartnerLandlord(partnerType, relationship) {
-          const label = relationship?.landlord?.full_name || relationship?.landlord?.email || 'this landlord';
-          const confirmed = await this.requestConfirm({
-            title: 'Drop landlord',
-            message: `Stop serving ${label}? Your access to this landlord's properties, tenants, leases, payments, maintenance, and files will be removed. The landlord's own account and records will stay safely stored.`,
-            confirmText: 'Drop Landlord',
-            tone: 'danger'
-          });
-          if (!confirmed) return;
-
-          const errorTarget = partnerType === 'pmc' ? this.managementContext : this.staffContext;
-          errorTarget.error = '';
-          errorTarget.message = '';
-          const { error } = await supabaseClient.rpc('drop_partner_landlord', {
-            p_partner_type: partnerType,
-            p_permission_id: relationship.id
-          });
-
-          if (error) {
-            errorTarget.error = this.friendlyErrorMessage(error);
-            return;
-          }
-
-          errorTarget.message = 'Landlord connection dropped.';
-          if (partnerType === 'pmc') {
-            await this.loadManagementPageData();
-          } else {
-            await this.loadStaffPermissions(this.profile.id);
-          }
-          this.clearPartnerLandlordWorkspace();
-          if (this.currentPage === 'finance') await this.loadPartnerFinanceData();
-        },
-
         async regenerateLandlordCode() {
           this.staff.error = '';
           const { data, error } = await supabaseClient.rpc('regenerate_landlord_code');
           if (error) {
-            this.staff.error = this.friendlyErrorMessage(error);
+            this.staff.error = error.message;
             return;
           }
           this.profile.landlord_code = data;
@@ -9033,26 +8323,8 @@
           return 'Your Mushavo subscription has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to renew your subscription and restore access.';
         },
 
-        subscriptionSuspendedMessage() {
-          return 'Your Mushavo account access is currently paused by the administrator. Your data is still safely stored.\n\nPlease contact support to restore access.';
-        },
-
-        trialExpiredMessage() {
-          return 'Your Mushavo trial has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to continue using Mushavo.';
-        },
-
-        markSubscriptionPaused(reason = 'expired') {
+        markSubscriptionPaused() {
           this.accessPaused = true;
-          if (reason === 'suspended') {
-            this.suspendedTitle = 'Account Paused';
-            this.suspendedMessage = this.subscriptionSuspendedMessage();
-            return;
-          }
-          if (reason === 'trial_expired') {
-            this.suspendedTitle = 'Trial Expired';
-            this.suspendedMessage = this.trialExpiredMessage();
-            return;
-          }
           this.suspendedTitle = 'Subscription Expired';
           this.suspendedMessage = this.subscriptionExpiredMessage();
         },
@@ -9069,24 +8341,6 @@
 
         canViewFinancials() {
           return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance || this.permissions.can_view_payments || this.permissions.can_verify_payments);
-        },
-
-        isPartnerFinanceAccount() {
-          return this.profile?.role === 'management_leader'
-            || this.profile?.role === 'management_staff'
-            || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
-        },
-
-        canRecordPartnerPayments() {
-          if (!this.isPartnerFinanceAccount()) return false;
-          if (this.profile?.role === 'management_staff') return Boolean(this.permissions.can_view_finance);
-          return true;
-        },
-
-        partnerFinanceLandlordOptions() {
-          return ['management_leader', 'management_staff'].includes(this.profile?.role)
-            ? (this.managementContext.relationships || [])
-            : (this.staffContext.relationships || []);
         },
 
         canManageLeases() {
@@ -9252,7 +8506,7 @@
           const firstError = propertiesResult.error || unitsResult.error || tenantsResult.error || leasesResult.error;
 
           if (firstError) {
-            this.propertyUnit.error = this.friendlyErrorMessage(firstError);
+            this.propertyUnit.error = firstError.message;
           }
 
           this.propertyUnit.properties = propertiesResult.data || [];
@@ -9292,7 +8546,7 @@
           this.propertyUnit.saving = true;
 
           if (this.profile?.role === 'landlord') {
-            const propertyLimit = Number(this.subscription?.property_limit || 1);
+            const propertyLimit = Number(this.subscription?.property_limit || 5);
             const activeCount = this.propertyUnit.properties.filter(property => property.landlord_id === this.currentLandlordId()).length;
             if (activeCount >= propertyLimit) {
               this.propertyUnit.error = `Property limit reached. Your current subscription allows ${propertyLimit} properties.`;
@@ -9311,7 +8565,7 @@
             });
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             this.propertyUnit.saving = false;
             return;
           }
@@ -9362,7 +8616,7 @@
             .eq('id', propertyId);
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             this.propertyUnit.saving = false;
             return;
           }
@@ -9399,7 +8653,7 @@
               .eq('status', 'active');
 
             if (leaseError) {
-              this.propertyUnit.error = this.friendlyErrorMessage(leaseError);
+              this.propertyUnit.error = leaseError.message;
               return;
             }
           }
@@ -9414,7 +8668,7 @@
             .eq('property_id', property.id);
 
           if (unitError) {
-            this.propertyUnit.error = this.friendlyErrorMessage(unitError);
+            this.propertyUnit.error = unitError.message;
             return;
           }
 
@@ -9427,7 +8681,7 @@
             .eq('id', property.id);
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             return;
           }
 
@@ -9465,7 +8719,7 @@
             });
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             this.propertyUnit.saving = false;
             return;
           }
@@ -9503,7 +8757,7 @@
             .eq('status', 'active');
 
           if (leaseError) {
-            this.propertyUnit.error = this.friendlyErrorMessage(leaseError);
+            this.propertyUnit.error = leaseError.message;
             return;
           }
 
@@ -9517,7 +8771,7 @@
             .eq('id', unit.id);
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             return;
           }
 
@@ -9551,7 +8805,7 @@
               .eq('id', activeLease.id);
 
             if (error) {
-              this.propertyUnit.error = this.friendlyErrorMessage(error);
+              this.propertyUnit.error = error.message;
               return;
             }
           } else {
@@ -9561,7 +8815,7 @@
               .eq('id', unit.id);
 
             if (error) {
-              this.propertyUnit.error = this.friendlyErrorMessage(error);
+              this.propertyUnit.error = error.message;
               return;
             }
           }
@@ -9724,7 +8978,7 @@
           ]);
 
           const firstError = paymentsResult.error || maintenanceResult.error || assignedStaffResult.error;
-          if (firstError) this.propertyUnit.error = this.friendlyErrorMessage(firstError);
+          if (firstError) this.propertyUnit.error = firstError.message;
 
           this.propertyUnit.payments = paymentsResult.data || [];
           this.propertyUnit.maintenance = maintenanceResult.data || [];
@@ -9767,7 +9021,7 @@
             .eq('id', unit.id);
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             return;
           }
 
@@ -9831,7 +9085,7 @@
             await this.loadPropertyUnitData();
             await this.loadDashboardData();
           } catch (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
           }
         },
 
@@ -9890,7 +9144,7 @@
             .limit(1);
 
           if (error) {
-            this.propertyUnit.error = this.friendlyErrorMessage(error);
+            this.propertyUnit.error = error.message;
             return;
           }
 
@@ -9902,7 +9156,7 @@
               this.propertyUnit.detailMode = '';
               await this.loadUnitDetail(this.propertyUnit.selectedUnit);
               await this.loadDashboardData();
-              this.propertyUnit.error = `Payment saved, but proof upload failed: ${this.friendlyErrorMessage(proofError)}`;
+              this.propertyUnit.error = `Payment saved, but proof upload failed: ${proofError.message}`;
               return;
             }
           }
@@ -9964,7 +9218,7 @@
 
           const firstError = pendingResult.error || verifiedResult.error || leasesResult.error;
           if (firstError) {
-            this.payments.error = this.friendlyErrorMessage(firstError);
+            this.payments.error = firstError.message;
             this.payments.loading = false;
             return;
           }
@@ -9987,10 +9241,6 @@
         },
 
         async loadLandlordFinanceData() {
-          if (this.isPartnerFinanceAccount()) {
-            await this.loadPartnerFinanceData();
-            return;
-          }
           if (!this.canViewFinancials()) return;
 
           this.finance.loading = true;
@@ -10002,7 +9252,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.finance.error = this.friendlyErrorMessage(error);
+            this.finance.error = error.message;
             this.finance.loading = false;
             return;
           }
@@ -10049,157 +9299,8 @@
           this.finance.loading = false;
         },
 
-        resetPartnerFinanceForm() {
-          const today = this.toIsoDate(new Date());
-          const monthStart = today.slice(0, 8) + '01';
-          this.finance.partnerForm = {
-            landlordId: '',
-            amount: 0,
-            paidAt: today,
-            periodStart: monthStart,
-            periodEnd: today,
-            notes: ''
-          };
-        },
-
-        async loadPartnerFinanceData() {
-          this.finance.loading = true;
-          this.finance.error = '';
-          if (!this.finance.partnerForm.paidAt) this.resetPartnerFinanceForm();
-
-          if (this.profile?.role === 'management_leader' && !this.managementContext.company?.id) {
-            await this.loadManagementPageData();
-          } else if (this.profile?.role === 'management_staff' && !this.managementContext.company?.id) {
-            await this.loadManagementStaffPermissions(this.profile.id);
-          } else if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer' && this.staffContext.relationships.length === 0) {
-            await this.loadStaffPermissions(this.profile.id);
-          }
-
-          const relationships = this.partnerFinanceLandlordOptions();
-          const landlordIds = relationships.map(row => row.landlord_id).filter(Boolean);
-          if (landlordIds.length === 0) {
-            this.finance.payments = [];
-            this.finance.byProperty = [];
-            this.finance.stats = { totalRevenue: 0, monthRevenue: 0, yearRevenue: 0, averagePayment: 0 };
-            this.finance.loading = false;
-            return;
-          }
-
-          let query = supabaseClient
-            .from('partner_payments')
-            .select('id, partner_type, partner_staff_id, management_company_id, landlord_id, amount_paid, paid_at, period_start, period_end, notes, created_at, landlord:profiles!partner_payments_landlord_id_fkey(id, full_name, email, phone)')
-            .in('landlord_id', landlordIds)
-            .order('paid_at', { ascending: false });
-
-          if (['management_leader', 'management_staff'].includes(this.profile?.role)) {
-            query = query.eq('partner_type', 'pmc').eq('management_company_id', this.managementContext.company?.id);
-          } else {
-            query = query.eq('partner_type', 'ipm').eq('partner_staff_id', this.profile.id);
-          }
-
-          const { data, error } = await query;
-          if (error) {
-            this.finance.error = this.friendlyErrorMessage(error);
-            this.finance.loading = false;
-            return;
-          }
-
-          const payments = (data || []).map(payment => ({
-            id: payment.id,
-            amount: Number(payment.amount_paid || 0),
-            date: payment.paid_at || payment.created_at,
-            method: 'Partner payment',
-            period: `${this.formatDate(payment.period_start)} - ${this.formatDate(payment.period_end)}`,
-            notes: payment.notes || '',
-            receipt: '',
-            tenant: payment.landlord?.full_name || 'Landlord',
-            landlord: payment.landlord?.full_name || 'Landlord',
-            landlordEmail: payment.landlord?.email || '-',
-            unit: payment.landlord?.email || '-',
-            property: payment.landlord?.full_name || payment.landlord?.email || 'Landlord',
-            propertyAddress: payment.landlord?.email || ''
-          }));
-
-          const now = new Date();
-          const monthKey = now.toISOString().slice(0, 7);
-          const yearKey = String(now.getFullYear());
-          const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
-          const byLandlordMap = new Map();
-          payments.forEach(payment => {
-            const current = byLandlordMap.get(payment.landlord) || { property: payment.landlord, count: 0, total: 0 };
-            current.count += 1;
-            current.total += payment.amount;
-            byLandlordMap.set(payment.landlord, current);
-          });
-
-          this.finance.payments = payments;
-          this.finance.byProperty = Array.from(byLandlordMap.values()).sort((a, b) => b.total - a.total);
-          this.finance.stats = {
-            totalRevenue,
-            monthRevenue: payments.filter(payment => String(payment.date || '').slice(0, 7) === monthKey).reduce((sum, payment) => sum + payment.amount, 0),
-            yearRevenue: payments.filter(payment => String(payment.date || '').slice(0, 4) === yearKey).reduce((sum, payment) => sum + payment.amount, 0),
-            averagePayment: payments.length ? totalRevenue / payments.length : 0
-          };
-          this.finance.loading = false;
-        },
-
-        async recordPartnerPayment() {
-          this.finance.error = '';
-          if (!this.canRecordPartnerPayments()) {
-            this.finance.error = 'You do not have permission to record partner payments.';
-            return;
-          }
-          const form = this.finance.partnerForm;
-          const relationship = this.partnerFinanceLandlordOptions().find(row => row.landlord_id === form.landlordId);
-          if (!relationship) {
-            this.finance.error = 'Select a connected landlord before recording a payment.';
-            return;
-          }
-          if (Number(form.amount || 0) <= 0) {
-            this.finance.error = 'Enter a payment amount greater than zero.';
-            return;
-          }
-          if (!form.paidAt || !form.periodStart || !form.periodEnd) {
-            this.finance.error = 'Enter the paid date and payment period.';
-            return;
-          }
-          if (form.periodEnd < form.periodStart) {
-            this.finance.error = 'The payment period end date cannot be before the start date.';
-            return;
-          }
-
-          this.finance.saving = true;
-          const payload = {
-            partner_type: ['management_leader', 'management_staff'].includes(this.profile?.role) ? 'pmc' : 'ipm',
-            partner_staff_id: ['management_leader', 'management_staff'].includes(this.profile?.role) ? null : this.profile.id,
-            management_company_id: ['management_leader', 'management_staff'].includes(this.profile?.role) ? this.managementContext.company?.id : null,
-            landlord_id: form.landlordId,
-            amount_paid: Number(form.amount || 0),
-            paid_at: form.paidAt,
-            period_start: form.periodStart,
-            period_end: form.periodEnd,
-            notes: form.notes || null,
-            recorded_by: this.profile.id
-          };
-
-          const { error } = await supabaseClient.from('partner_payments').insert(payload);
-          if (error) {
-            this.finance.error = this.friendlyErrorMessage(error);
-            this.finance.saving = false;
-            return;
-          }
-
-          this.resetPartnerFinanceForm();
-          this.finance.saving = false;
-          await this.loadPartnerFinanceData();
-        },
-
         financePropertyOptions() {
           return [...new Set((this.finance.payments || []).map(payment => payment.property).filter(Boolean))].sort();
-        },
-
-        financePrimaryOptions() {
-          return this.financePropertyOptions();
         },
 
         filteredFinancePayments() {
@@ -10207,11 +9308,10 @@
           const search = String(filters.search || '').toLowerCase();
           return (this.finance.payments || []).filter(payment => {
             if (filters.property && payment.property !== filters.property) return false;
-            if (filters.landlord && payment.landlord !== filters.landlord) return false;
             if (filters.startDate && String(payment.date || '').slice(0, 10) < filters.startDate) return false;
             if (filters.endDate && String(payment.date || '').slice(0, 10) > filters.endDate) return false;
             if (search) {
-              const haystack = [payment.tenant, payment.landlord, payment.landlordEmail, payment.unit, payment.property, payment.period, payment.receipt, payment.notes, payment.method].join(' ').toLowerCase();
+              const haystack = [payment.tenant, payment.unit, payment.property, payment.period, payment.receipt, payment.notes, payment.method].join(' ').toLowerCase();
               if (!haystack.includes(search)) return false;
             }
             return true;
@@ -10265,17 +9365,21 @@
         downloadFinanceCsv() {
           const rows = this.filteredFinancePayments();
           if (rows.length === 0) return;
-          const headers = this.isPartnerFinanceAccount()
-            ? ['Date', 'Landlord', 'Email', 'Period', 'Amount', 'Notes']
-            : ['Date', 'Property', 'Unit', 'Tenant', 'Period', 'Amount', 'Method', 'Receipt', 'Notes'];
+          const headers = ['Date', 'Property', 'Unit', 'Tenant', 'Period', 'Amount', 'Method', 'Receipt', 'Notes'];
           const escapeCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
           const csv = [
             headers.map(escapeCell).join(','),
-            ...rows.map(row => (
-              this.isPartnerFinanceAccount()
-                ? [row.date, row.landlord, row.landlordEmail, row.period, row.amount, row.notes]
-                : [row.date, row.property, row.unit, row.tenant, row.period, row.amount, row.method, row.receipt, row.notes]
-            ).map(escapeCell).join(','))
+            ...rows.map(row => [
+              row.date,
+              row.property,
+              row.unit,
+              row.tenant,
+              row.period,
+              row.amount,
+              row.method,
+              row.receipt,
+              row.notes
+            ].map(escapeCell).join(','))
           ].join('\n');
           const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
           const url = URL.createObjectURL(blob);
@@ -10565,7 +9669,7 @@
             .limit(1);
 
           if (error) {
-            this.payments.error = this.friendlyErrorMessage(error);
+            this.payments.error = error.message;
             this.payments.saving = false;
             return;
           }
@@ -10579,7 +9683,7 @@
               this.closePaymentModal();
               await this.loadPaymentsData();
               await this.loadDashboardData();
-              this.payments.error = `Payment saved, but proof upload failed: ${this.friendlyErrorMessage(proofError)}`;
+              this.payments.error = `Payment saved, but proof upload failed: ${proofError.message}`;
               return;
             }
           }
@@ -10601,7 +9705,7 @@
           });
 
           if (error) {
-            this.payments.error = this.friendlyErrorMessage(error);
+            this.payments.error = error.message;
             this.payments.saving = false;
             return;
           }
@@ -10637,7 +9741,7 @@
             .eq('id', this.payments.selectedSubmission.id);
 
           if (error) {
-            this.payments.error = this.friendlyErrorMessage(error);
+            this.payments.error = error.message;
             this.payments.saving = false;
             return;
           }
@@ -10744,7 +9848,7 @@
             doc.text('Thank you for your payment', 20, 280);
             doc.save(`${receiptNumber}.pdf`);
           } catch (error) {
-            const message = this.friendlyErrorMessage(error, 'Receipt could not be generated.');
+            const message = error.message || 'Receipt could not be generated.';
             this.payments.error = message;
             this.propertyUnit.error = message;
             this.tenant.error = message;
@@ -10796,7 +9900,7 @@
 
           const firstError = requestsResult.error || propertiesResult.error || unitsResult.error || leasesResult.error || staffResult.error || assignableUnitsResult.error;
           if (firstError) {
-            this.maintenance.error = this.friendlyErrorMessage(firstError);
+            this.maintenance.error = firstError.message;
             this.maintenance.loading = false;
             return;
           }
@@ -10948,7 +10052,7 @@
             .single();
 
           if (error) {
-            this.maintenance.error = this.friendlyErrorMessage(error);
+            this.maintenance.error = error.message;
             this.maintenance.saving = false;
             return;
           }
@@ -10957,7 +10061,7 @@
             try {
               await this.attachMaintenancePhoto(requestRow, photoFile);
             } catch (error) {
-              this.maintenance.error = `Request was saved, but the photo upload failed: ${this.friendlyErrorMessage(error)}`;
+              this.maintenance.error = `Request was saved, but the photo upload failed: ${error.message}`;
               this.maintenance.saving = false;
               await this.loadMaintenanceData();
               return;
@@ -11014,7 +10118,7 @@
             .eq('id', this.maintenance.selectedRequest.id);
 
           if (error) {
-            this.maintenance.error = this.friendlyErrorMessage(error);
+            this.maintenance.error = error.message;
             this.maintenance.saving = false;
             return;
           }
@@ -11050,7 +10154,7 @@
             .eq('id', request.id);
 
           if (error) {
-            this.maintenance.error = this.friendlyErrorMessage(error);
+            this.maintenance.error = error.message;
             this.maintenance.saving = false;
             return;
           }
@@ -11256,32 +10360,6 @@
           return '';
         },
 
-        personalStaffLimit() {
-          return Number(this.subscription?.personal_staff_limit ?? 0);
-        },
-
-        personalStaffUsage() {
-          const members = this.staff.members || [];
-          return members.filter(member => (
-            (member.staff_type || 'landlord') === 'landlord'
-            && (member.accepted || member.invite_id)
-          )).length;
-        },
-
-        canInvitePersonalStaff() {
-          if (this.profile?.role !== 'landlord') return true;
-          return this.personalStaffUsage() < this.personalStaffLimit();
-        },
-
-        personalStaffLimitMessage() {
-          const limit = this.personalStaffLimit();
-          const usage = this.personalStaffUsage();
-          if (limit <= 0) {
-            return 'Your current subscription does not include personal landlord staff. Upgrade your plan or ask admin to increase the personal staff limit.';
-          }
-          return `Your current subscription allows ${limit} personal staff member${limit === 1 ? '' : 's'}. You already have ${usage}. Upgrade your plan or ask admin to increase the personal staff limit.`;
-        },
-
         async loadStaffData() {
           if (this.profile?.role === 'management_leader') {
             await this.loadManagementPageData();
@@ -11292,8 +10370,8 @@
           this.staff.loading = true;
           this.staff.error = '';
 
-          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, contract_start_date, contract_end_date, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
-          const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, contract_start_date, contract_end_date, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
+          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
+          const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
           const [propertiesResult, permissionsResult, requestsResult, inviteTokensResult, managementPermissionsResult, managementRequestsResult] = await Promise.all([
             supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
             supabaseClient.from('staff_permissions').select(permissionSelect).eq('landlord_id', this.currentLandlordId()).order('accepted_at', { ascending: false }),
@@ -11305,7 +10383,7 @@
 
           const firstError = propertiesResult.error || permissionsResult.error || requestsResult.error || inviteTokensResult.error || managementPermissionsResult.error || managementRequestsResult.error;
           if (firstError) {
-            this.staff.error = this.friendlyErrorMessage(firstError);
+            this.staff.error = firstError.message;
             this.staff.loading = false;
             return;
           }
@@ -11425,7 +10503,7 @@
             ]);
 
             if (propertiesResult.error || tenantsResult.error || leasesResult.error || staffResult.error || inviteTokensResult.error) {
-              this.managementContext.error = this.friendlyErrorMessage(propertiesResult.error || tenantsResult.error || leasesResult.error || staffResult.error || inviteTokensResult.error);
+              this.managementContext.error = propertiesResult.error?.message || tenantsResult.error?.message || leasesResult.error?.message || staffResult.error?.message || inviteTokensResult.error?.message;
             } else {
               const activeRelationship = this.managementContext.relationships.find(row => row.landlord_id === this.managementContext.activeLandlordId) || null;
               const allowedPropertyIds = new Set(activeRelationship?.property_ids || []);
@@ -11545,12 +10623,6 @@
           this.staff.saving = true;
           this.staff.generatedInviteLink = '';
 
-          if (this.profile?.role === 'landlord' && !this.canInvitePersonalStaff()) {
-            this.staff.error = this.personalStaffLimitMessage();
-            this.staff.saving = false;
-            return;
-          }
-
           if (this.profile?.role === 'management_leader' && !this.managementContext.company?.id) {
             this.staff.error = 'PMC record not found.';
             this.staff.saving = false;
@@ -11586,13 +10658,7 @@
             });
 
           if (error) {
-            if (this.profile?.role === 'landlord' && /row-level security|violates row-level/i.test(error.message || '')) {
-              this.staff.error = this.canInvitePersonalStaff()
-                ? 'Supabase is still blocking this invite because the database is counting an old pending staff invite. Run the updated SQL in Supabase, refresh this page, and try again.'
-                : this.personalStaffLimitMessage();
-            } else {
-              this.staff.error = this.friendlyErrorMessage(error);
-            }
+            this.staff.error = error.message;
             this.staff.saving = false;
             return;
           }
@@ -11633,7 +10699,7 @@
             });
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11645,7 +10711,7 @@
               .eq('landlord_id', this.currentLandlordId());
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11684,7 +10750,7 @@
               .eq('management_company_id', this.managementContext.company?.id);
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11708,18 +10774,7 @@
             const { error } = await saveQuery;
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
-              this.staff.saving = false;
-              return;
-            }
-          } else if (member.request_id) {
-            const { error } = await supabaseClient.rpc('approve_staff_landlord_request_with_permissions', {
-              p_request_id: member.request_id,
-              p_permissions: permissions
-            });
-
-            if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11737,7 +10792,7 @@
               .eq('id', member.invite_id);
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11766,7 +10821,7 @@
           });
 
           if (error) {
-            this.staff.error = this.friendlyErrorMessage(error);
+            this.staff.error = error.message;
             this.staff.saving = false;
             return;
           }
@@ -11791,7 +10846,7 @@
           });
 
           if (error) {
-            this.staff.error = this.friendlyErrorMessage(error);
+            this.staff.error = error.message;
             this.staff.saving = false;
             return;
           }
@@ -11820,7 +10875,7 @@
           });
 
           if (error) {
-            this.staff.error = this.friendlyErrorMessage(error);
+            this.staff.error = error.message;
             this.staff.saving = false;
             return;
           }
@@ -11845,7 +10900,7 @@
           });
 
           if (error) {
-            this.staff.error = this.friendlyErrorMessage(error);
+            this.staff.error = error.message;
             this.staff.saving = false;
             return;
           }
@@ -11878,7 +10933,7 @@
               .eq('id', member.invite_id);
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11894,7 +10949,7 @@
             });
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11910,7 +10965,7 @@
             });
 
             if (error) {
-              this.staff.error = this.friendlyErrorMessage(error);
+              this.staff.error = error.message;
               this.staff.saving = false;
               return;
             }
@@ -11927,42 +10982,6 @@
             .map(propertyId => this.staff.properties.find(property => property.id === propertyId)?.name)
             .filter(Boolean);
           return names.length ? names.join(', ') : 'No properties';
-        },
-
-        partnerPropertyScopeLabel(relationship) {
-          if (relationship.all_properties) return 'All properties';
-          const ids = relationship.property_ids || [];
-          if (ids.length === 0) return 'No properties';
-          const names = ids
-            .map(propertyId => this.propertyUnit.properties.find(property => property.id === propertyId)?.name || this.staff.properties.find(property => property.id === propertyId)?.name)
-            .filter(Boolean);
-          return names.length ? names.join(', ') : `${ids.length} selected`;
-        },
-
-        partnerTenantCountLabel(relationship) {
-          const landlordId = relationship.landlord_id;
-          if (!landlordId) return '-';
-          const count = (this.tenantLease.tenants || []).filter(tenant => tenant.landlord_id === landlordId).length;
-          return count ? `${count} tenant${count === 1 ? '' : 's'}` : '-';
-        },
-
-        partnershipStatusLabel(row = {}) {
-          if (row.status && row.status !== 'approved') return this.titleCase(row.status);
-          const endDate = row.contract_end_date || '';
-          if (!endDate) return 'Active';
-          const today = this.toIsoDate(new Date());
-          if (endDate < today) return 'Expired';
-          const days = this.daysUntil(endDate);
-          if (days <= 30) return 'Expiring soon';
-          return 'Active';
-        },
-
-        partnershipStatusBadgeClass(row = {}) {
-          const label = this.partnershipStatusLabel(row);
-          if (label === 'Expired' || label === 'Suspended' || label === 'Dropped') return 'bg-red-100 text-red-700';
-          if (label === 'Expiring soon') return 'bg-yellow-100 text-amber-700';
-          if (label === 'Pending') return 'bg-yellow-100 text-amber-700';
-          return 'bg-emerald-100 text-emerald-700';
         },
 
         staffPermissionBadges(member) {
@@ -12005,7 +11024,7 @@
           const { error: linkError } = await supabaseClient.rpc('link_current_tenant_account');
 
           if (linkError) {
-            this.tenant.error = this.friendlyErrorMessage(linkError);
+            this.tenant.error = linkError.message;
             this.tenant.loading = false;
             return;
           }
@@ -12018,7 +11037,7 @@
             .order('created_at', { ascending: false });
 
           if (tenantError) {
-            this.tenant.error = this.friendlyErrorMessage(tenantError);
+            this.tenant.error = tenantError.message;
             this.tenant.loading = false;
             return;
           }
@@ -12046,7 +11065,7 @@
             .order('created_at', { ascending: false });
 
           if (leaseError) {
-            this.tenant.error = this.friendlyErrorMessage(leaseError);
+            this.tenant.error = leaseError.message;
             this.tenant.loading = false;
             return;
           }
@@ -12093,7 +11112,7 @@
 
           const firstError = paymentsResult.error || submissionsResult.error || maintenanceResult.error;
           if (firstError) {
-            this.tenant.error = this.friendlyErrorMessage(firstError);
+            this.tenant.error = firstError.message;
             this.tenant.loading = false;
             return;
           }
@@ -12211,7 +11230,7 @@
             .single();
 
           if (error) {
-            this.tenant.error = this.friendlyErrorMessage(error);
+            this.tenant.error = error.message;
             this.tenant.saving = false;
             return;
           }
@@ -12220,7 +11239,7 @@
             try {
               await this.attachPaymentProof(submissionRow, proofFile, lease.landlord_id);
             } catch (error) {
-              this.tenant.error = `Payment was submitted, but the proof upload failed: ${this.friendlyErrorMessage(error)}`;
+              this.tenant.error = `Payment was submitted, but the proof upload failed: ${error.message}`;
               this.tenant.saving = false;
               await this.loadTenantData();
               return;
@@ -12259,7 +11278,7 @@
             .single();
 
           if (error) {
-            this.tenant.error = this.friendlyErrorMessage(error);
+            this.tenant.error = error.message;
             this.tenant.saving = false;
             return;
           }
@@ -12268,7 +11287,7 @@
             try {
               await this.attachMaintenancePhoto(requestRow, photoFile);
             } catch (error) {
-              this.tenant.error = `Request was submitted, but the photo upload failed: ${this.friendlyErrorMessage(error)}`;
+              this.tenant.error = `Request was submitted, but the photo upload failed: ${error.message}`;
               this.tenant.saving = false;
               await this.loadTenantData();
               return;
@@ -12304,7 +11323,7 @@
 
           const [propertiesResult, unitsResult, tenantsResult, leasesResult] = results;
           const firstError = propertiesResult.error || unitsResult.error || tenantsResult.error || leasesResult.error;
-          if (firstError) this.tenantLease.error = this.friendlyErrorMessage(firstError);
+          if (firstError) this.tenantLease.error = firstError.message;
 
           this.tenantLease.properties = propertiesResult.data || [];
           this.tenantLease.units = (unitsResult.data || []).map(unit => ({ ...unit, property: unit.properties || null }));
@@ -12358,7 +11377,7 @@
           });
 
           if (tenantError) {
-            this.tenantLease.error = this.friendlyErrorMessage(tenantError);
+            this.tenantLease.error = tenantError.message;
             this.tenantLease.saving = false;
             return;
           }
@@ -12390,7 +11409,7 @@
           });
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             return;
           }
 
@@ -12452,7 +11471,7 @@
           });
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             return;
           }
 
@@ -12514,7 +11533,7 @@
             .eq('id', tenantId);
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             this.tenantLease.saving = false;
             return;
           }
@@ -12545,7 +11564,7 @@
             .eq('id', lease.id);
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             return;
           }
 
@@ -12556,7 +11575,7 @@
               .eq('id', lease.unit_id);
 
             if (unitError) {
-              this.tenantLease.error = this.friendlyErrorMessage(unitError);
+              this.tenantLease.error = unitError.message;
               return;
             }
           }
@@ -12688,7 +11707,7 @@
             } else {
               this.tenantLease.leaseForm.documentFile = null;
             }
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
           }
         },
 
@@ -12769,7 +11788,7 @@
 
           if (error) {
             if (documentWindow) documentWindow.close();
-            this.setLeaseDocumentError(this.friendlyErrorMessage(error));
+            this.setLeaseDocumentError(error.message);
             return;
           }
 
@@ -12797,7 +11816,7 @@
             await this.loadTenantLeaseData();
             await this.loadPropertyUnitData();
           } catch (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
           }
 
           this.tenantLease.saving = false;
@@ -12865,7 +11884,7 @@
           } catch (error) {
             event.target.value = '';
             targetConfig.form[fieldName] = null;
-            this.setImageUploadError(targetConfig.errorScope, this.friendlyErrorMessage(error));
+            this.setImageUploadError(targetConfig.errorScope, error.message);
           }
         },
 
@@ -12954,7 +11973,7 @@
 
           if (error) {
             if (imageWindow) imageWindow.close();
-            this.setImageUploadError(errorScope, this.friendlyErrorMessage(error));
+            this.setImageUploadError(errorScope, error.message);
             return;
           }
 
@@ -13055,7 +12074,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             return;
           }
 
@@ -13104,7 +12123,7 @@
               try {
                 await this.uploadLeaseDocument(lease, documentFile);
               } catch (error) {
-                uploadWarning = `Lease was created, but the PDF upload failed: ${this.friendlyErrorMessage(error)}`;
+                uploadWarning = `Lease was created, but the PDF upload failed: ${error.message}`;
               }
             }
 
@@ -13125,7 +12144,7 @@
             await this.loadDashboardData();
             if (uploadWarning) this.tenantLease.error = uploadWarning;
           } catch (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
           }
 
           this.tenantLease.saving = false;
@@ -13142,7 +12161,7 @@
             .order('payment_date', { ascending: false });
 
           if (error) {
-            this.tenantLease.error = this.friendlyErrorMessage(error);
+            this.tenantLease.error = error.message;
             return;
           }
 
@@ -13199,23 +12218,11 @@
               .maybeSingle();
 
             error = result.error;
-            data = result.data || {
-              landlord_id: this.profile.id,
-              subscription_plan: 'free',
-              status: 'active',
-              expires_at: '2099-12-31 23:59:59+00',
-              property_limit: 1,
-              unit_limit: 1,
-              personal_staff_limit: 0,
-              partner_connection_limit: 1,
-              notes: 'Free landlord plan: 1 property, 1 unit, 0 personal staff, and 1 IPM or PMC connection.',
-              updated_at: null,
-              created_at: this.profile.created_at
-            };
+            data = result.data || null;
           }
 
           if (error) {
-            this.account.error = this.friendlyErrorMessage(error);
+            this.account.error = error.message;
           }
 
           this.account.subscription = data || null;
@@ -13224,8 +12231,6 @@
 
         accountDaysRemaining() {
           if (!this.account.subscription?.expires_at) return '-';
-          if (this.account.subscription?.subscription_plan === 'free') return 'No expiry';
-          if (String(this.account.subscription.expires_at).startsWith('2099-12-31')) return 'No expiry';
           const days = this.daysUntil(this.account.subscription.expires_at.slice(0, 10));
           if (days < 0) return 'Expired';
           if (days === 0) return 'Expires today';
@@ -13264,7 +12269,7 @@
             .single();
 
           if (error) {
-            this.settings.error = this.friendlyErrorMessage(error);
+            this.settings.error = error.message;
             this.settings.savingProfile = false;
             return;
           }
@@ -13295,7 +12300,7 @@
           });
 
           if (error) {
-            this.settings.error = this.friendlyErrorMessage(error);
+            this.settings.error = error.message;
             this.settings.savingPassword = false;
             return;
           }
@@ -13322,7 +12327,7 @@
             .limit(80);
 
           if (error) {
-            this.notifications.error = this.friendlyErrorMessage(error);
+            this.notifications.error = error.message;
             this.notifications.loading = false;
             return;
           }
@@ -13344,7 +12349,7 @@
             .eq('is_read', false);
 
           if (error) {
-            this.notifications.error = this.friendlyErrorMessage(error);
+            this.notifications.error = error.message;
             this.notifications.saving = false;
             return;
           }
@@ -13472,7 +12477,7 @@
           this.authLoading = false;
 
           if (error) {
-            this.authError = this.friendlyErrorMessage(error);
+            this.authError = error.message;
             return;
           }
 
@@ -13486,24 +12491,6 @@
           }
         },
 
-        normalizePhoneForSignup(phone) {
-          return String(phone || '').replace(/\s+/g, ' ').trim();
-        },
-
-        async signupIdentityAlreadyExists(email, phone) {
-          const { data, error } = await supabaseClient.rpc('signup_identity_exists', {
-            p_email: String(email || '').trim(),
-            p_phone: this.normalizePhoneForSignup(phone)
-          });
-
-          if (error) throw error;
-          return Boolean(data);
-        },
-
-        existingAccountSignupMessage() {
-          return 'Your account already exists. Please contact Mushavo support.';
-        },
-
         async signUpLandlord() {
           this.authError = '';
           this.successMessage = '';
@@ -13514,21 +12501,6 @@
           }
 
           this.authLoading = true;
-          const signupPhone = this.normalizePhoneForSignup(this.landlordSignupForm.phone);
-
-          try {
-            const exists = await this.signupIdentityAlreadyExists(this.landlordSignupForm.email, signupPhone);
-            if (exists) {
-              this.authError = this.existingAccountSignupMessage();
-              this.authLoading = false;
-              return;
-            }
-          } catch (lookupError) {
-            this.authError = this.friendlyErrorMessage(lookupError, 'We could not verify whether this account already exists. Please try again or contact Mushavo support.');
-            this.authLoading = false;
-            return;
-          }
-
           await supabaseClient.auth.signOut();
 
           const { data, error } = await supabaseClient.auth.signUp({
@@ -13538,13 +12510,13 @@
               data: {
                 mushavo_signup: 'landlord_free',
                 full_name: this.landlordSignupForm.fullName,
-                phone: signupPhone
+                phone: this.landlordSignupForm.phone || ''
               }
             }
           });
 
           if (error) {
-            this.authError = this.friendlyErrorMessage(error);
+            this.authError = error.message;
             this.authLoading = false;
             return;
           }
@@ -13558,11 +12530,11 @@
 
           const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
             p_full_name: this.landlordSignupForm.fullName,
-            p_phone: signupPhone
+            p_phone: this.landlordSignupForm.phone || ''
           });
 
           if (registerError) {
-            this.authError = this.friendlyErrorMessage(registerError, this.existingAccountSignupMessage());
+            this.authError = registerError.message;
             this.authLoading = false;
             return;
           }
@@ -13596,21 +12568,6 @@
           }
 
           this.authLoading = true;
-          const signupPhone = this.normalizePhoneForSignup(this.staffSignupForm.phone);
-
-          try {
-            const exists = await this.signupIdentityAlreadyExists(this.staffSignupForm.email, signupPhone);
-            if (exists) {
-              this.authError = this.existingAccountSignupMessage();
-              this.authLoading = false;
-              return;
-            }
-          } catch (lookupError) {
-            this.authError = this.friendlyErrorMessage(lookupError, 'We could not verify whether this account already exists. Please try again or contact Mushavo support.');
-            this.authLoading = false;
-            return;
-          }
-
           await supabaseClient.auth.signOut();
 
           const { data: codeValid, error: codeError } = await supabaseClient.rpc('validate_landlord_code', {
@@ -13618,7 +12575,7 @@
           });
 
           if (codeError || !codeValid) {
-            this.authError = codeError ? this.friendlyErrorMessage(codeError, 'Landlord code not found.') : 'Landlord code not found.';
+            this.authError = codeError?.message || 'Landlord code not found.';
             this.authLoading = false;
             return;
           }
@@ -13629,7 +12586,7 @@
           });
 
           if (error) {
-            this.authError = this.friendlyErrorMessage(error);
+            this.authError = error.message;
             this.authLoading = false;
             return;
           }
@@ -13643,12 +12600,12 @@
 
           const { error: registerError } = await supabaseClient.rpc('register_staff_with_landlord_code', {
             p_full_name: this.staffSignupForm.fullName,
-            p_phone: signupPhone,
+            p_phone: this.staffSignupForm.phone || '',
             p_landlord_code: this.staffSignupForm.landlordCode
           });
 
           if (registerError) {
-            this.authError = this.friendlyErrorMessage(registerError);
+            this.authError = registerError.message;
             this.authLoading = false;
             return;
           }
@@ -13716,7 +12673,7 @@
           if (profileError || !profile) {
             await supabaseClient.auth.signOut();
             this.authError = profileError?.message
-              ? `Your login exists, but Mushavo could not load your profile: ${this.friendlyErrorMessage(profileError)}`
+              ? `Your login exists, but Mushavo could not load your profile: ${profileError.message}`
               : 'Your account does not exist or has been removed. Please contact your landlord or Mushavo administrator.';
             this.currentShell = 'login';
             this.booting = false;
@@ -13892,66 +12849,24 @@
         },
 
         async checkLandlordSubscription(landlordId) {
-          let { data, error } = await supabaseClient
+          const { data, error } = await supabaseClient
             .from('landlord_subscriptions')
             .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
             .eq('landlord_id', landlordId)
             .maybeSingle();
 
           if (error || !data) {
-            const { error: repairError } = await supabaseClient.rpc('register_free_landlord', {
-              p_full_name: this.profile?.full_name || this.user?.email || 'Landlord',
-              p_phone: this.profile?.phone || ''
-            });
-
-            if (!repairError) {
-              const retry = await supabaseClient
-                .from('landlord_subscriptions')
-                .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
-                .eq('landlord_id', landlordId)
-                .maybeSingle();
-              data = retry.data;
-              error = retry.error;
-            }
-
-            if (error || !data) {
-              this.subscription = {
-                status: 'active',
-                expires_at: '2099-12-31 23:59:59+00',
-                notes: 'Free landlord plan: 1 property, 1 unit, 0 personal staff, and 1 IPM or PMC connection.',
-                subscription_plan: 'free',
-                property_limit: 1,
-                unit_limit: 1,
-                personal_staff_limit: 0,
-                partner_connection_limit: 1
-              };
-              return true;
-            }
-          }
-
-          this.subscription = data;
-          const status = data.status || 'active';
-          const plan = data.subscription_plan || 'free';
-          if (status === 'suspended') {
-            this.markSubscriptionPaused('suspended');
-            return false;
-          }
-          if (plan === 'free') return true;
-
-          const activeStatus = status === 'active' || status === 'trial';
-          if (!activeStatus) {
+            this.subscription = null;
             this.markSubscriptionPaused();
             return false;
           }
 
-          const expiresAt = data.expires_at ? new Date(data.expires_at) : null;
-          const hasExpiry = expiresAt && !Number.isNaN(expiresAt.getTime());
-          const expired = hasExpiry && expiresAt.getTime() <= Date.now();
-          if (expired) {
-            this.markSubscriptionPaused(status === 'trial' ? 'trial_expired' : 'expired');
-            return false;
-          }
-          return true;
+          this.subscription = data;
+          const expiresAt = new Date(data.expires_at);
+          const activeStatus = data.status === 'active' || data.status === 'trial';
+          const hasAccess = activeStatus && expiresAt.getTime() > Date.now();
+          if (!hasAccess) this.markSubscriptionPaused();
+          return hasAccess;
         },
 
         async loadStaffPermissions(staffProfileId) {
@@ -13986,9 +12901,7 @@
           if (this.staffContext.relationships.length === 0) {
             if (this.profile?.staff_type === 'freelancer') {
               this.staffContext.activeLandlordId = '';
-              this.profile.landlord_id = '';
               this.permissions = this.permissionStateFromRow({});
-              this.clearPartnerLandlordWorkspace();
               return true;
             }
 
@@ -14041,7 +12954,7 @@
             notes: company.notes || ''
           };
 
-          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, contract_start_date, contract_end_date, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
+          const permissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)';
           const [permissionsResult, requestsResult] = await Promise.all([
             supabaseClient
               .from('management_landlord_permissions')
@@ -14065,9 +12978,7 @@
 
           if (this.managementContext.relationships.length === 0) {
             this.managementContext.activeLandlordId = '';
-            localStorage.removeItem('mushavo_management_landlord_id');
             this.permissions = this.permissionStateFromRow({});
-            this.clearPartnerLandlordWorkspace();
             return true;
           }
 
@@ -14121,7 +13032,7 @@
 
           const { data: landlordPermission, error: landlordError } = await supabaseClient
             .from('management_landlord_permissions')
-            .select('id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, status, contract_start_date, contract_end_date, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, phone, landlord_code)')
+            .select('id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, status, landlord:profiles!management_landlord_permissions_landlord_id_fkey(id, full_name, email, landlord_code)')
             .eq('management_company_id', staffPermission.management_company_id)
             .eq('landlord_id', this.profile.landlord_id)
             .eq('status', 'approved')
@@ -14392,4 +13303,3 @@
   </script>
 </body>
 </html>
-
