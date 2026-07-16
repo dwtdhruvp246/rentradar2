@@ -832,7 +832,7 @@
                     <th class="px-4 py-3 font-semibold">Tenants</th>
                     <th class="px-4 py-3 font-semibold">Staff</th>
                     <th class="px-4 py-3 font-semibold">Date Added</th>
-                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
                   </tr>
@@ -858,7 +858,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="row.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.created_at)"></td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(row.archived_at ? 'archived' : (row.subscription?.status || 'trial'))" x-text="row.archived_at ? 'Archived' : titleCase(row.subscription?.status || 'trial')"></span>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="landlordPlanStatusBadgeClass(row.subscription, row.archived_at)" x-text="landlordPlanStatusLabel(row.subscription, row.archived_at)"></span>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.subscription?.expires_at)"></td>
                       <td class="px-4 py-3">
@@ -1303,7 +1303,7 @@
                     <th class="px-4 py-3 font-semibold">Tenants</th>
                     <th class="px-4 py-3 font-semibold">Staff</th>
                     <th class="px-4 py-3 font-semibold">Limits</th>
-                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
                   </tr>
@@ -1322,7 +1322,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="company.tenant_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="`${company.max_landlords || 0} landlords / ${company.max_properties || 0} properties / ${company.max_staff || 0} staff`"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(company.archived_at ? 'archived' : (company.subscription_status || 'trial'))" x-text="company.archived_at ? 'Archived' : (company.accepted ? titleCase(company.subscription_status || 'trial') : 'Pending')"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="managementPlanStatusBadgeClass(company)" x-text="managementPlanStatusLabel(company)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(company.subscription_expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
@@ -1574,7 +1574,7 @@
                     <th class="px-4 py-3 font-semibold">Account Status</th>
                     <th class="px-4 py-3 font-semibold">Landlords</th>
                     <th class="px-4 py-3 font-semibold">Limit</th>
-                    <th class="px-4 py-3 font-semibold">Subscription</th>
+                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Joined</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
@@ -1593,7 +1593,7 @@
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.landlord_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_max_landlords"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffSubscriptionBadgeClass(staffRow)" x-text="staffSubscriptionLabel(staffRow)"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffSubscriptionBadgeClass(staffRow)" x-text="staffSubscriptionPlanStatusLabel(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_subscription_expires_at ? formatDate(staffRow.staff_subscription_expires_at) : '-'"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
@@ -4182,8 +4182,8 @@
 
                     <div class="grid gap-4 lg:grid-cols-3">
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-sm font-medium text-slate-500">Subscription Status</p>
-                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionBadgeClass() : statusBadgeClass(account.subscription?.status || 'active')" x-text="profile?.staff_type === 'freelancer' ? staffProfileSubscriptionLabel() : titleCase(account.subscription?.subscription_plan === 'free' && (account.subscription?.status || 'active') === 'active' ? 'free' : (account.subscription?.status || 'active'))"></span>
+                        <p class="text-sm font-medium text-slate-500">Plan / Status</p>
+                        <span class="mt-3 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="accountPlanStatusBadgeClass()" x-text="accountPlanStatusLabel()"></span>
                       </article>
                       <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm font-medium text-slate-500">Account Expires</p>
@@ -4210,7 +4210,7 @@
                       <section class="rounded-lg border border-slate-200 p-4">
                         <h2 class="text-sm font-semibold text-slate-900">Subscription Details</h2>
                         <dl class="mt-4 space-y-3 text-sm">
-                          <div x-show="account.subscription?.subscription_plan" class="flex justify-between gap-4"><dt class="text-slate-500">Plan</dt><dd class="font-medium text-slate-900" x-text="titleCase(account.subscription?.subscription_plan || '-')"></dd></div>
+                          <div class="flex justify-between gap-4"><dt class="text-slate-500">Plan / Status</dt><dd class="font-medium text-slate-900" x-text="accountPlanStatusLabel()"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Started</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.created_at)"></dd></div>
                           <div class="flex justify-between gap-4"><dt class="text-slate-500">Last Updated</dt><dd class="font-medium text-slate-900" x-text="formatDate(account.subscription?.updated_at)"></dd></div>
                           <div x-show="account.subscription?.property_limit !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">Property Limit</dt><dd class="font-medium text-slate-900" x-text="account.subscription?.property_limit ?? '-'"></dd></div>
@@ -7070,7 +7070,14 @@
           const metadata = {
             full_name: this.admin.addForm.fullName,
             phone: this.admin.addForm.phone || '',
-            country_id: countryId
+            country_id: countryId,
+            subscription_plan: 'free',
+            subscription_status: 'active',
+            property_limit: 1,
+            unit_limit: 1,
+            personal_staff_limit: 0,
+            partner_connection_limit: 1,
+            subscription_expires_at: '2099-12-31 23:59:59+00'
           };
 
           const { data: inviteRow, error: inviteError } = await supabaseClient
@@ -7098,9 +7105,14 @@
             .insert({
               landlord_id: null,
               country_id: countryId,
-              status: 'trial',
-              expires_at: this.addDaysIso(30),
-              notes: '',
+              subscription_plan: 'free',
+              property_limit: 1,
+              unit_limit: 1,
+              personal_staff_limit: 0,
+              partner_connection_limit: 1,
+              status: 'active',
+              expires_at: '2099-12-31 23:59:59+00',
+              notes: 'Free landlord plan created from admin invite.',
               invite_token_id: inviteRow.id,
               updated_by: this.profile.id
             });
@@ -8164,6 +8176,7 @@
         staffSubscriptionLabel(staffRow) {
           const status = staffRow?.staff_subscription_status || 'free';
           const expiry = staffRow?.staff_subscription_expires_at ? new Date(staffRow.staff_subscription_expires_at) : null;
+          if (status === 'free') return 'Active';
           if (status === 'suspended') return 'Suspended';
           if (status === 'active' && expiry && !Number.isNaN(expiry.getTime())) {
             const today = new Date();
@@ -8425,22 +8438,152 @@
           this.dashboard.selectedLease = lease;
         },
 
-        subscriptionDashboardLabel() {
-          const status = this.subscription?.subscription_plan === 'free' && this.subscription?.status === 'active' ? 'free' : (this.subscription?.status || 'trial');
-          return this.subscriptionExpiringSoon() ? `${this.titleCase(status)} - Expiring soon` : this.titleCase(status);
+        planDisplayName(plan, fallback = 'Free') {
+          const value = String(plan || '').trim().toLowerCase();
+          const labels = {
+            free: 'Free',
+            starter: 'Starter',
+            growth: 'Growth',
+            portfolio: 'Portfolio',
+            standard: 'Standard',
+            custom: 'Custom',
+            ipm: 'IPM',
+            pmc: 'PMC'
+          };
+          return labels[value] || (value ? this.titleCase(value) : fallback);
         },
 
-        subscriptionExpiringSoon() {
-          if (!this.subscription?.expires_at) return false;
-          if (this.subscription?.subscription_plan === 'free') return false;
-          const days = this.daysUntil(this.subscription.expires_at.slice(0, 10));
-          return days >= 0 && days <= 7 && this.subscription.status !== 'suspended';
+        statusDisplayName(status) {
+          const value = String(status || '').trim().toLowerCase();
+          const labels = {
+            active: 'Active',
+            trial: 'Trial',
+            suspended: 'Suspended',
+            expired: 'Expired',
+            trial_expired: 'Trial Expired',
+            archived: 'Archived',
+            pending: 'Pending'
+          };
+          return labels[value] || (value ? this.titleCase(value) : 'Active');
+        },
+
+        effectiveSubscriptionStatus(subscription = this.subscription) {
+          if (!subscription) return 'active';
+          const status = String(subscription.status || subscription.subscription_status || 'active').toLowerCase();
+          const plan = String(subscription.subscription_plan || subscription.plan || 'free').toLowerCase();
+          if (status === 'suspended') return 'suspended';
+          if (plan === 'free') return 'active';
+          if (subscription.expires_at) {
+            const days = this.daysUntil(String(subscription.expires_at).slice(0, 10));
+            if (days < 0) return status === 'trial' ? 'trial_expired' : 'expired';
+          }
+          return status || 'active';
+        },
+
+        planStatusLabel(plan, status) {
+          const normalizedPlan = String(plan || 'free').toLowerCase();
+          const displayStatus = this.statusDisplayName(status || 'active');
+          const displayPlan = this.planDisplayName(normalizedPlan);
+          if (normalizedPlan === 'free') return `${displayStatus} - ${displayPlan}`;
+          return `${displayPlan} - ${displayStatus}`;
+        },
+
+        landlordPlanStatusLabel(subscription = this.subscription, archived = false) {
+          if (archived) return 'Archived';
+          const plan = subscription?.subscription_plan || 'free';
+          const status = this.effectiveSubscriptionStatus(subscription || { subscription_plan: plan, status: 'active' });
+          return this.planStatusLabel(plan, status);
+        },
+
+        landlordPlanStatusBadgeClass(subscription = this.subscription, archived = false) {
+          if (archived) return this.statusBadgeClass('archived');
+          const status = this.effectiveSubscriptionStatus(subscription);
+          if (['suspended', 'expired', 'trial_expired'].includes(status)) return 'bg-red-100 text-red-700';
+          if (this.subscriptionExpiringSoon(subscription) || status === 'trial') return 'bg-yellow-100 text-amber-700';
+          return 'bg-emerald-100 text-emerald-700';
+        },
+
+        managementPlanStatusLabel(companyOrSubscription) {
+          if (companyOrSubscription?.archived_at) return 'Archived';
+          if (companyOrSubscription?.accepted === false) return 'Pending';
+          const plan = companyOrSubscription?.subscription_plan || companyOrSubscription?.plan || 'pmc';
+          const status = companyOrSubscription?.subscription_status || companyOrSubscription?.status || 'trial';
+          return this.planStatusLabel(plan, status);
+        },
+
+        managementPlanStatusBadgeClass(companyOrSubscription) {
+          if (companyOrSubscription?.archived_at) return this.statusBadgeClass('archived');
+          if (companyOrSubscription?.accepted === false) return this.statusBadgeClass('trial');
+          const status = String(companyOrSubscription?.subscription_status || companyOrSubscription?.status || 'trial').toLowerCase();
+          if (status === 'suspended') return 'bg-red-100 text-red-700';
+          if (status === 'trial') return 'bg-yellow-100 text-amber-700';
+          return 'bg-emerald-100 text-emerald-700';
+        },
+
+        staffSubscriptionPlanStatusLabel(staffRow) {
+          if (staffRow?.archived_at) return 'Archived';
+          if (staffRow?.accepted === false) return 'Pending';
+          const status = String(staffRow?.staff_subscription_status || 'free').toLowerCase();
+          if (status === 'free') return 'Active - Free';
+          if (status === 'suspended') return 'IPM - Suspended';
+          const expiryLabel = this.staffSubscriptionLabel(staffRow);
+          if (expiryLabel === 'Expired') return 'IPM - Expired';
+          if (expiryLabel === 'Expiring Soon') return 'IPM - Active - Expiring soon';
+          return 'IPM - Active';
+        },
+
+        accountPlanStatusLabel() {
+          if (this.profile?.staff_type === 'freelancer') {
+            return this.staffSubscriptionPlanStatusLabel({
+              accepted: true,
+              staff_subscription_status: this.profile?.staff_subscription_status || 'free',
+              staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null
+            });
+          }
+          if (this.profile?.role === 'management_leader') {
+            return this.managementPlanStatusLabel({
+              accepted: true,
+              subscription_status: this.account.subscription?.status || 'trial',
+              subscription_expires_at: this.account.subscription?.expires_at || null
+            });
+          }
+          return this.landlordPlanStatusLabel(this.account.subscription || this.subscription);
+        },
+
+        accountPlanStatusBadgeClass() {
+          if (this.profile?.staff_type === 'freelancer') return this.staffProfileSubscriptionBadgeClass();
+          if (this.profile?.role === 'management_leader') {
+            return this.managementPlanStatusBadgeClass({
+              accepted: true,
+              subscription_status: this.account.subscription?.status || 'trial',
+              subscription_expires_at: this.account.subscription?.expires_at || null
+            });
+          }
+          return this.landlordPlanStatusBadgeClass(this.account.subscription || this.subscription);
+        },
+
+        subscriptionDashboardLabel() {
+          const label = this.profile?.role === 'management_leader'
+            ? this.managementPlanStatusLabel({ accepted: true, status: this.subscription?.status || 'trial', subscription_plan: this.subscription?.subscription_plan || 'pmc' })
+            : this.landlordPlanStatusLabel(this.subscription);
+          return this.subscriptionExpiringSoon() ? `${label} - Expiring soon` : label;
+        },
+
+        subscriptionExpiringSoon(subscription = this.subscription) {
+          if (!subscription?.expires_at) return false;
+          if (subscription?.subscription_plan === 'free') return false;
+          const days = this.daysUntil(String(subscription.expires_at).slice(0, 10));
+          const status = subscription.status || subscription.subscription_status;
+          return days >= 0 && days <= 7 && status !== 'suspended';
         },
 
         subscriptionDashboardBadgeClass() {
+          if (this.profile?.role === 'management_leader') {
+            return this.managementPlanStatusBadgeClass({ accepted: true, status: this.subscription?.status || 'trial', subscription_status: this.subscription?.status || 'trial' });
+          }
           if (this.subscription?.status === 'suspended') return 'bg-red-100 text-red-700';
           if (this.subscriptionExpiringSoon()) return 'bg-yellow-100 text-amber-700';
-          return this.statusBadgeClass(this.subscription?.status || 'active');
+          return this.landlordPlanStatusBadgeClass(this.subscription);
         },
 
         subscriptionExpiryLabel(subscription = this.subscription) {
