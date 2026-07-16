@@ -278,7 +278,7 @@
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
-              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="landlordSignupForm.phone">
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="landlordSignupForm.phone" required>
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -12650,6 +12650,39 @@
           }
         },
 
+        async checkSignupIdentityAvailable(email, phone) {
+          const normalizedEmail = String(email || '').trim().toLowerCase();
+          const normalizedPhone = String(phone || '').replace(/\D/g, '');
+
+          if (!normalizedEmail || normalizedPhone.length < 6) {
+            return {
+              available: false,
+              message: 'Enter a valid email and phone number before creating the account.'
+            };
+          }
+
+          const { data, error } = await supabaseClient.rpc('signup_identity_exists', {
+            p_email: normalizedEmail,
+            p_phone: phone || ''
+          });
+
+          if (error) {
+            return {
+              available: false,
+              message: 'Mushavo could not safely check whether this account already exists. Please contact Mushavo support.'
+            };
+          }
+
+          if (data === true) {
+            return {
+              available: false,
+              message: 'Your account already exists. Please contact Mushavo support.'
+            };
+          }
+
+          return { available: true, message: '' };
+        },
+
         async signUpLandlord() {
           this.authError = '';
           this.successMessage = '';
@@ -12660,6 +12693,17 @@
           }
 
           this.authLoading = true;
+          const availability = await this.checkSignupIdentityAvailable(
+            this.landlordSignupForm.email,
+            this.landlordSignupForm.phone
+          );
+
+          if (!availability.available) {
+            this.authError = availability.message;
+            this.authLoading = false;
+            return;
+          }
+
           await supabaseClient.auth.signOut();
 
           const { data, error } = await supabaseClient.auth.signUp({
@@ -12675,7 +12719,9 @@
           });
 
           if (error) {
-            this.authError = error.message;
+            this.authError = /already registered|already exists|user exists/i.test(error.message || '')
+              ? 'Your account already exists. Please contact Mushavo support.'
+              : error.message;
             this.authLoading = false;
             return;
           }
@@ -12693,7 +12739,9 @@
           });
 
           if (registerError) {
-            this.authError = registerError.message;
+            this.authError = /already exists|phone number|email|duplicate/i.test(registerError.message || '')
+              ? 'Your account already exists. Please contact Mushavo support.'
+              : this.friendlyDatabaseError(registerError, 'Your free landlord account could not be created. Please contact Mushavo support.');
             this.authLoading = false;
             return;
           }
