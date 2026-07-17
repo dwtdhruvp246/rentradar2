@@ -925,7 +925,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.planStatus" @change="applyManagementAddPlanStatusSelection">
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.planStatus" @change="applyManagementAddPlanStatusSelection()">
                       <template x-for="option in planStatusOptions('pmc')" :key="`management-add-plan-status-${option.value}`">
                         <option :value="option.value" x-text="option.label"></option>
                       </template>
@@ -978,7 +978,7 @@
                 <div class="grid gap-3 sm:grid-cols-2">
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.planStatus" @change="applyManagementPlanStatusSelection">
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.planStatus" @change="applyManagementPlanStatusSelection()">
                       <template x-for="option in planStatusOptions('pmc')" :key="`pmc-plan-status-${option.value}`">
                         <option :value="option.value" x-text="option.label"></option>
                       </template>
@@ -1501,7 +1501,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection()" required>
                     <template x-for="option in planStatusOptions('ipm')" :key="`freelancer-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -1624,7 +1624,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.planStatus" @change="applyStaffPlanStatusSelection" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.planStatus" @change="applyStaffPlanStatusSelection()" required>
                     <template x-for="option in planStatusOptions('ipm')" :key="`ipm-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -1773,7 +1773,7 @@
               <form class="space-y-4" @submit.prevent="saveSubscription">
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection()" required>
                     <template x-for="option in planStatusOptions('landlord')" :key="`landlord-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -6904,7 +6904,13 @@
         },
 
         applySubscriptionPlanStatusSelection() {
-          const [plan = 'free', status = 'active'] = String(this.admin.subscriptionForm.planStatus || 'free:active').split(':');
+          const selectedPlanStatus = this.subscriptionPlanStatusValue(
+            String(this.admin.subscriptionForm.planStatus || 'free:active').split(':')[0],
+            String(this.admin.subscriptionForm.planStatus || 'free:active').split(':')[1],
+            'landlord'
+          );
+          const [plan = 'free', status = 'active'] = selectedPlanStatus.split(':');
+          this.admin.subscriptionForm.planStatus = selectedPlanStatus;
           this.admin.subscriptionForm.plan = plan;
           this.admin.subscriptionForm.status = status;
           Object.assign(this.admin.subscriptionForm, this.subscriptionPlanDefaults('landlord', plan));
@@ -6937,25 +6943,49 @@
         },
 
         applyStaffPlanStatusSelection() {
-          const [plan = 'pro', status = 'active'] = String(this.admin.staffLimitForm.planStatus || 'pro:active').split(':');
+          const selectedPlanStatus = this.subscriptionPlanStatusValue(
+            String(this.admin.staffLimitForm.planStatus || 'pro:active').split(':')[0],
+            String(this.admin.staffLimitForm.planStatus || 'pro:active').split(':')[1],
+            'ipm'
+          );
+          const [plan = 'pro', status = 'active'] = selectedPlanStatus.split(':');
+          this.admin.staffLimitForm.planStatus = selectedPlanStatus;
           this.admin.staffLimitForm.subscriptionStatus = status;
           Object.assign(this.admin.staffLimitForm, this.subscriptionPlanDefaults('ipm', plan));
         },
 
         applyFreelancerPlanStatusSelection() {
-          const [plan = 'pro', status = 'active'] = String(this.admin.freelancerForm.planStatus || 'pro:active').split(':');
+          const selectedPlanStatus = this.subscriptionPlanStatusValue(
+            String(this.admin.freelancerForm.planStatus || 'pro:active').split(':')[0],
+            String(this.admin.freelancerForm.planStatus || 'pro:active').split(':')[1],
+            'ipm'
+          );
+          const [plan = 'pro', status = 'active'] = selectedPlanStatus.split(':');
+          this.admin.freelancerForm.planStatus = selectedPlanStatus;
           this.admin.freelancerForm.subscriptionStatus = status;
           Object.assign(this.admin.freelancerForm, this.subscriptionPlanDefaults('ipm', plan));
         },
 
         applyManagementPlanStatusSelection() {
-          const [plan = 'starter', status = 'active'] = String(this.admin.managementLimitForm.planStatus || 'starter:active').split(':');
+          const selectedPlanStatus = this.subscriptionPlanStatusValue(
+            String(this.admin.managementLimitForm.planStatus || 'starter:active').split(':')[0],
+            String(this.admin.managementLimitForm.planStatus || 'starter:active').split(':')[1],
+            'pmc'
+          );
+          const [plan = 'starter', status = 'active'] = selectedPlanStatus.split(':');
+          this.admin.managementLimitForm.planStatus = selectedPlanStatus;
           this.admin.managementLimitForm.subscriptionStatus = status;
           Object.assign(this.admin.managementLimitForm, this.subscriptionPlanDefaults('pmc', plan));
         },
 
         applyManagementAddPlanStatusSelection() {
-          const [plan = 'starter', status = 'trial'] = String(this.admin.managementAddForm.planStatus || 'starter:trial').split(':');
+          const selectedPlanStatus = this.subscriptionPlanStatusValue(
+            String(this.admin.managementAddForm.planStatus || 'starter:trial').split(':')[0],
+            String(this.admin.managementAddForm.planStatus || 'starter:trial').split(':')[1],
+            'pmc'
+          );
+          const [plan = 'starter', status = 'trial'] = selectedPlanStatus.split(':');
+          this.admin.managementAddForm.planStatus = selectedPlanStatus;
           this.admin.managementAddForm.subscriptionStatus = status;
           Object.assign(this.admin.managementAddForm, this.subscriptionPlanDefaults('pmc', plan));
         },
