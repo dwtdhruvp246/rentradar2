@@ -815,6 +815,7 @@
                       <td class="max-w-72 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
+                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadPlatformReceipt(payment)">Download Receipt</button>
                           <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="editPlatformPayment(payment)">Edit</button>
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deletePlatformPayment(payment)">Delete</button>
                         </div>
@@ -2708,11 +2709,11 @@
                         <div class="border-b border-slate-200 bg-slate-50 px-4 py-3"><h3 class="text-sm font-semibold text-slate-900">Payment History</h3></div>
                         <div class="overflow-x-auto">
                           <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
-                            <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Receipt</th><th class="px-4 py-3">Period</th><th class="px-4 py-3">Amount</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Method</th><th class="px-4 py-3">Notes</th></tr></thead>
+                            <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Receipt</th><th class="px-4 py-3">Period</th><th class="px-4 py-3">Amount</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Method</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3">Actions</th></tr></thead>
                             <tbody class="divide-y divide-slate-200">
-                              <template x-if="tenantLease.selectedTenantPayments.length === 0"><tr><td class="px-4 py-6 text-center text-sm text-slate-500" colspan="6">No payments.</td></tr></template>
+                              <template x-if="tenantLease.selectedTenantPayments.length === 0"><tr><td class="px-4 py-6 text-center text-sm text-slate-500" colspan="7">No payments.</td></tr></template>
                               <template x-for="payment in tenantLease.selectedTenantPayments" :key="payment.id">
-                                <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.receipt_number || '-'"></td><td class="px-4 py-3" x-text="paymentPeriodLabel(payment)"></td><td class="px-4 py-3" x-text="formatCurrency(payment.amount_paid)"></td><td class="px-4 py-3" x-text="formatDate(payment.payment_date)"></td><td class="px-4 py-3" x-text="titleCase(payment.payment_method)"></td><td class="max-w-48 truncate px-4 py-3" x-text="payment.notes || '-'"></td></tr>
+                                <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.receipt_number || '-'"></td><td class="px-4 py-3" x-text="paymentPeriodLabel(payment)"></td><td class="px-4 py-3" x-text="formatCurrency(payment.amount_paid)"></td><td class="px-4 py-3" x-text="formatDate(payment.payment_date)"></td><td class="px-4 py-3" x-text="titleCase(payment.payment_method)"></td><td class="max-w-48 truncate px-4 py-3" x-text="payment.notes || '-'"></td><td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadReceipt(payment)">Download Receipt</button></td></tr>
                               </template>
                             </tbody>
                           </table>
@@ -2823,10 +2824,10 @@
                       <div class="border-b border-slate-200 bg-slate-50 px-4 py-3"><h3 class="text-sm font-semibold text-slate-900">Payment History</h3></div>
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
-                          <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Receipt</th><th class="px-4 py-3">Period</th><th class="px-4 py-3">Amount</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Method</th><th class="px-4 py-3">Notes</th></tr></thead>
+                          <thead class="bg-white text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3">Receipt</th><th class="px-4 py-3">Period</th><th class="px-4 py-3">Amount</th><th class="px-4 py-3">Date</th><th class="px-4 py-3">Method</th><th class="px-4 py-3">Notes</th><th class="px-4 py-3">Actions</th></tr></thead>
                           <tbody class="divide-y divide-slate-200">
-                            <template x-if="tenantLease.selectedLeasePayments.length === 0"><tr><td class="px-4 py-6 text-center text-sm text-slate-500" colspan="6">No payments.</td></tr></template>
-                            <template x-for="payment in tenantLease.selectedLeasePayments" :key="payment.id"><tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.receipt_number || '-'"></td><td class="px-4 py-3" x-text="paymentPeriodLabel(payment)"></td><td class="px-4 py-3" x-text="formatCurrency(payment.amount_paid)"></td><td class="px-4 py-3" x-text="formatDate(payment.payment_date)"></td><td class="px-4 py-3" x-text="titleCase(payment.payment_method)"></td><td class="max-w-48 truncate px-4 py-3" x-text="payment.notes || '-'"></td></tr></template>
+                            <template x-if="tenantLease.selectedLeasePayments.length === 0"><tr><td class="px-4 py-6 text-center text-sm text-slate-500" colspan="7">No payments.</td></tr></template>
+                            <template x-for="payment in tenantLease.selectedLeasePayments" :key="payment.id"><tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.receipt_number || '-'"></td><td class="px-4 py-3" x-text="paymentPeriodLabel(payment)"></td><td class="px-4 py-3" x-text="formatCurrency(payment.amount_paid)"></td><td class="px-4 py-3" x-text="formatDate(payment.payment_date)"></td><td class="px-4 py-3" x-text="titleCase(payment.payment_method)"></td><td class="max-w-48 truncate px-4 py-3" x-text="payment.notes || '-'"></td><td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadReceipt(payment, tenantLease.selectedLease)">Download Receipt</button></td></tr></template>
                           </tbody>
                         </table>
                       </div>
@@ -3150,12 +3151,12 @@
                       <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                           <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                            <tr><th class="px-4 py-3 font-semibold">Tenant</th><th class="px-4 py-3 font-semibold">Unit</th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th></tr>
+                            <tr><th class="px-4 py-3 font-semibold">Tenant</th><th class="px-4 py-3 font-semibold">Unit</th><th class="px-4 py-3 font-semibold">Period</th><th class="px-4 py-3 font-semibold">Amount</th><th class="px-4 py-3 font-semibold">Date</th><th class="px-4 py-3 font-semibold">Notes</th><th class="px-4 py-3 font-semibold">Actions</th></tr>
                           </thead>
                           <tbody class="divide-y divide-slate-200">
-                            <template x-if="!finance.loading && filteredFinancePayments().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No verified payments.</td></tr></template>
+                            <template x-if="!finance.loading && filteredFinancePayments().length === 0"><tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No verified payments.</td></tr></template>
                             <template x-for="payment in filteredFinancePayments().slice(0, 20)" :key="payment.id">
-                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td></tr>
+                              <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="payment.tenant"></td><td class="px-4 py-3 text-slate-700" x-text="payment.unit"></td><td class="px-4 py-3 text-slate-700" x-text="payment.period"></td><td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount)"></td><td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.date)"></td><td class="max-w-48 truncate px-4 py-3 text-slate-700" x-text="payment.notes || '-'"></td><td class="px-4 py-3"><button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadReceipt(payment)">Download Receipt</button></td></tr>
                             </template>
                           </tbody>
                         </table>
@@ -10366,6 +10367,69 @@
             this.payments.error = message;
             this.propertyUnit.error = message;
             this.tenant.error = message;
+          }
+        },
+
+        downloadPlatformReceipt(payment) {
+          this.admin.error = '';
+
+          try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const receiptNumber = `MSH-${payment?.id?.slice(0, 8) || Date.now()}`;
+            const accountName = this.adminPaymentAccountName(payment);
+            const accountEmail = this.adminPaymentAccountEmail(payment);
+            const amountPaid = Number(payment?.amount_paid || 0);
+            const period = `${this.formatDate(payment?.period_start)} - ${this.formatDate(payment?.period_end)}`;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            doc.text('Mushavo', 20, 22);
+            doc.setFontSize(13);
+            doc.text('Platform Payment Receipt', 20, 32);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text(`Receipt Number: ${receiptNumber}`, 140, 22);
+            doc.text(`Date: ${this.formatDate(payment?.paid_at)}`, 140, 29);
+
+            doc.setDrawColor(16, 185, 129);
+            doc.setLineWidth(0.8);
+            doc.line(20, 40, 190, 40);
+
+            const rows = [
+              ['Account', accountName || '-'],
+              ['Email', accountEmail || '-'],
+              ['Type', this.paymentPayerTypeLabel(payment)],
+              ['Country', this.adminCountryName(payment?.country_id)],
+              ['Amount Paid', this.formatCurrency(amountPaid)],
+              ['Payment Period', period],
+              ['Paid Date', this.formatDate(payment?.paid_at)]
+            ];
+
+            let y = 56;
+            rows.forEach(([label, value]) => {
+              doc.setFont('helvetica', 'bold');
+              doc.text(`${label}:`, 20, y);
+              doc.setFont('helvetica', 'normal');
+              doc.text(String(value || '-'), 66, y, { maxWidth: 120 });
+              y += 10;
+            });
+
+            if (payment?.notes) {
+              doc.setFont('helvetica', 'bold');
+              doc.text('Notes:', 20, y + 2);
+              doc.setFont('helvetica', 'normal');
+              doc.text(String(payment.notes), 66, y + 2, { maxWidth: 120 });
+            }
+
+            doc.setDrawColor(226, 232, 240);
+            doc.line(20, 270, 190, 270);
+            doc.setFontSize(11);
+            doc.text('Thank you for your payment', 20, 280);
+            doc.save(`${receiptNumber}.pdf`);
+          } catch (error) {
+            this.admin.error = error.message || 'Platform receipt could not be generated.';
           }
         },
 
