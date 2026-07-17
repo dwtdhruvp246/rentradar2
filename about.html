@@ -3,179 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>About Mushavo | Vision, Mission, Goals</title>
-  <meta name="description" content="Learn about Mushavo's vision, mission, goals, and values.">
+  <title>About Mushavo</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="i18n.js" defer></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: { ink: '#0f172a', muted: '#64748b', brand: '#00806b', brandDark: '#075e56' },
-          boxShadow: { glass: '0 24px 80px rgba(15, 23, 42, 0.12)' }
-        }
-      }
-    };
-  </script>
-  <style>
-    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>body{font-family:Inter,system-ui,sans-serif;background:#f8fafc;color:#0f172a}.btn{border-radius:.75rem;padding:.75rem 1rem;font-weight:700}.btn-primary{background:#10b981;color:white}.btn-primary:hover{background:#059669}</style>
 </head>
-<body class="min-h-screen overflow-x-hidden bg-[#eefbf7] text-ink">
-  <div class="pointer-events-none fixed inset-0 -z-10">
-    <div class="absolute left-[-8rem] top-[-8rem] h-80 w-80 rounded-full bg-emerald-200/60 blur-3xl"></div>
-    <div class="absolute right-[-10rem] top-20 h-96 w-96 rounded-full bg-cyan-200/50 blur-3xl"></div>
-  </div>
-
-  <header class="sticky top-0 z-40 border-b border-white/50 bg-white/55 backdrop-blur-2xl">
-    <div class="mx-auto flex w-full max-w-[96rem] items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-      <a href="index.html" class="flex min-w-0 items-center gap-3">
-        <img src="mushavo-logo.png" alt="Mushavo logo" class="h-[7.875rem] w-auto sm:h-36">
-      </a>
-      <button id="menuButton" class="inline-flex items-center rounded-2xl border border-slate-200 bg-white/70 px-3 py-2 text-sm font-semibold shadow-sm md:hidden" type="button">Menu</button>
-      <nav class="hidden items-center gap-2 md:flex">
-        <a class="rounded-2xl bg-emerald-50 px-4 py-2 text-sm font-bold text-brandDark" href="about.html">About</a>
-        <a class="rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white/70" href="pricing.html">Pricing</a>
-        <a class="rounded-2xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-white/70" href="contact.html">Contact</a>
-        <a class="rounded-2xl border border-emerald-200 bg-white/70 px-4 py-2 text-sm font-bold text-brandDark shadow-sm transition hover:bg-white" href="client.html">Client Area</a>
+<body>
+  <header class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <a href="index.html"><img src="mushavo-logo.png" alt="Mushavo logo" class="h-12 w-12 rounded-xl object-contain"></a>
+      <nav class="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-700">
+        <a class="rounded-xl px-3 py-2 hover:bg-slate-100" href="index.html">Home</a>
+        <a class="rounded-xl px-3 py-2 hover:bg-slate-100" href="about.html">About</a>
+        <a class="rounded-xl px-3 py-2 hover:bg-slate-100" href="pricing.html">Pricing</a>
+        <a class="rounded-xl px-3 py-2 hover:bg-slate-100" href="contact.html">Contact</a>
+        <a class="btn btn-primary" href="client.html">Client Area</a>
+        <span data-language-mount></span>
       </nav>
     </div>
-    <nav id="mobileMenu" class="mx-auto hidden w-full max-w-[96rem] px-4 pb-4 sm:px-6 md:hidden">
-      <div class="grid gap-2 rounded-3xl border border-white/70 bg-white/70 p-3 shadow-glass backdrop-blur-xl">
-        <a class="rounded-2xl bg-emerald-50 px-4 py-3 text-sm font-bold text-brandDark" href="about.html">About</a>
-        <a class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-emerald-50" href="pricing.html">Pricing</a>
-        <a class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-emerald-50" href="contact.html">Contact</a>
-        <a class="rounded-2xl bg-brand px-4 py-3 text-sm font-bold text-white" href="client.html">Client Area</a>
-      </div>
-    </nav>
   </header>
-
-  <main>
-    <section class="mx-auto w-full max-w-[96rem] px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-      <div class="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-glass backdrop-blur-2xl sm:p-10 lg:p-14">
-        <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">About Mushavo</p>
-        <h1 class="mt-4 max-w-4xl text-4xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">Property management should feel calm, clear, and under control.</h1>
-        <p class="mt-6 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg">Mushavo is a property operations platform for landlords, individual portfolio managers, and property management companies. It brings properties, units, tenants, leases, payments, proof files, maintenance, staff permissions, and subscriptions into one accountable workspace.</p>
-        <div class="mt-8 grid gap-3 sm:grid-cols-3">
-          <div class="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
-            <p class="text-3xl font-black text-brandDark">1</p>
-            <p class="mt-2 text-sm font-bold text-slate-700">Clear record for each property, unit, tenant, and lease.</p>
-          </div>
-          <div class="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
-            <p class="text-3xl font-black text-brandDark">2</p>
-            <p class="mt-2 text-sm font-bold text-slate-700">Controlled access for staff, IPMs, PMCs, and tenants.</p>
-          </div>
-          <div class="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
-            <p class="text-3xl font-black text-brandDark">3</p>
-            <p class="mt-2 text-sm font-bold text-slate-700">Safer documents, payments, maintenance history, and audit trails.</p>
-          </div>
-        </div>
-      </div>
+  <main class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+    <section class="max-w-3xl">
+      <p class="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">About Mushavo</p>
+      <h1 class="mt-4 text-4xl font-extrabold tracking-normal sm:text-5xl">Practical software for property work that happens every day.</h1>
+      <p class="mt-6 text-lg leading-8 text-slate-600">Mushavo exists to make property operations easier to run, easier to audit, and easier to share between the people who need access.</p>
     </section>
-
-    <section class="mx-auto grid w-full max-w-[96rem] gap-4 px-4 py-4 sm:px-6 md:grid-cols-3 lg:px-8">
-      <article class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
-        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">Vision</p>
-        <h2 class="mt-3 text-2xl font-black">Make property operations simpler across growing markets.</h2>
-        <p class="mt-4 leading-7 text-slate-600">We want Mushavo to become a trusted operating system for property work in markets like Zimbabwe, Malaysia, and other countries where owners and managers need practical tools that fit local pricing and workflows.</p>
-      </article>
-      <article class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
-        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">Mission</p>
-        <h2 class="mt-3 text-2xl font-black">Put every important property record in one clean place.</h2>
-        <p class="mt-4 leading-7 text-slate-600">Mushavo helps teams manage rent, tenants, leases, maintenance, documents, staff permissions, and subscriptions with clear accountability, so records do not disappear when people move, change teams, or change landlords.</p>
-      </article>
-      <article class="rounded-[1.75rem] border border-white/70 bg-white/60 p-6 shadow-glass backdrop-blur-xl">
-        <p class="text-sm font-black uppercase tracking-[0.16em] text-brandDark">Goals</p>
-        <h2 class="mt-3 text-2xl font-black">Build trust through reliable records and better workflows.</h2>
-        <p class="mt-4 leading-7 text-slate-600">The goal is to reduce disputes, missed follow-ups, lost files, and unclear responsibility between landlords, tenants, staff, IPMs, and PMCs.</p>
-      </article>
-    </section>
-
-    <section class="mx-auto w-full max-w-[96rem] px-4 py-8 sm:px-6 lg:px-8">
-      <div class="rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-glass backdrop-blur-2xl sm:p-10">
-        <div class="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-          <div>
-            <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">Who we serve</p>
-            <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Built for the different people involved in property work.</h2>
-            <p class="mt-4 leading-8 text-slate-600">Mushavo is not only for one type of property owner. It is designed for the full chain: owners, managers, company teams, staff, and tenants.</p>
-          </div>
-          <div class="grid gap-3 sm:grid-cols-2">
-            <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-              <h3 class="font-bold">Landlords</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Own and manage properties, tenants, leases, payments, staff, and maintenance.</p>
-            </div>
-            <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-              <h3 class="font-bold">Individual portfolio managers</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Work for multiple landlords with approved access and clear limits.</p>
-            </div>
-            <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-              <h3 class="font-bold">Property management companies</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Manage landlord relationships, company staff, permissions, and assigned portfolios.</p>
-            </div>
-            <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-              <h3 class="font-bold">Tenants and staff</h3>
-              <p class="mt-2 text-sm leading-6 text-slate-600">Submit payments, report issues, upload files, and only see what they are allowed to access.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mx-auto w-full max-w-[96rem] px-4 py-12 sm:px-6 lg:px-8">
-      <div class="grid gap-8 rounded-[2rem] border border-white/70 bg-white/55 p-8 shadow-glass backdrop-blur-2xl lg:grid-cols-[0.9fr_1.1fr] lg:p-10">
-        <div>
-          <p class="text-sm font-black uppercase tracking-[0.2em] text-brandDark">What guides us</p>
-          <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Useful first. Beautiful because it is useful.</h2>
-          <p class="mt-4 leading-8 text-slate-600">Mushavo should feel premium, but the design has to support the work. Every screen should make the next action obvious, protect records, and keep teams aligned.</p>
-        </div>
-        <div class="grid gap-3 sm:grid-cols-2">
-          <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-            <h3 class="font-bold">Clarity</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Important information should be easy to find and easy to understand.</p>
-          </div>
-          <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-            <h3 class="font-bold">Control</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Owners decide who can view, edit, upload, approve, and manage.</p>
-          </div>
-          <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-            <h3 class="font-bold">Trust</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Records should remain available even when accounts or relationships change.</p>
-          </div>
-          <div class="rounded-3xl bg-white/80 p-5 shadow-sm">
-            <h3 class="font-bold">Scale</h3>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Country pricing, subscriptions, IPMs, PMCs, and staff permissions are designed for growth.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mx-auto w-full max-w-[96rem] px-4 pb-16 sm:px-6 lg:px-8">
-      <div class="rounded-[2rem] bg-slate-950 p-8 text-white shadow-glass sm:p-10">
-        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <p class="text-sm font-black uppercase tracking-[0.2em] text-emerald-200">Our product promise</p>
-            <h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Records should stay reliable even when people change.</h2>
-          </div>
-          <p class="leading-8 text-slate-300">When a tenant moves, a landlord changes manager, staff are removed, or a subscription pauses, the business history should remain understandable. Mushavo is being designed around long-term records, controlled deletion, clear archiving, and permission-based access.</p>
-        </div>
-      </div>
+    <section class="mt-12 grid gap-6 md:grid-cols-2">
+      <article class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Vision</h2><p class="mt-3 text-slate-600">A property system where small landlords and larger operators can manage records, payments, maintenance, and teams without losing control of access.</p></article>
+      <article class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Mission</h2><p class="mt-3 text-slate-600">Give landlords, tenants, IPMs, and PMCs a clear static-hosting friendly app backed by Supabase RLS, private storage, and precise permissions.</p></article>
+      <article class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Goals</h2><p class="mt-3 text-slate-600">Keep tenant identities reusable, prevent duplicate lifecycle rows, protect files, separate rent from other money, and make plan limits understandable.</p></article>
+      <article class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"><h2 class="text-xl font-bold">Values</h2><p class="mt-3 text-slate-600">Clarity, scoped access, honest records, customer-friendly errors, and operational screens that fit real phone and desktop use.</p></article>
     </section>
   </main>
-
-  <footer class="border-t border-white/60 bg-white/50 backdrop-blur-xl">
-    <div class="mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 py-8 text-sm text-slate-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-      <p>All rights reserved to Mushavo.</p>
-      <div class="flex flex-wrap gap-4">
-        <a class="font-semibold text-brandDark" href="contact.html">Contact Support</a>
-        <a class="font-semibold text-brandDark" href="client.html">Client Area</a>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    const menuButton = document.getElementById('menuButton');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuButton?.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-  </script>
+  <footer class="border-t border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">Mushavo. Your property, handled simply.</footer>
+  <script src="i18n.js"></script>
 </body>
 </html>
