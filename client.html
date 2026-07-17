@@ -5898,8 +5898,19 @@
             propertiesByLandlord.get(property.landlord_id).push(property.id);
           });
           const platformPayments = platformPaymentsResult.data || [];
-          const subscriptionByLandlord = new Map(subscriptions.filter(row => row.landlord_id).map(row => [row.landlord_id, row]));
-          const subscriptionByInvite = new Map(subscriptions.filter(row => row.invite_token_id).map(row => [row.invite_token_id, row]));
+          const subscriptionTimestamp = row => new Date(row?.updated_at || row?.created_at || row?.expires_at || 0).getTime() || 0;
+          const newerSubscription = (current, next) => {
+            if (!current) return next;
+            return subscriptionTimestamp(next) >= subscriptionTimestamp(current) ? next : current;
+          };
+          const subscriptionByLandlord = new Map();
+          subscriptions
+            .filter(row => row.landlord_id)
+            .forEach(row => subscriptionByLandlord.set(row.landlord_id, newerSubscription(subscriptionByLandlord.get(row.landlord_id), row)));
+          const subscriptionByInvite = new Map();
+          subscriptions
+            .filter(row => row.invite_token_id)
+            .forEach(row => subscriptionByInvite.set(row.invite_token_id, newerSubscription(subscriptionByInvite.get(row.invite_token_id), row)));
           const adminTeamCountriesByStaff = new Map();
           (adminTeamCountriesResult.data || []).forEach(row => {
             if (!row.staff_profile_id || !row.country_id) return;
@@ -7871,25 +7882,40 @@
           this.admin.saving = true;
           this.applySubscriptionPlanStatusSelection();
 
+          const subscriptionPayload = {
+            subscription_plan: this.admin.subscriptionForm.plan || 'standard',
+            status: this.admin.subscriptionForm.status,
+            expires_at: `${this.admin.subscriptionForm.expiresAt}T23:59:59.000Z`,
+            property_limit: Number(this.admin.subscriptionForm.propertyLimit || 0),
+            unit_limit: Number(this.admin.subscriptionForm.unitLimit || 0),
+            personal_staff_limit: Number(this.admin.subscriptionForm.personalStaffLimit || 0),
+            partner_connection_limit: Number(this.admin.subscriptionForm.partnerConnectionLimit || 0),
+            notes: this.admin.subscriptionForm.notes || '',
+            updated_by: this.profile.id
+          };
+
           const { error } = await supabaseClient
             .from('landlord_subscriptions')
-            .update({
-              subscription_plan: this.admin.subscriptionForm.plan || 'standard',
-              status: this.admin.subscriptionForm.status,
-              expires_at: `${this.admin.subscriptionForm.expiresAt}T23:59:59.000Z`,
-              property_limit: Number(this.admin.subscriptionForm.propertyLimit || 0),
-              unit_limit: Number(this.admin.subscriptionForm.unitLimit || 0),
-              personal_staff_limit: Number(this.admin.subscriptionForm.personalStaffLimit || 0),
-              partner_connection_limit: Number(this.admin.subscriptionForm.partnerConnectionLimit || 0),
-              notes: this.admin.subscriptionForm.notes || '',
-              updated_by: this.profile.id
-            })
+            .update(subscriptionPayload)
             .eq('id', this.admin.selectedRow.subscription.id);
 
           if (error) {
             this.admin.formError = error.message;
             this.admin.saving = false;
             return;
+          }
+
+          if (this.admin.selectedRow.profile_id) {
+            const { error: landlordSubscriptionError } = await supabaseClient
+              .from('landlord_subscriptions')
+              .update(subscriptionPayload)
+              .eq('landlord_id', this.admin.selectedRow.profile_id);
+
+            if (landlordSubscriptionError) {
+              this.admin.formError = landlordSubscriptionError.message;
+              this.admin.saving = false;
+              return;
+            }
           }
 
           const { error: notesError } = await supabaseClient
