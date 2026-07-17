@@ -8054,7 +8054,8 @@
 
         isSubscriptionExpired(subscription) {
           if (!subscription?.expires_at) return false;
-          return this.daysUntil(subscription.expires_at) < 0;
+          const days = this.daysUntil(subscription.expires_at);
+          return Number.isFinite(days) && days < 0;
         },
 
         landlordSubscriptionStatus(row) {
@@ -8369,10 +8370,23 @@
           this.dashboard.loading = false;
         },
 
+        parseDateOnly(dateValue) {
+          if (!dateValue) return null;
+          const raw = String(dateValue);
+          const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+          }
+          const parsed = new Date(raw);
+          if (Number.isNaN(parsed.getTime())) return null;
+          return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+        },
+
         daysUntil(dateValue) {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          const target = new Date(`${dateValue}T00:00:00`);
+          const target = this.parseDateOnly(dateValue);
+          if (!target) return Number.NaN;
           return Math.ceil((target.getTime() - today.getTime()) / 86400000);
         },
 
