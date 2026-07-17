@@ -141,6 +141,27 @@
       min-width: 100%;
     }
     td, th { vertical-align: top; }
+    table thead th {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    table thead th::after {
+      content: "↕";
+      display: inline-block;
+      margin-left: 0.35rem;
+      font-size: 0.7rem;
+      opacity: 0.45;
+      transform: translateY(-0.05rem);
+    }
+    table thead th[data-sort-direction="asc"]::after {
+      content: "↑";
+      opacity: 0.9;
+    }
+    table thead th[data-sort-direction="desc"]::after {
+      content: "↓";
+      opacity: 0.9;
+    }
     td, th, p, span, h1, h2, h3, h4, label, button, a {
       min-width: 0;
     }
@@ -460,7 +481,7 @@
               <img class="brand-logo h-24 w-auto max-w-[150px]" src="mushavo-logo.png" alt="Mushavo logo">
               <div class="min-w-0">
                 <span class="block truncate text-base font-bold text-slate-900" x-text="profile?.role === 'admin_staff' ? (profile.full_name || 'Admin Staff') : 'Admin'"></span>
-                <span class="block truncate text-xs font-semibold text-emerald-700" x-show="profile?.role === 'admin_staff'" x-text="adminCountryName(profile?.country_id)"></span>
+                <span class="block truncate text-xs font-semibold text-emerald-700" x-show="profile?.role === 'admin_staff'" x-text="adminCountryNames(profile?.country_ids, profile?.country_id)"></span>
               </div>
             </div>
             <div class="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
@@ -570,6 +591,7 @@
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="trial">Trial</option>
+                  <option value="expired">Expired</option>
                   <option value="suspended">Suspended</option>
                   <option value="pending">Pending invite</option>
                   <option value="archived">Archived</option>
@@ -615,7 +637,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="row.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.created_at)"></td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(row.archived_at ? 'archived' : (row.subscription?.status || 'trial'))" x-text="row.archived_at ? 'Archived' : titleCase(row.subscription?.status || 'trial')"></span>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="landlordSubscriptionStatusBadgeClass(row)" x-text="landlordSubscriptionStatusLabel(row)"></span>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.subscription?.expires_at)"></td>
                       <td class="px-4 py-3">
@@ -1158,7 +1180,7 @@
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted ? 'Accepted' : 'Invite pending'"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
-                      <td class="px-4 py-3 text-slate-700" x-text="adminCountryName(staffRow.country_id)"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.country_name || adminCountryNames(staffRow.country_ids, staffRow.country_id)"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(staffRow.archived_at ? 'archived' : (staffRow.accepted ? (staffRow.staff_subscription_status === 'suspended' ? 'suspended' : 'active') : 'trial'))" x-text="staffRow.archived_at ? 'Archived' : (staffRow.accepted ? (staffRow.staff_subscription_status === 'suspended' ? 'Suspended' : 'Active') : 'Pending')"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
                       <td class="px-4 py-3">
@@ -1376,7 +1398,7 @@
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 class="text-lg font-bold text-slate-900" x-text="admin.modal === 'admin-team-edit' ? 'Edit Admin Staff' : 'Add Admin Staff'"></h2>
-                  <p class="mt-1 text-sm text-slate-500">Assign a country. This staff member will only see and manage accounts in that country.</p>
+                  <p class="mt-1 text-sm text-slate-500">Assign one or more countries. This staff member will only see and manage accounts in those countries.</p>
                 </div>
                 <button class="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700" type="button" @click="closeAdminModal" aria-label="Close">
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
@@ -1404,15 +1426,18 @@
                   <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="admin.adminTeamForm.phone">
                 </label>
-                <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.adminTeamForm.countryId" required>
-                    <option value="">Select country</option>
+                <fieldset class="block sm:col-span-2">
+                  <legend class="mb-2 block text-sm font-medium text-slate-700">Countries</legend>
+                  <div class="grid max-h-56 gap-2 overflow-y-auto rounded-lg border border-slate-200 bg-slate-100 p-3 sm:grid-cols-2">
                     <template x-for="country in admin.countries" :key="`admin-team-country-${country.id}`">
-                      <option :value="country.id" x-text="country.name"></option>
+                      <label class="flex items-center gap-2 rounded-lg bg-white/60 px-3 py-2 text-sm font-medium text-slate-700">
+                        <input class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" type="checkbox" :value="country.id" x-model="admin.adminTeamForm.countryIds">
+                        <span x-text="country.name"></span>
+                      </label>
                     </template>
-                  </select>
-                </label>
+                  </div>
+                  <p class="mt-2 text-xs text-slate-500">Select every country this admin staff member can manage.</p>
+                </fieldset>
                 <div class="flex justify-end gap-3 pt-2 sm:col-span-2">
                   <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
                   <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving">
@@ -1775,8 +1800,13 @@
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.subscriptionForm.partnerConnectionLimit" required>
                 </label>
                 <label class="block">
-                  <span class="mb-2 block text-sm font-medium text-slate-700">Notes</span>
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Landlord-visible notes</span>
                   <textarea class="min-h-28 w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model.trim="admin.subscriptionForm.notes"></textarea>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Internal admin notes</span>
+                  <textarea class="min-h-28 w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model.trim="admin.subscriptionForm.adminNotes" placeholder="Only admin and admin staff can see this."></textarea>
+                  <span class="mt-1 block text-xs text-slate-500">This note is not shown to the landlord.</span>
                 </label>
                 <div class="flex justify-end gap-3 pt-2">
                   <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
@@ -4432,7 +4462,8 @@
             fullName: '',
             email: '',
             phone: '',
-            countryId: ''
+            countryId: '',
+            countryIds: []
           },
           freelancerForm: {
             fullName: '',
@@ -4468,7 +4499,8 @@
             unitLimit: 25,
             personalStaffLimit: 1,
             partnerConnectionLimit: 2,
-            notes: ''
+            notes: '',
+            adminNotes: ''
           },
           staffLimitForm: {
             maxLandlords: 2,
@@ -4817,6 +4849,7 @@
 
         async init() {
           try {
+            this.enableTableSorting();
             this.successMessage = sessionStorage.getItem('mushavo_success') || '';
             sessionStorage.removeItem('mushavo_success');
 
@@ -5301,19 +5334,108 @@
           return counts;
         },
 
+        enableTableSorting() {
+          if (this.tableSortingEnabled) return;
+          this.tableSortingEnabled = true;
+          document.addEventListener('click', event => {
+            const th = event.target.closest('th');
+            if (!th || th.closest('[data-no-sort]')) return;
+            const table = th.closest('table');
+            const tbody = table?.tBodies?.[0];
+            if (!table || !tbody) return;
+            const headerRow = th.parentElement;
+            const columnIndex = Array.from(headerRow.children).indexOf(th);
+            if (columnIndex < 0) return;
+
+            const direction = th.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
+            Array.from(headerRow.children).forEach(cell => cell.removeAttribute('data-sort-direction'));
+            th.dataset.sortDirection = direction;
+
+            const rows = Array.from(tbody.rows).filter(row => row.cells.length > columnIndex && !row.querySelector('[colspan]'));
+            rows.sort((a, b) => this.compareTableCellValues(
+              a.cells[columnIndex]?.innerText || '',
+              b.cells[columnIndex]?.innerText || '',
+              direction
+            ));
+            rows.forEach(row => tbody.appendChild(row));
+          });
+        },
+
+        compareTableCellValues(a, b, direction = 'asc') {
+          const cleanA = String(a || '').trim();
+          const cleanB = String(b || '').trim();
+          const numericA = Number(cleanA.replace(/[^0-9.-]+/g, ''));
+          const numericB = Number(cleanB.replace(/[^0-9.-]+/g, ''));
+          const bothNumeric = cleanA && cleanB && Number.isFinite(numericA) && Number.isFinite(numericB);
+          let result = 0;
+          if (bothNumeric) {
+            result = numericA - numericB;
+          } else {
+            const dateA = Date.parse(cleanA);
+            const dateB = Date.parse(cleanB);
+            if (Number.isFinite(dateA) && Number.isFinite(dateB)) {
+              result = dateA - dateB;
+            } else {
+              result = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
+            }
+          }
+          return direction === 'asc' ? result : -result;
+        },
+
         adminCountryName(countryId) {
           if (!countryId) return 'Unassigned';
           return this.admin.countries.find(country => country.id === countryId)?.name || 'Unassigned';
         },
 
+        normalizeCountryIds(value) {
+          const values = Array.isArray(value)
+            ? value
+            : value
+              ? [value]
+              : [];
+          return Array.from(new Set(values.map(item => String(item || '').trim()).filter(Boolean)));
+        },
+
+        adminCountryNames(countryIds = [], fallbackCountryId = '') {
+          const ids = this.normalizeCountryIds(countryIds);
+          if (!ids.length && fallbackCountryId) ids.push(fallbackCountryId);
+          if (!ids.length) return 'Unassigned';
+          return ids.map(id => this.adminCountryName(id)).filter(Boolean).join(', ');
+        },
+
+        adminStaffCountryIds() {
+          return this.normalizeCountryIds(this.profile?.country_ids || (this.profile?.country_id ? [this.profile.country_id] : []));
+        },
+
+        adminCanAccessCountry(countryId) {
+          if (this.profile?.role !== 'admin_staff') return true;
+          if (!countryId) return false;
+          return this.adminStaffCountryIds().includes(countryId);
+        },
+
+        restrictRowsToAdminStaffCountries(rows, countryGetter = row => row.country_id) {
+          if (this.profile?.role !== 'admin_staff') return rows;
+          const allowed = new Set(this.adminStaffCountryIds());
+          return rows.filter(row => allowed.has(countryGetter(row)));
+        },
+
+        rowMatchesSelectedAdminCountry(row, countryGetter = item => item.country_id) {
+          const countryId = countryGetter(row);
+          if (this.admin.selectedCountryId === 'unassigned') return !countryId;
+          if (this.admin.selectedCountryId === 'all') return true;
+          return countryId === this.admin.selectedCountryId;
+        },
+
         enforceAdminCountryScope() {
           if (this.profile?.role !== 'admin_staff') return true;
-          const countryId = this.profile.country_id || '';
-          if (!countryId) {
-            this.admin.error = 'No country is assigned to this admin staff account. Please ask the main admin to assign a country.';
+          const countryIds = this.adminStaffCountryIds();
+          if (!countryIds.length) {
+            this.admin.error = 'No country is assigned to this admin staff account. Please ask the main admin to assign at least one country.';
             return false;
           }
-          this.admin.selectedCountryId = countryId;
+          if (this.admin.selectedCountryId !== 'all' && !countryIds.includes(this.admin.selectedCountryId)) {
+            this.admin.selectedCountryId = countryIds[0];
+          }
           return true;
         },
 
@@ -5323,7 +5445,7 @@
         },
 
         adminCountryLandlords() {
-          let rows = this.admin.landlords;
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.landlords);
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
           return rows;
@@ -5346,13 +5468,13 @@
           const status = this.admin.filters.landlordStatus || '';
           if (status === 'pending') rows = rows.filter(row => !row.accepted && !row.archived_at);
           if (status === 'archived') rows = rows.filter(row => row.archived_at);
-          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && (row.subscription?.status || 'trial') === status);
+          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && this.landlordSubscriptionStatus(row) === status);
 
           return rows;
         },
 
         selectedAdminStaffProfiles() {
-          let rows = this.admin.staffProfiles;
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.staffProfiles, row => this.adminStaffCountryId(row));
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !this.adminStaffCountryId(row));
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => this.adminStaffCountryId(row) === this.admin.selectedCountryId);
 
@@ -5384,7 +5506,7 @@
               row.full_name,
               row.email,
               row.phone,
-              this.adminCountryName(row.country_id)
+              row.country_name || this.adminCountryNames(row.country_ids, row.country_id)
             ].some(value => String(value || '').toLowerCase().includes(search)));
           }
 
@@ -5397,7 +5519,7 @@
         },
 
         selectedAdminManagementCompanies() {
-          let rows = this.admin.managementCompanies;
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.managementCompanies);
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
 
@@ -5420,7 +5542,7 @@
         },
 
         selectedAdminTenants() {
-          let rows = this.admin.tenants;
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.tenants);
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
           if (this.admin.filters.tenantLandlordId) rows = rows.filter(row => row.landlord_id === this.admin.filters.tenantLandlordId);
@@ -5449,7 +5571,7 @@
         },
 
         selectedAdminEnquiries() {
-          let rows = this.admin.enquiries || [];
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.enquiries || []);
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(row => !row.country_id);
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(row => row.country_id === this.admin.selectedCountryId);
 
@@ -5488,8 +5610,8 @@
           const landlords = this.adminCountryLandlords().filter(row => !row.archived_at);
           return {
             total: landlords.length,
-            active: landlords.filter(row => row.subscription?.status === 'active').length,
-            trial: landlords.filter(row => row.subscription?.status === 'trial').length,
+            active: landlords.filter(row => this.landlordSubscriptionStatus(row) === 'active').length,
+            trial: landlords.filter(row => this.landlordSubscriptionStatus(row) === 'trial').length,
             suspended: landlords.filter(row => row.subscription?.status === 'suspended').length
           };
         },
@@ -5547,7 +5669,7 @@
         },
 
         selectedAdminFinancePayments() {
-          let rows = this.admin.financePayments;
+          let rows = this.restrictRowsToAdminStaffCountries(this.admin.financePayments);
           if (this.admin.selectedCountryId === 'unassigned') rows = rows.filter(payment => !payment.country_id);
           if (this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned') rows = rows.filter(payment => payment.country_id === this.admin.selectedCountryId);
 
@@ -5571,7 +5693,7 @@
         adminFinanceSummary() {
           const payments = this.selectedAdminFinancePayments();
           const monthKey = new Date().toISOString().slice(0, 7);
-          const landlordIds = new Set(this.adminCountryLandlords().filter(row => row.accepted && row.subscription?.status === 'active').map(row => row.profile_id));
+          const landlordIds = new Set(this.adminCountryLandlords().filter(row => row.accepted && this.landlordSubscriptionStatus(row) === 'active').map(row => row.profile_id));
           return {
             totalRevenue: payments.reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0),
             thisMonth: payments
@@ -5606,17 +5728,27 @@
           });
           let values = Array.from(byId.values()).filter(row => row.id !== 'unassigned' || row.landlords || row.revenue);
           if (this.profile?.role === 'admin_staff') {
-            values = values.filter(row => row.id === this.profile.country_id);
+            const allowed = new Set(this.adminStaffCountryIds());
+            values = values.filter(row => allowed.has(row.id));
           }
           return values;
         },
 
         selectAdminCountry(countryId) {
           if (this.profile?.role === 'admin_staff') {
-            this.enforceAdminCountryScope();
-            return;
+            const countryIds = this.adminStaffCountryIds();
+            if (!countryIds.length) {
+              this.enforceAdminCountryScope();
+              return;
+            }
+            if (countryId !== 'all' && !countryIds.includes(countryId)) {
+              this.admin.selectedCountryId = countryIds[0];
+            } else {
+              this.admin.selectedCountryId = countryId || 'all';
+            }
+          } else {
+            this.admin.selectedCountryId = countryId || 'all';
           }
-          this.admin.selectedCountryId = countryId || 'all';
           const accountId = this.admin.financeForm.accountId
             || this.admin.financeForm.landlordId
             || this.admin.financeForm.staffId
@@ -5644,7 +5776,7 @@
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, adminTeamProfilesResult, adminTeamInvitesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -5666,6 +5798,9 @@
               .order('created_at', { ascending: false })
             ,
             supabaseClient
+              .from('landlord_subscription_admin_notes')
+              .select('landlord_id, notes, updated_by, updated_at'),
+            supabaseClient
               .from('profiles')
               .select('id, country_id, full_name, phone, email, role, staff_subscription_status, created_at, archived_at, archived_by')
               .eq('role', 'admin_staff')
@@ -5675,6 +5810,9 @@
               .select('id, token, email, role, country_id, metadata, used, expires_at, created_at')
               .eq('role', 'admin_staff')
               .order('created_at', { ascending: false }),
+            supabaseClient
+              .from('admin_staff_country_assignments')
+              .select('staff_profile_id, country_id, country:countries(id, name, code, currency_code)'),
             supabaseClient
               .from('profiles')
               .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at, archived_at, archived_by')
@@ -5731,7 +5869,7 @@
               .order('created_at', { ascending: false })
           ]);
 
-          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
+          const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || internalNotesResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || adminTeamCountriesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
             this.admin.error = firstError.message;
             this.admin.loading = false;
@@ -5745,6 +5883,7 @@
           }
           this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
+          const internalNotesByLandlord = new Map((internalNotesResult.data || []).map(row => [row.landlord_id, row.notes || '']));
           const staffPermissions = staffPermissionsResult.data || [];
           const staffCounts = this.countByKey(staffPermissions, 'landlord_id');
           const staffLandlordCounts = this.countByKey(staffPermissions, 'staff_profile_id');
@@ -5761,24 +5900,35 @@
           const platformPayments = platformPaymentsResult.data || [];
           const subscriptionByLandlord = new Map(subscriptions.filter(row => row.landlord_id).map(row => [row.landlord_id, row]));
           const subscriptionByInvite = new Map(subscriptions.filter(row => row.invite_token_id).map(row => [row.invite_token_id, row]));
+          const adminTeamCountriesByStaff = new Map();
+          (adminTeamCountriesResult.data || []).forEach(row => {
+            if (!row.staff_profile_id || !row.country_id) return;
+            if (!adminTeamCountriesByStaff.has(row.staff_profile_id)) adminTeamCountriesByStaff.set(row.staff_profile_id, []);
+            adminTeamCountriesByStaff.get(row.staff_profile_id).push(row.country_id);
+          });
 
-          const acceptedAdminTeamStaff = (adminTeamProfilesResult.data || []).map(profile => ({
-            ...profile,
-            rowKey: `admin-team-profile-${profile.id}`,
-            accepted: true,
-            profile_id: profile.id,
-            invite_id: null,
-            invite_link: '',
-            staff_subscription_status: profile.staff_subscription_status || 'active',
-            country_name: this.adminCountryName(profile.country_id),
-            created_at: profile.created_at
-          }));
+          const acceptedAdminTeamStaff = (adminTeamProfilesResult.data || []).map(profile => {
+            const countryIds = this.normalizeCountryIds(adminTeamCountriesByStaff.get(profile.id) || (profile.country_id ? [profile.country_id] : []));
+            return {
+              ...profile,
+              rowKey: `admin-team-profile-${profile.id}`,
+              accepted: true,
+              profile_id: profile.id,
+              invite_id: null,
+              invite_link: '',
+              staff_subscription_status: profile.staff_subscription_status || 'active',
+              country_ids: countryIds,
+              country_name: this.adminCountryNames(countryIds, profile.country_id),
+              created_at: profile.created_at
+            };
+          });
           const acceptedAdminTeamEmails = new Set(acceptedAdminTeamStaff.map(row => String(row.email || '').toLowerCase()).filter(Boolean));
           const pendingAdminTeamStaff = (adminTeamInvitesResult.data || [])
             .filter(invite => !invite.used && !acceptedAdminTeamEmails.has(String(invite.email || '').toLowerCase()))
             .map(invite => {
               const metadata = invite.metadata || {};
-              const countryId = invite.country_id || metadata.country_id || null;
+              const countryIds = this.normalizeCountryIds(metadata.country_ids || metadata.countryIds || (metadata.country_id || invite.country_id ? [metadata.country_id || invite.country_id] : []));
+              const countryId = invite.country_id || countryIds[0] || metadata.country_id || null;
               return {
                 rowKey: `admin-team-invite-${invite.id}`,
                 accepted: false,
@@ -5789,7 +5939,8 @@
                 invite_link: this.buildInviteLink(invite.token),
                 metadata,
                 country_id: countryId,
-                country_name: this.adminCountryName(countryId),
+                country_ids: countryIds,
+                country_name: this.adminCountryNames(countryIds, countryId),
                 full_name: metadata.full_name || metadata.fullName || invite.email,
                 email: invite.email,
                 phone: metadata.phone || '',
@@ -5804,6 +5955,7 @@
 
           const acceptedRows = (profilesResult.data || []).map(profile => {
             const subscription = subscriptionByLandlord.get(profile.id) || null;
+            if (subscription) subscription.admin_notes = internalNotesByLandlord.get(profile.id) || '';
             return {
               rowKey: `profile-${profile.id}`,
               accepted: true,
@@ -5924,8 +6076,8 @@
           const activeAdminLandlords = this.admin.landlords.filter(row => !row.archived_at);
           this.admin.stats = {
             total: activeAdminLandlords.length,
-            active: activeAdminLandlords.filter(row => row.subscription?.status === 'active').length,
-            trial: activeAdminLandlords.filter(row => row.subscription?.status === 'trial').length,
+            active: activeAdminLandlords.filter(row => this.landlordSubscriptionStatus(row) === 'active').length,
+            trial: activeAdminLandlords.filter(row => this.landlordSubscriptionStatus(row) === 'trial').length,
             suspended: activeAdminLandlords.filter(row => row.subscription?.status === 'suspended').length,
             tenants: Array.from(tenantCounts.values()).reduce((sum, count) => sum + count, 0),
             properties: Array.from(propertyCounts.values()).reduce((sum, count) => sum + count, 0),
@@ -6125,11 +6277,15 @@
           }
 
           if (modalName === 'admin-team-add') {
+            const defaultCountryIds = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned'
+              ? [this.admin.selectedCountryId]
+              : [];
             this.admin.adminTeamForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : ''
+              countryId: defaultCountryIds[0] || '',
+              countryIds: defaultCountryIds
             };
           }
 
@@ -6164,7 +6320,8 @@
             fullName: staffRow.full_name || '',
             email: staffRow.email || '',
             phone: staffRow.phone || '',
-            countryId: staffRow.country_id || ''
+            countryId: staffRow.country_id || '',
+            countryIds: this.normalizeCountryIds(staffRow.country_ids || (staffRow.country_id ? [staffRow.country_id] : []))
           };
           this.admin.modal = 'admin-team-edit';
         },
@@ -6174,9 +6331,10 @@
           this.admin.generatedInviteLink = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.adminTeamForm.countryId || '';
-          if (!countryId) {
-            this.admin.formError = 'Select the country this admin staff member can manage.';
+          const countryIds = this.normalizeCountryIds(this.admin.adminTeamForm.countryIds);
+          const countryId = countryIds[0] || '';
+          if (!countryIds.length) {
+            this.admin.formError = 'Select at least one country this admin staff member can manage.';
             this.admin.saving = false;
             return;
           }
@@ -6185,7 +6343,8 @@
           const metadata = {
             full_name: this.admin.adminTeamForm.fullName,
             phone: this.admin.adminTeamForm.phone || '',
-            country_id: countryId
+            country_id: countryId,
+            country_ids: countryIds
           };
 
           const { data: inviteRow, error } = await supabaseClient
@@ -6220,7 +6379,13 @@
           this.admin.formError = '';
           this.admin.saving = true;
 
-          const countryId = this.admin.adminTeamForm.countryId || null;
+          const countryIds = this.normalizeCountryIds(this.admin.adminTeamForm.countryIds);
+          const countryId = countryIds[0] || null;
+          if (!countryIds.length) {
+            this.admin.formError = 'Select at least one country this admin staff member can manage.';
+            this.admin.saving = false;
+            return;
+          }
           const payload = {
             full_name: this.admin.adminTeamForm.fullName,
             email: this.admin.adminTeamForm.email,
@@ -6233,7 +6398,8 @@
               ...(row.metadata || {}),
               full_name: payload.full_name,
               phone: payload.phone,
-              country_id: countryId
+              country_id: countryId,
+              country_ids: countryIds
             };
             const { error } = await supabaseClient
               .from('invite_tokens')
@@ -6262,11 +6428,38 @@
               this.admin.saving = false;
               return;
             }
+
+            const syncError = await this.syncAdminStaffCountryAssignments(row.id, countryIds);
+            if (syncError) {
+              this.admin.formError = syncError.message;
+              this.admin.saving = false;
+              return;
+            }
           }
 
           this.admin.message = 'Admin staff updated.';
           this.closeAdminModal();
           await this.loadSuperAdminData();
+        },
+
+        async syncAdminStaffCountryAssignments(staffProfileId, countryIds) {
+          if (!staffProfileId) return null;
+          const normalizedIds = this.normalizeCountryIds(countryIds);
+          const { error: deleteError } = await supabaseClient
+            .from('admin_staff_country_assignments')
+            .delete()
+            .eq('staff_profile_id', staffProfileId);
+          if (deleteError) return deleteError;
+          if (!normalizedIds.length) return null;
+          const rows = normalizedIds.map(countryId => ({
+            staff_profile_id: staffProfileId,
+            country_id: countryId,
+            assigned_by: this.profile?.id || null
+          }));
+          const { error } = await supabaseClient
+            .from('admin_staff_country_assignments')
+            .insert(rows);
+          return error || null;
         },
 
         async suspendAdminTeamStaff(staffRow) {
@@ -6637,7 +6830,8 @@
             unitLimit: Number(row.subscription?.unit_limit ?? 25),
             personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 1),
             partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 2),
-            notes: row.subscription?.notes || ''
+            notes: row.subscription?.notes || '',
+            adminNotes: row.subscription?.admin_notes || ''
           };
           this.admin.modal = 'subscription';
         },
@@ -7660,6 +7854,21 @@
             return;
           }
 
+          const { error: notesError } = await supabaseClient
+            .from('landlord_subscription_admin_notes')
+            .upsert({
+              landlord_id: this.admin.selectedRow.profile_id,
+              notes: this.admin.subscriptionForm.adminNotes || '',
+              updated_by: this.profile.id,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'landlord_id' });
+
+          if (notesError) {
+            this.admin.formError = notesError.message;
+            this.admin.saving = false;
+            return;
+          }
+
           this.admin.message = 'Subscription updated.';
           this.closeAdminModal();
           await this.loadSuperAdminData();
@@ -7836,10 +8045,34 @@
           const classes = {
             active: 'bg-emerald-100 text-emerald-700',
             trial: 'bg-yellow-100 text-amber-700',
+            expired: 'bg-red-100 text-red-700',
             suspended: 'bg-red-100 text-red-700',
             archived: 'bg-slate-100 text-slate-700'
           };
           return classes[status] || 'bg-slate-100 text-slate-600';
+        },
+
+        isSubscriptionExpired(subscription) {
+          if (!subscription?.expires_at) return false;
+          return this.daysUntil(subscription.expires_at) < 0;
+        },
+
+        landlordSubscriptionStatus(row) {
+          if (row?.archived_at) return 'archived';
+          if (!row?.accepted) return 'pending';
+          if (row?.subscription?.status === 'suspended') return 'suspended';
+          if (this.isSubscriptionExpired(row?.subscription)) return 'expired';
+          return row?.subscription?.status || 'trial';
+        },
+
+        landlordSubscriptionStatusLabel(row) {
+          const status = this.landlordSubscriptionStatus(row);
+          if (status === 'pending') return 'Pending';
+          return this.titleCase(status);
+        },
+
+        landlordSubscriptionStatusBadgeClass(row) {
+          return this.statusBadgeClass(this.landlordSubscriptionStatus(row));
         },
 
         enquiryStatusBadgeClass(status) {
@@ -12832,6 +13065,23 @@
           this.successMessage = 'Staff account created. Your request was sent to the landlord for approval.';
         },
 
+        async attachAdminStaffCountries(profile) {
+          if (!profile || profile.role !== 'admin_staff') return profile;
+          const countryIds = this.normalizeCountryIds(profile.country_ids || (profile.country_id ? [profile.country_id] : []));
+          const { data, error } = await supabaseClient
+            .from('admin_staff_country_assignments')
+            .select('country_id')
+            .eq('staff_profile_id', profile.id);
+          if (!error) {
+            (data || []).forEach(row => {
+              if (row.country_id) countryIds.push(row.country_id);
+            });
+          }
+          profile.country_ids = this.normalizeCountryIds(countryIds);
+          if (!profile.country_id && profile.country_ids.length) profile.country_id = profile.country_ids[0];
+          return profile;
+        },
+
         async loadAuthenticatedUser(authUser) {
           const previousShell = this.currentShell;
           const previousPage = this.currentPage;
@@ -12895,6 +13145,10 @@
             return;
           }
 
+          if (profile.role === 'admin_staff') {
+            profile = await this.attachAdminStaffCountries(profile);
+          }
+
           this.profile = profile;
 
           if (profile.role === 'super_admin' || profile.role === 'admin_staff') {
@@ -12905,7 +13159,7 @@
               this.booting = false;
               return;
             }
-            if (profile.role === 'admin_staff' && !profile.country_id) {
+            if (profile.role === 'admin_staff' && !this.normalizeCountryIds(profile.country_ids || (profile.country_id ? [profile.country_id] : [])).length) {
               await supabaseClient.auth.signOut();
               this.authError = 'Your admin staff account does not have a country assigned yet. Please contact the Mushavo administrator.';
               this.currentShell = 'login';
@@ -12913,7 +13167,7 @@
               return;
             }
             this.currentShell = 'super_admin';
-            if (profile.role === 'admin_staff') this.admin.selectedCountryId = profile.country_id;
+            if (profile.role === 'admin_staff') this.admin.selectedCountryId = profile.country_ids?.[0] || profile.country_id;
             this.currentPage = this.resolveActivePage('landlord-management', previousShell, previousPage);
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
