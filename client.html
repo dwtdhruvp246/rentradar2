@@ -586,7 +586,7 @@
                 <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="search" x-model.trim="admin.filters.landlordSearch" placeholder="Name, email, phone">
               </label>
               <label class="block">
-                <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
+                <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.landlordStatus">
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
@@ -611,7 +611,7 @@
                     <th class="px-4 py-3 font-semibold">Tenants</th>
                     <th class="px-4 py-3 font-semibold">Staff</th>
                     <th class="px-4 py-3 font-semibold">Date Added</th>
-                    <th class="px-4 py-3 font-semibold">Status</th>
+                    <th class="px-4 py-3 font-semibold">Plan / Status</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Actions</th>
                   </tr>
@@ -637,7 +637,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="row.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.created_at)"></td>
                       <td class="px-4 py-3">
-                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="landlordSubscriptionStatusBadgeClass(row)" x-text="landlordSubscriptionStatusLabel(row)"></span>
+                        <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="landlordSubscriptionStatusBadgeClass(row)" x-text="landlordPlanStatusLabel(row)"></span>
                       </td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(row.subscription?.expires_at)"></td>
                       <td class="px-4 py-3">
@@ -8167,6 +8167,15 @@
           const status = this.landlordSubscriptionStatus(row);
           if (status === 'pending') return 'Pending';
           return this.titleCase(status);
+        },
+
+        landlordPlanStatusLabel(row) {
+          const status = this.landlordSubscriptionStatus(row);
+          if (status === 'pending') return 'Pending';
+          if (status === 'archived') return 'Archived';
+          if (status === 'suspended') return 'Suspended';
+          if (status === 'expired') return 'Expired';
+          return this.subscriptionPlanStatusLabel(row?.subscription);
         },
 
         landlordSubscriptionStatusBadgeClass(row) {
