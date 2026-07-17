@@ -6908,6 +6908,9 @@
           this.admin.subscriptionForm.plan = plan;
           this.admin.subscriptionForm.status = status;
           Object.assign(this.admin.subscriptionForm, this.subscriptionPlanDefaults('landlord', plan));
+          if (plan === 'free' && status === 'active') {
+            this.admin.subscriptionForm.expiresAt = '2099-12-31';
+          }
         },
 
         inferIpmPlanStatus(staffRow) {
@@ -8054,6 +8057,7 @@
 
         isSubscriptionExpired(subscription) {
           if (!subscription?.expires_at) return false;
+          if (subscription?.subscription_plan === 'free' && subscription?.status === 'active') return false;
           const days = this.daysUntil(subscription.expires_at);
           return Number.isFinite(days) && days < 0;
         },
@@ -8429,6 +8433,7 @@
 
         subscriptionExpiringSoon(subscription = this.subscription) {
           if (!subscription?.expires_at) return false;
+          if (subscription?.subscription_plan === 'free' && subscription?.status === 'active') return false;
           const days = this.daysUntil(subscription.expires_at);
           return Number.isFinite(days) && days >= 0 && days <= 7 && subscription.status !== 'suspended';
         },
@@ -13367,7 +13372,8 @@
           this.subscription = data;
           const expiresAt = new Date(data.expires_at);
           const activeStatus = data.status === 'active' || data.status === 'trial';
-          const hasAccess = activeStatus && expiresAt.getTime() > Date.now();
+          const freeActivePlan = data.subscription_plan === 'free' && data.status === 'active';
+          const hasAccess = freeActivePlan || (activeStatus && expiresAt.getTime() > Date.now());
           if (!hasAccess) this.markSubscriptionPaused();
           return hasAccess;
         },
