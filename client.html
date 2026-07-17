@@ -6826,14 +6826,14 @@
 
         openSubscriptionModal(row) {
           const expiresAt = row.subscription?.expires_at || this.addDaysIso(30);
-          const plan = row.subscription?.subscription_plan || 'free';
-          const status = row.subscription?.status || 'active';
+          const planStatus = this.inferLandlordPlanStatus(row.subscription);
+          const [plan = 'free', status = 'active'] = planStatus.split(':');
           this.admin.error = '';
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = row;
           this.admin.subscriptionForm = {
-            planStatus: this.subscriptionPlanStatusValue(plan, status, 'landlord'),
+            planStatus,
             plan: plan === 'standard' ? 'custom' : plan,
             status: status === 'suspended' ? 'active' : status,
             expiresAt: this.toDateInputValue(expiresAt),
@@ -6912,6 +6912,37 @@
               ? 'starter:active'
               : 'free:active';
           return allowed.has(value) ? value : fallback;
+        },
+
+        inferLandlordPlanStatus(subscription) {
+          const status = ['trial', 'active'].includes(String(subscription?.status || '').toLowerCase())
+            ? String(subscription.status).toLowerCase()
+            : 'active';
+          const storedPlan = String(subscription?.subscription_plan || 'free').toLowerCase() === 'standard'
+            ? 'custom'
+            : String(subscription?.subscription_plan || 'free').toLowerCase();
+          const defaults = {
+            free: this.subscriptionPlanDefaults('landlord', 'free'),
+            starter: this.subscriptionPlanDefaults('landlord', 'starter'),
+            growth: this.subscriptionPlanDefaults('landlord', 'growth'),
+            portfolio: this.subscriptionPlanDefaults('landlord', 'portfolio')
+          };
+          const valuesMatch = plan => {
+            const limits = defaults[plan] || {};
+            return Number(subscription?.property_limit ?? limits.propertyLimit) === Number(limits.propertyLimit)
+              && Number(subscription?.unit_limit ?? limits.unitLimit) === Number(limits.unitLimit)
+              && Number(subscription?.personal_staff_limit ?? limits.personalStaffLimit) === Number(limits.personalStaffLimit)
+              && Number(subscription?.partner_connection_limit ?? limits.partnerConnectionLimit) === Number(limits.partnerConnectionLimit);
+          };
+
+          if (storedPlan && storedPlan !== 'free') {
+            return this.subscriptionPlanStatusValue(storedPlan, status, 'landlord');
+          }
+          if (valuesMatch('free')) {
+            return this.subscriptionPlanStatusValue('free', 'active', 'landlord');
+          }
+          const inferredPlan = ['starter', 'growth', 'portfolio'].find(valuesMatch) || 'custom';
+          return this.subscriptionPlanStatusValue(inferredPlan, status, 'landlord');
         },
 
         applySubscriptionPlanStatusSelection() {
@@ -7881,10 +7912,11 @@
           this.admin.formError = '';
           this.admin.saving = true;
           this.applySubscriptionPlanStatusSelection();
+          const [selectedPlan = 'free', selectedStatus = 'active'] = String(this.admin.subscriptionForm.planStatus || 'free:active').split(':');
 
           const subscriptionPayload = {
-            subscription_plan: this.admin.subscriptionForm.plan || 'standard',
-            status: this.admin.subscriptionForm.status,
+            subscription_plan: selectedPlan,
+            status: selectedStatus,
             expires_at: `${this.admin.subscriptionForm.expiresAt}T23:59:59.000Z`,
             property_limit: Number(this.admin.subscriptionForm.propertyLimit || 0),
             unit_limit: Number(this.admin.subscriptionForm.unitLimit || 0),
