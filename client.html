@@ -1649,7 +1649,7 @@
               <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
                   <h2 class="text-lg font-bold text-slate-900">Add Landlord</h2>
-                  <p class="mt-1 text-sm text-slate-500">Create a 48-hour invite and a 30-day trial subscription.</p>
+                  <p class="mt-1 text-sm text-slate-500">Create a 48-hour invite and a Free - Active landlord subscription.</p>
                 </div>
                 <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
                   <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -7003,8 +7003,13 @@
             .insert({
               landlord_id: null,
               country_id: countryId,
-              status: 'trial',
-              expires_at: this.addDaysIso(30),
+              subscription_plan: 'free',
+              status: 'active',
+              expires_at: '2099-12-31T23:59:59.000Z',
+              property_limit: 1,
+              unit_limit: 1,
+              personal_staff_limit: 0,
+              partner_connection_limit: 1,
               notes: '',
               invite_token_id: inviteRow.id,
               updated_by: this.profile.id
