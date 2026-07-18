@@ -818,8 +818,8 @@
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
                           <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="downloadPlatformReceipt(payment)">Download Receipt</button>
-                          <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="editPlatformPayment(payment)">Edit</button>
-                          <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deletePlatformPayment(payment)">Delete</button>
+                          <button x-show="profile?.role === 'super_admin'" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="editPlatformPayment(payment)">Edit</button>
+                          <button x-show="profile?.role === 'super_admin'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deletePlatformPayment(payment)">Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -6883,6 +6883,12 @@
             ? supabaseClient.from('platform_payments').update(payload).eq('id', this.admin.financeForm.id)
             : supabaseClient.from('platform_payments').insert(payload);
 
+          if (this.admin.financeForm.id && this.profile?.role !== 'super_admin') {
+            this.admin.error = 'Only the admin can edit existing payment records.';
+            this.admin.saving = false;
+            return;
+          }
+
           const { error } = await query;
 
           if (error) {
@@ -6898,6 +6904,10 @@
         },
 
         editPlatformPayment(payment) {
+          if (this.profile?.role !== 'super_admin') {
+            this.admin.error = 'Only the admin can edit existing payment records.';
+            return;
+          }
           this.admin.error = '';
           this.admin.message = 'Editing payment. Update the form and click Save.';
           this.admin.financeForm = {
@@ -6921,6 +6931,10 @@
 
         async deletePlatformPayment(payment) {
           if (!payment?.id) return;
+          if (this.profile?.role !== 'super_admin') {
+            this.admin.error = 'Only the admin can delete payment records.';
+            return;
+          }
           const confirmed = await this.requestConfirm({
             title: 'Delete payment record',
             message: 'Delete this platform payment record? This action cannot be undone.',
