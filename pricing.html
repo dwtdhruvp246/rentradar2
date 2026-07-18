@@ -68,9 +68,12 @@
           </label>
           <div class="block">
             <span class="mb-2 block text-sm font-bold text-slate-700">Billing</span>
-            <div class="grid h-12 grid-cols-2 rounded-2xl border border-slate-200 bg-white/70 p-1 shadow-sm backdrop-blur-xl">
-              <button class="billingButton rounded-xl px-4 text-sm font-black transition" type="button" data-billing="monthly">Monthly</button>
-              <button class="billingButton rounded-xl px-4 text-sm font-black transition" type="button" data-billing="yearly">Yearly</button>
+            <div class="grid min-h-12 grid-cols-2 rounded-2xl border border-slate-200 bg-white/70 p-1 shadow-sm backdrop-blur-xl">
+              <button class="billingButton rounded-xl px-4 py-2 text-sm font-black transition" type="button" data-billing="monthly">Monthly</button>
+              <button class="billingButton rounded-xl px-4 py-2 text-sm font-black leading-tight transition" type="button" data-billing="yearly">
+                <span class="block">Yearly</span>
+                <span class="block text-[10px] font-extrabold opacity-80">1 month free</span>
+              </button>
             </div>
           </div>
         </div>
@@ -146,7 +149,7 @@
         label: 'Zimbabwe',
         plans: {
           landlord: [
-            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
+            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
             { name: 'Starter', monthly: 4, yearly: 44, limits: '2 properties, 8 units, 1 staff, 1 IPM or PMC connection', description: 'For a small landlord who needs more than the free single-unit account.' },
             { name: 'Growth', monthly: 10, yearly: 110, limits: '6 properties, 35 units, 3 staff, 2 IPM or PMC connections', description: 'For growing owners with multiple units.' },
             { name: 'Portfolio', monthly: 22, yearly: 242, limits: '20 properties, 120 units, 8 staff, 5 IPM or PMC connections', description: 'For larger private portfolios.' },
@@ -236,7 +239,7 @@
       });
       billingButtons.forEach(button => {
         const active = button.dataset.billing === billing;
-        button.className = `billingButton rounded-xl px-4 text-sm font-black transition ${active ? 'bg-brand text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
+        button.className = `billingButton rounded-xl px-4 py-2 text-sm font-black transition ${button.dataset.billing === 'yearly' ? 'leading-tight' : ''} ${active ? 'bg-brand text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
       });
       pricingGrid.innerHTML = data.plans[selectedType].map((plan, index) => `
         <article class="flex min-w-0 flex-col rounded-[2rem] border ${index === 1 ? 'border-emerald-300 bg-white/80' : 'border-white/70 bg-white/60'} p-6 shadow-glass backdrop-blur-xl">
