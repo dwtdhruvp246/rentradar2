@@ -487,6 +487,7 @@
             <div class="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
+              <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-pricing' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-pricing')">Pricing</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-enquiries' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-enquiries')">Enquiries</button>
               <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-team' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-team')">Staff</button>
@@ -652,6 +653,92 @@
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteLandlord(row)">Delete</button>
                           <button x-show="row.invite_link && !row.accepted" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="copyText(row.invite_link)">Copy Invite</button>
                         </div>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section x-show="currentPage === 'admin-pricing'" id="super-admin-pricing" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Pricing</h1>
+              <p class="mt-1 text-sm text-slate-600">Control the public pricing page and the default subscription limits used when adding accounts.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openPricingPlanModal()">Add Plan</button>
+            </div>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+
+          <template x-if="admin.message">
+            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="admin.message"></div>
+          </template>
+
+          <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+            <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.countryId">
+                  <option value="">All countries</option>
+                  <template x-for="country in admin.countries" :key="`pricing-country-filter-${country.id}`">
+                    <option :value="country.id" x-text="country.name"></option>
+                  </template>
+                </select>
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Account type</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.accountType">
+                  <option value="">All account types</option>
+                  <option value="landlord">Landlords</option>
+                  <option value="ipm">IPM</option>
+                  <option value="pmc">PMC</option>
+                </select>
+              </label>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="min-w-[1350px] divide-y divide-slate-200 text-left text-[13px]">
+                <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Country</th>
+                    <th class="px-4 py-3 font-semibold">Account</th>
+                    <th class="px-4 py-3 font-semibold">Plan</th>
+                    <th class="px-4 py-3 font-semibold">Monthly</th>
+                    <th class="px-4 py-3 font-semibold">Yearly</th>
+                    <th class="px-4 py-3 font-semibold">Limits</th>
+                    <th class="px-4 py-3 font-semibold">Public</th>
+                    <th class="px-4 py-3 font-semibold">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 bg-white">
+                  <template x-if="filteredPricingPlans().length === 0">
+                    <tr>
+                      <td class="px-4 py-8 text-center text-slate-500" colspan="8">No pricing plans yet.</td>
+                    </tr>
+                  </template>
+                  <template x-for="plan in filteredPricingPlans()" :key="plan.id || `${plan.country_code}-${plan.account_type}-${plan.plan_key}`">
+                    <tr>
+                      <td class="px-4 py-3 text-slate-700" x-text="pricingPlanCountryLabel(plan)"></td>
+                      <td class="px-4 py-3 font-semibold uppercase text-slate-700" x-text="plan.account_type"></td>
+                      <td class="px-4 py-3">
+                        <p class="font-semibold text-slate-900" x-text="plan.plan_name"></p>
+                        <p class="text-xs text-slate-500" x-text="plan.plan_key"></p>
+                      </td>
+                      <td class="px-4 py-3 text-slate-700" x-text="formatPricingAmount(plan.currency_code, plan.monthly_amount, plan.custom_price_label)"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="formatPricingAmount(plan.currency_code, plan.yearly_amount, plan.custom_price_label)"></td>
+                      <td class="max-w-sm whitespace-normal break-words px-4 py-3 text-slate-700" x-text="plan.limits_summary || pricingPlanLimitsSummary(plan)"></td>
+                      <td class="px-4 py-3">
+                        <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="plan.public_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'" x-text="plan.public_active ? 'Shown' : 'Hidden'"></span>
+                      </td>
+                      <td class="px-4 py-3">
+                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openPricingPlanModal(plan)">Edit</button>
                       </td>
                     </tr>
                   </template>
@@ -894,6 +981,139 @@
               <div class="mt-5 flex justify-end">
                 <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Close</button>
               </div>
+            </section>
+          </div>
+        </template>
+
+        <template x-if="admin.modal === 'pricing-plan'">
+          <div class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/40 px-4 py-8">
+            <section class="mx-auto w-full max-w-4xl rounded-xl border border-slate-200 bg-white p-6 shadow-soft">
+              <div class="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 class="text-lg font-bold text-slate-900" x-text="admin.pricingForm.id ? 'Edit Pricing Plan' : 'Add Pricing Plan'"></h2>
+                  <p class="mt-1 text-sm text-slate-500">These values control the public pricing page and subscription defaults.</p>
+                </div>
+                <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closeAdminModal" aria-label="Close modal">
+                  <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <template x-if="admin.formError">
+                <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.formError"></div>
+              </template>
+
+              <form class="space-y-4" @submit.prevent="savePricingPlan">
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.countryId" @change="syncPricingFormCountry()" required>
+                      <option value="">Select country</option>
+                      <template x-for="country in admin.countries" :key="`pricing-country-${country.id}`">
+                        <option :value="country.id" x-text="country.name"></option>
+                      </template>
+                    </select>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Account type</span>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.accountType" required>
+                      <option value="landlord">Landlord</option>
+                      <option value="ipm">IPM</option>
+                      <option value="pmc">PMC</option>
+                    </select>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Plan key</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm lowercase outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.pricingForm.planKey" placeholder="starter" required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Plan name</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.pricingForm.planName" placeholder="Starter" required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Monthly amount</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="admin.pricingForm.monthlyAmount" required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Yearly amount</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="admin.pricingForm.yearlyAmount" required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Currency code</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm uppercase outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" maxlength="3" x-model.trim="admin.pricingForm.currencyCode" required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Custom price label</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.pricingForm.customPriceLabel" placeholder="From $50">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Display order</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.pricingForm.displayOrder">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">CTA label</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="admin.pricingForm.ctaLabel" placeholder="Enquire">
+                  </label>
+                </div>
+
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Property limit</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.propertyLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Unit limit</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.unitLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Personal staff limit</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.personalStaffLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">IPM / PMC connections</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.partnerConnectionLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Landlord limit</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.landlordLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">IPM properties per landlord</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.propertiesPerLandlordLimit">
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">PMC staff limit</span>
+                    <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" type="number" min="0" step="1" x-model.number="admin.pricingForm.staffLimit">
+                  </label>
+                </div>
+
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Description</span>
+                  <textarea class="min-h-24 w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model.trim="admin.pricingForm.description" required></textarea>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Public limits text</span>
+                  <textarea class="min-h-20 w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model.trim="admin.pricingForm.limitsSummary" placeholder="Leave blank to auto-build from the limits above."></textarea>
+                </label>
+                <div class="flex flex-wrap gap-4">
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <input class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" type="checkbox" x-model="admin.pricingForm.popular">
+                    Popular card
+                  </label>
+                  <label class="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <input class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" type="checkbox" x-model="admin.pricingForm.publicActive">
+                    Show on pricing page
+                  </label>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                  <button class="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 hover:bg-slate-50" type="button" @click="closeAdminModal">Cancel</button>
+                  <button class="rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="admin.saving">
+                    <span x-show="!admin.saving">Save Plan</span>
+                    <span x-show="admin.saving">Saving...</span>
+                  </button>
+                </div>
+              </form>
             </section>
           </div>
         </template>
@@ -4495,6 +4715,7 @@
           modal: '',
           selectedRow: null,
           countries: [],
+          pricingPlans: [],
           selectedCountryId: 'all',
           landlords: [],
           tenants: [],
@@ -4516,6 +4737,10 @@
             tenantLandlordId: '',
             managementSearch: '',
             managementStatus: ''
+          },
+          pricingFilters: {
+            countryId: '',
+            accountType: ''
           },
           stats: {
             total: 0,
@@ -4636,6 +4861,33 @@
             subscriptionStatus: 'trial',
             expiresAt: '',
             notes: ''
+          },
+          pricingForm: {
+            id: '',
+            countryId: '',
+            countryCode: '',
+            countryName: '',
+            currencyCode: 'USD',
+            accountType: 'landlord',
+            planKey: 'starter',
+            planName: 'Starter',
+            displayOrder: 20,
+            monthlyAmount: 0,
+            yearlyAmount: 0,
+            customPriceLabel: '',
+            description: '',
+            limitsSummary: '',
+            propertyLimit: 0,
+            unitLimit: 0,
+            personalStaffLimit: 0,
+            partnerConnectionLimit: 0,
+            landlordLimit: 0,
+            propertiesPerLandlordLimit: 0,
+            staffLimit: 0,
+            ctaLabel: '',
+            ctaHref: '',
+            popular: false,
+            publicActive: true
           },
           generatedInviteLink: ''
         },
@@ -5392,7 +5644,7 @@
           if (!page) return false;
 
           if (this.currentShell === 'super_admin') {
-            const pages = ['landlord-management', 'admin-finance', 'admin-tenants', 'admin-enquiries', 'admin-staff', 'admin-management'];
+            const pages = ['landlord-management', 'admin-finance', 'admin-pricing', 'admin-tenants', 'admin-enquiries', 'admin-staff', 'admin-management'];
             if (this.profile?.role === 'super_admin') pages.push('admin-team');
             return pages.includes(page);
           }
@@ -5930,7 +6182,7 @@
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult, pricingPlansResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -6021,6 +6273,11 @@
               .from('enquiries')
               .select('id, full_name, email, country_name, country_id, enquiry_type, message, status, source, handled_by, handled_at, created_at, updated_at, country:countries(id, name, code, currency_code), handler:profiles!enquiries_handled_by_fkey(id, full_name, email)')
               .order('created_at', { ascending: false })
+            ,
+            supabaseClient
+              .from('pricing_plans')
+              .select('id, country_id, country_code, country_name, currency_code, account_type, plan_key, plan_name, display_order, monthly_amount, yearly_amount, custom_price_label, description, limits_summary, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, landlord_limit, properties_per_landlord_limit, staff_limit, cta_label, cta_href, popular, public_active, updated_by, updated_at, created_at')
+              .order('display_order', { ascending: true })
           ]);
 
           const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || internalNotesResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || adminTeamCountriesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
@@ -6032,8 +6289,12 @@
 
           this.admin.countries = countriesResult.data || [];
           this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
+          this.admin.pricingPlans = pricingPlansResult.error ? this.defaultPricingPlans() : (pricingPlansResult.data || this.defaultPricingPlans());
           if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
             this.admin.error = enquiriesResult.error.message;
+          }
+          if (pricingPlansResult.error && this.currentPage === 'admin-pricing') {
+            this.admin.error = pricingPlansResult.error.message;
           }
           this.enforceAdminCountryScope();
           const subscriptions = subscriptionsResult.data || [];
@@ -6427,15 +6688,17 @@
           }
 
           if (modalName === 'management-add') {
+            const countryId = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '';
+            const defaults = this.subscriptionPlanDefaults('pmc', 'starter', countryId);
             this.admin.managementAddForm = {
               companyName: '',
               leaderName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
-              maxLandlords: 3,
-              maxProperties: 15,
-              maxStaff: 5,
+              countryId,
+              maxLandlords: defaults.maxLandlords ?? 3,
+              maxProperties: defaults.maxProperties ?? 15,
+              maxStaff: defaults.maxStaff ?? 5,
               planStatus: 'starter:trial',
               subscriptionStatus: 'trial',
               expiresAt: this.toDateInputValue(this.addDaysIso(30))
@@ -6456,18 +6719,100 @@
           }
 
           if (modalName === 'freelancer-add') {
+            const countryId = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '';
+            const defaults = this.subscriptionPlanDefaults('ipm', 'pro', countryId);
             this.admin.freelancerForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
-              maxLandlords: 5,
-              maxPropertiesPerLandlord: 5,
+              countryId,
+              maxLandlords: defaults.maxLandlords ?? 5,
+              maxPropertiesPerLandlord: defaults.maxPropertiesPerLandlord ?? 5,
               planStatus: 'pro:active',
               subscriptionStatus: 'active',
               expiresAt: ''
             };
           }
+        },
+
+        resetPricingForm() {
+          const country = this.countryById(this.admin.pricingFilters.countryId) || this.admin.countries[0] || null;
+          this.admin.pricingForm = {
+            id: '',
+            countryId: country?.id || '',
+            countryCode: country?.code || '',
+            countryName: country?.name || '',
+            currencyCode: country?.currency_code || 'USD',
+            accountType: this.admin.pricingFilters.accountType || 'landlord',
+            planKey: 'starter',
+            planName: 'Starter',
+            displayOrder: 20,
+            monthlyAmount: 0,
+            yearlyAmount: 0,
+            customPriceLabel: '',
+            description: '',
+            limitsSummary: '',
+            propertyLimit: 0,
+            unitLimit: 0,
+            personalStaffLimit: 0,
+            partnerConnectionLimit: 0,
+            landlordLimit: 0,
+            propertiesPerLandlordLimit: 0,
+            staffLimit: 0,
+            ctaLabel: 'Enquire',
+            ctaHref: 'contact.html',
+            popular: false,
+            publicActive: true
+          };
+        },
+
+        syncPricingFormCountry() {
+          const country = this.countryById(this.admin.pricingForm.countryId);
+          if (!country) return;
+          this.admin.pricingForm.countryCode = country.code || '';
+          this.admin.pricingForm.countryName = country.name || '';
+          this.admin.pricingForm.currencyCode = country.currency_code || this.admin.pricingForm.currencyCode || 'USD';
+        },
+
+        openPricingPlanModal(plan = null) {
+          this.admin.error = '';
+          this.admin.message = '';
+          this.admin.formError = '';
+          if (!plan) {
+            this.admin.selectedRow = null;
+            this.resetPricingForm();
+          } else {
+            this.admin.selectedRow = plan;
+            this.admin.pricingForm = {
+              id: plan.id || '',
+              countryId: plan.country_id || '',
+              countryCode: plan.country_code || '',
+              countryName: plan.country_name || '',
+              currencyCode: plan.currency_code || 'USD',
+              accountType: plan.account_type || 'landlord',
+              planKey: plan.plan_key || '',
+              planName: plan.plan_name || '',
+              displayOrder: Number(plan.display_order || 100),
+              monthlyAmount: Number(plan.monthly_amount || 0),
+              yearlyAmount: Number(plan.yearly_amount || 0),
+              customPriceLabel: plan.custom_price_label || '',
+              description: plan.description || '',
+              limitsSummary: plan.limits_summary || '',
+              propertyLimit: Number(plan.property_limit || 0),
+              unitLimit: Number(plan.unit_limit || 0),
+              personalStaffLimit: Number(plan.personal_staff_limit || 0),
+              partnerConnectionLimit: Number(plan.partner_connection_limit || 0),
+              landlordLimit: Number(plan.landlord_limit || 0),
+              propertiesPerLandlordLimit: Number(plan.properties_per_landlord_limit || 0),
+              staffLimit: Number(plan.staff_limit || 0),
+              ctaLabel: plan.cta_label || '',
+              ctaHref: plan.cta_href || '',
+              popular: Boolean(plan.popular),
+              publicActive: plan.public_active !== false
+            };
+          }
+          this.syncPricingFormCountry();
+          this.admin.modal = 'pricing-plan';
         },
 
         closeAdminModal() {
@@ -7001,6 +7346,8 @@
           const expiresAt = row.subscription?.expires_at || this.addDaysIso(30);
           const planStatus = this.inferLandlordPlanStatus(row.subscription);
           const [plan = 'free', status = 'active'] = planStatus.split(':');
+          const countryId = row.country_id || row.subscription?.country_id || '';
+          const defaults = this.subscriptionPlanDefaults('landlord', plan, countryId);
           this.admin.error = '';
           this.admin.message = '';
           this.admin.formError = '';
@@ -7010,64 +7357,205 @@
             plan: plan === 'standard' ? 'custom' : plan,
             status: status === 'suspended' ? 'active' : status,
             expiresAt: this.toDateInputValue(expiresAt),
-            propertyLimit: Number(row.subscription?.property_limit ?? 5),
-            unitLimit: Number(row.subscription?.unit_limit ?? 25),
-            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? 1),
-            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? 2),
+            propertyLimit: Number(row.subscription?.property_limit ?? defaults.propertyLimit ?? 5),
+            unitLimit: Number(row.subscription?.unit_limit ?? defaults.unitLimit ?? 25),
+            personalStaffLimit: Number(row.subscription?.personal_staff_limit ?? defaults.personalStaffLimit ?? 1),
+            partnerConnectionLimit: Number(row.subscription?.partner_connection_limit ?? defaults.partnerConnectionLimit ?? 2),
             notes: row.subscription?.notes || '',
             adminNotes: row.subscription?.admin_notes || ''
           };
           this.admin.modal = 'subscription';
         },
 
-        planStatusOptions(accountType = 'landlord') {
-          const plans = {
+        basePlanCatalog() {
+          return {
             landlord: [
-              ['free', 'Free', ['active']],
-              ['starter', 'Starter', ['trial', 'active']],
-              ['growth', 'Growth', ['trial', 'active']],
-              ['portfolio', 'Portfolio', ['trial', 'active']],
-              ['custom', 'Custom', ['trial', 'active']]
+              { plan_key: 'free', plan_name: 'Free', display_order: 10, property_limit: 1, unit_limit: 1, personal_staff_limit: 0, partner_connection_limit: 1, statuses: ['active'] },
+              { plan_key: 'starter', plan_name: 'Starter', display_order: 20, property_limit: 2, unit_limit: 8, personal_staff_limit: 1, partner_connection_limit: 1, statuses: ['trial', 'active'] },
+              { plan_key: 'growth', plan_name: 'Growth', display_order: 30, property_limit: 6, unit_limit: 35, personal_staff_limit: 3, partner_connection_limit: 2, statuses: ['trial', 'active'] },
+              { plan_key: 'portfolio', plan_name: 'Portfolio', display_order: 40, property_limit: 20, unit_limit: 120, personal_staff_limit: 8, partner_connection_limit: 5, statuses: ['trial', 'active'] },
+              { plan_key: 'custom', plan_name: 'Custom', display_order: 90, property_limit: 0, unit_limit: 0, personal_staff_limit: 0, partner_connection_limit: 0, statuses: ['trial', 'active'] }
             ],
             ipm: [
-              ['pro', 'Pro', ['trial', 'active']],
-              ['growth', 'Growth', ['trial', 'active']],
-              ['portfolio', 'Portfolio', ['trial', 'active']],
-              ['custom', 'Custom', ['trial', 'active']]
+              { plan_key: 'pro', plan_name: 'Pro', display_order: 10, landlord_limit: 5, properties_per_landlord_limit: 5, statuses: ['trial', 'active'] },
+              { plan_key: 'growth', plan_name: 'Growth', display_order: 20, landlord_limit: 15, properties_per_landlord_limit: 12, statuses: ['trial', 'active'] },
+              { plan_key: 'portfolio', plan_name: 'Portfolio', display_order: 30, landlord_limit: 40, properties_per_landlord_limit: 30, statuses: ['trial', 'active'] },
+              { plan_key: 'custom', plan_name: 'Custom', display_order: 90, landlord_limit: 0, properties_per_landlord_limit: 0, statuses: ['trial', 'active'] }
             ],
             pmc: [
-              ['starter', 'Starter', ['trial', 'active']],
-              ['growth', 'Growth', ['trial', 'active']],
-              ['business', 'Business', ['trial', 'active']],
-              ['custom', 'Custom', ['trial', 'active']]
+              { plan_key: 'starter', plan_name: 'Starter', display_order: 10, landlord_limit: 3, property_limit: 15, unit_limit: 75, staff_limit: 5, statuses: ['trial', 'active'] },
+              { plan_key: 'growth', plan_name: 'Growth', display_order: 20, landlord_limit: 12, property_limit: 75, unit_limit: 400, staff_limit: 15, statuses: ['trial', 'active'] },
+              { plan_key: 'business', plan_name: 'Business', display_order: 30, landlord_limit: 35, property_limit: 250, unit_limit: 1500, staff_limit: 40, statuses: ['trial', 'active'] },
+              { plan_key: 'custom', plan_name: 'Custom', display_order: 90, landlord_limit: 0, property_limit: 0, unit_limit: 0, staff_limit: 0, statuses: ['trial', 'active'] }
             ]
           };
-          return (plans[accountType] || plans.landlord).flatMap(([plan, label, statuses]) => statuses.map(status => ({
-            value: `${plan}:${status}`,
-            label: `${label} - ${this.titleCase(status)}`
-          })));
         },
 
-        subscriptionPlanDefaults(accountType = 'landlord', plan = 'custom') {
-          const defaults = {
-            landlord: {
-              free: { propertyLimit: 1, unitLimit: 1, personalStaffLimit: 0, partnerConnectionLimit: 1 },
-              starter: { propertyLimit: 2, unitLimit: 8, personalStaffLimit: 1, partnerConnectionLimit: 1 },
-              growth: { propertyLimit: 6, unitLimit: 35, personalStaffLimit: 3, partnerConnectionLimit: 2 },
-              portfolio: { propertyLimit: 20, unitLimit: 120, personalStaffLimit: 8, partnerConnectionLimit: 5 }
+        defaultPricingPlans() {
+          const defaults = [];
+          const countries = this.admin?.countries?.length
+            ? this.admin.countries
+            : [
+                { id: '', code: 'ZW', name: 'Zimbabwe', currency_code: 'USD' },
+                { id: '', code: 'MY', name: 'Malaysia', currency_code: 'MYR' }
+              ];
+          const prices = {
+            ZW: {
+              landlord: { free: [0, 0, ''], starter: [4, 44, ''], growth: [10, 110, ''], portfolio: [22, 242, ''], custom: [0, 0, 'From $50'] },
+              ipm: { pro: [15, 165, ''], growth: [35, 385, ''], portfolio: [70, 770, ''], custom: [0, 0, 'From $100'] },
+              pmc: { starter: [30, 330, ''], growth: [75, 825, ''], business: [150, 1650, ''], custom: [0, 0, 'From $250'] }
             },
-            ipm: {
-              pro: { maxLandlords: 5, maxPropertiesPerLandlord: 5 },
-              growth: { maxLandlords: 15, maxPropertiesPerLandlord: 12 },
-              portfolio: { maxLandlords: 40, maxPropertiesPerLandlord: 30 }
-            },
-            pmc: {
-              starter: { maxLandlords: 3, maxProperties: 15, maxStaff: 5 },
-              growth: { maxLandlords: 12, maxProperties: 75, maxStaff: 15 },
-              business: { maxLandlords: 35, maxProperties: 250, maxStaff: 40 }
+            MY: {
+              landlord: { free: [0, 0, ''], starter: [19, 209, ''], growth: [59, 649, ''], portfolio: [149, 1639, ''], custom: [0, 0, 'From RM349'] },
+              ipm: { pro: [129, 1419, ''], growth: [299, 3289, ''], portfolio: [599, 6589, ''], custom: [0, 0, 'From RM899'] },
+              pmc: { starter: [249, 2739, ''], growth: [649, 7139, ''], business: [1299, 14289, ''], custom: [0, 0, 'From RM1,999'] }
             }
           };
-          return defaults[accountType]?.[plan] || {};
+          const descriptions = {
+            landlord: 'For landlords managing properties, units, rent, staff, and partner connections.',
+            ipm: 'For Individual Portfolio Managers serving multiple landlords.',
+            pmc: 'For Property Management Companies managing landlords, properties, units, and staff.'
+          };
+          countries.forEach(country => {
+            const code = String(country.code || country.name || '').toUpperCase();
+            Object.entries(this.basePlanCatalog()).forEach(([accountType, rows]) => {
+              rows.forEach(row => {
+                const price = prices[code]?.[accountType]?.[row.plan_key] || [0, 0, ''];
+                defaults.push({
+                  id: '',
+                  country_id: country.id || '',
+                  country_code: country.code || '',
+                  country_name: country.name || '',
+                  currency_code: country.currency_code || (code === 'MY' ? 'MYR' : 'USD'),
+                  account_type: accountType,
+                  plan_key: row.plan_key,
+                  plan_name: row.plan_name,
+                  display_order: row.display_order,
+                  monthly_amount: price[0],
+                  yearly_amount: price[1],
+                  custom_price_label: price[2],
+                  description: descriptions[accountType],
+                  limits_summary: this.pricingPlanLimitsSummary(row),
+                  property_limit: row.property_limit || 0,
+                  unit_limit: row.unit_limit || 0,
+                  personal_staff_limit: row.personal_staff_limit || 0,
+                  partner_connection_limit: row.partner_connection_limit || 0,
+                  landlord_limit: row.landlord_limit || 0,
+                  properties_per_landlord_limit: row.properties_per_landlord_limit || 0,
+                  staff_limit: row.staff_limit || 0,
+                  cta_label: accountType === 'landlord' && row.plan_key === 'free' ? 'Sign up for free' : 'Enquire',
+                  cta_href: accountType === 'landlord' && row.plan_key === 'free' ? 'client.html?signup=landlord' : 'contact.html',
+                  popular: row.plan_key === 'starter' || row.plan_key === 'pro',
+                  public_active: true
+                });
+              });
+            });
+          });
+          return defaults;
+        },
+
+        countryById(countryId) {
+          return (this.admin?.countries || []).find(country => country.id === countryId) || null;
+        },
+
+        pricingPlanCountryLabel(plan) {
+          return plan?.country?.name || plan?.country_name || this.adminCountryName(plan?.country_id) || plan?.country_code || '-';
+        },
+
+        pricingPlanRows(accountType = '', countryId = '') {
+          const rows = this.admin?.pricingPlans?.length ? this.admin.pricingPlans : this.defaultPricingPlans();
+          const country = this.countryById(countryId);
+          const countryCode = String(country?.code || '').toUpperCase();
+          return rows
+            .filter(row => !accountType || row.account_type === accountType)
+            .filter(row => row.public_active !== false || this.profile?.role === 'super_admin')
+            .filter(row => {
+              if (!countryId) return true;
+              return row.country_id === countryId || (countryCode && String(row.country_code || '').toUpperCase() === countryCode);
+            })
+            .sort((a, b) => Number(a.display_order || 100) - Number(b.display_order || 100));
+        },
+
+        pricingPlanFor(accountType = 'landlord', plan = 'custom', countryId = '') {
+          const normalizedPlan = String(plan || 'custom').toLowerCase() === 'standard' ? 'custom' : String(plan || 'custom').toLowerCase();
+          const rows = this.pricingPlanRows(accountType, countryId);
+          return rows.find(row => String(row.plan_key || '').toLowerCase() === normalizedPlan)
+            || this.pricingPlanRows(accountType, '').find(row => String(row.plan_key || '').toLowerCase() === normalizedPlan)
+            || (this.basePlanCatalog()[accountType] || []).find(row => row.plan_key === normalizedPlan)
+            || {};
+        },
+
+        filteredPricingPlans() {
+          const countryId = this.admin.pricingFilters.countryId;
+          const accountType = this.admin.pricingFilters.accountType;
+          return this.pricingPlanRows(accountType, countryId);
+        },
+
+        pricingPlanLimitsSummary(plan) {
+          const accountType = plan?.account_type || 'landlord';
+          if (accountType === 'landlord') {
+            return `${Number(plan.property_limit || 0)} properties, ${Number(plan.unit_limit || 0)} units, ${Number(plan.personal_staff_limit || 0)} staff, ${Number(plan.partner_connection_limit || 0)} IPM or PMC connections`;
+          }
+          if (accountType === 'ipm') {
+            return `${Number(plan.landlord_limit || 0)} landlords, ${Number(plan.properties_per_landlord_limit || 0)} properties per landlord`;
+          }
+          if (accountType === 'pmc') {
+            return `${Number(plan.landlord_limit || 0)} landlords, ${Number(plan.property_limit || 0)} properties, ${Number(plan.unit_limit || 0)} units, ${Number(plan.staff_limit || 0)} staff`;
+          }
+          return '';
+        },
+
+        formatPricingAmount(currencyCode, amount, customLabel = '') {
+          if (customLabel) return customLabel;
+          const value = Number(amount || 0);
+          if (value === 0) return 'Free';
+          const symbol = String(currencyCode || '').toUpperCase() === 'MYR' ? 'RM' : String(currencyCode || '').toUpperCase() === 'USD' ? '$' : `${currencyCode || ''} `;
+          return `${symbol}${value.toLocaleString(undefined, { maximumFractionDigits: value % 1 ? 2 : 0 })}`;
+        },
+
+        planStatusOptions(accountType = 'landlord') {
+          const baseRows = this.pricingPlanRows(accountType, '');
+          const rows = baseRows.length ? baseRows : (this.basePlanCatalog()[accountType] || this.basePlanCatalog().landlord);
+          const seen = new Set();
+          const plans = rows.filter(row => {
+            const key = row.plan_key || '';
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          return plans.flatMap(row => {
+            const statuses = row.statuses || (row.plan_key === 'free' && accountType === 'landlord' ? ['active'] : ['trial', 'active']);
+            return statuses.map(status => ({
+              value: `${row.plan_key}:${status}`,
+              label: `${row.plan_name || this.titleCase(row.plan_key)} - ${this.titleCase(status)}`
+            }));
+          });
+        },
+
+        subscriptionPlanDefaults(accountType = 'landlord', plan = 'custom', countryId = '') {
+          const row = this.pricingPlanFor(accountType, plan, countryId);
+          if (accountType === 'landlord') {
+            return {
+              propertyLimit: Number(row.property_limit || 0),
+              unitLimit: Number(row.unit_limit || 0),
+              personalStaffLimit: Number(row.personal_staff_limit || 0),
+              partnerConnectionLimit: Number(row.partner_connection_limit || 0)
+            };
+          }
+          if (accountType === 'ipm') {
+            return {
+              maxLandlords: Number(row.landlord_limit || 0),
+              maxPropertiesPerLandlord: Number(row.properties_per_landlord_limit || 0)
+            };
+          }
+          if (accountType === 'pmc') {
+            return {
+              maxLandlords: Number(row.landlord_limit || 0),
+              maxProperties: Number(row.property_limit || 0),
+              maxStaff: Number(row.staff_limit || 0)
+            };
+          }
+          return {};
         },
 
         subscriptionPlanStatusValue(plan, status, accountType = 'landlord') {
@@ -7128,7 +7616,8 @@
           this.admin.subscriptionForm.planStatus = selectedPlanStatus;
           this.admin.subscriptionForm.plan = plan;
           this.admin.subscriptionForm.status = status;
-          Object.assign(this.admin.subscriptionForm, this.subscriptionPlanDefaults('landlord', plan));
+          const countryId = this.admin.selectedRow?.country_id || this.admin.selectedRow?.subscription?.country_id || '';
+          Object.assign(this.admin.subscriptionForm, this.subscriptionPlanDefaults('landlord', plan, countryId));
           if (plan === 'free' && status === 'active') {
             this.admin.subscriptionForm.expiresAt = '2099-12-31';
           }
@@ -7140,13 +7629,9 @@
             : 'active';
           const landlords = Number(staffRow?.staff_max_landlords || 0);
           const propertiesPerLandlord = Number(staffRow?.staff_max_properties_per_landlord ?? 0);
-          const plan = landlords <= 5 && propertiesPerLandlord <= 5
-            ? 'pro'
-            : landlords <= 15 && propertiesPerLandlord <= 12
-              ? 'growth'
-              : landlords <= 40 && propertiesPerLandlord <= 30
-                ? 'portfolio'
-                : 'custom';
+          const rows = this.pricingPlanRows('ipm', this.adminStaffCountryId(staffRow)).filter(row => row.plan_key !== 'custom');
+          const matched = rows.find(row => landlords <= Number(row.landlord_limit || 0) && propertiesPerLandlord <= Number(row.properties_per_landlord_limit || 0));
+          const plan = matched?.plan_key || 'custom';
           return this.subscriptionPlanStatusValue(plan, status, 'ipm');
         },
 
@@ -7157,10 +7642,9 @@
           const landlords = Number(company?.max_landlords || 0);
           const properties = Number(company?.max_properties || 0);
           const staff = Number(company?.max_staff || 0);
-          let plan = 'custom';
-          if (landlords <= 3 && properties <= 15 && staff <= 5) plan = 'starter';
-          else if (landlords <= 12 && properties <= 75 && staff <= 15) plan = 'growth';
-          else if (landlords <= 35 && properties <= 250 && staff <= 40) plan = 'business';
+          const rows = this.pricingPlanRows('pmc', company?.country_id).filter(row => row.plan_key !== 'custom');
+          const matched = rows.find(row => landlords <= Number(row.landlord_limit || 0) && properties <= Number(row.property_limit || 0) && staff <= Number(row.staff_limit || 0));
+          const plan = matched?.plan_key || 'custom';
           return this.subscriptionPlanStatusValue(plan, status, 'pmc');
         },
 
@@ -7173,7 +7657,8 @@
           const [plan = 'pro', status = 'active'] = selectedPlanStatus.split(':');
           this.admin.staffLimitForm.planStatus = selectedPlanStatus;
           this.admin.staffLimitForm.subscriptionStatus = status;
-          Object.assign(this.admin.staffLimitForm, this.subscriptionPlanDefaults('ipm', plan));
+          const countryId = this.adminStaffCountryId(this.admin.selectedRow);
+          Object.assign(this.admin.staffLimitForm, this.subscriptionPlanDefaults('ipm', plan, countryId));
         },
 
         applyFreelancerPlanStatusSelection() {
@@ -7185,7 +7670,7 @@
           const [plan = 'pro', status = 'active'] = selectedPlanStatus.split(':');
           this.admin.freelancerForm.planStatus = selectedPlanStatus;
           this.admin.freelancerForm.subscriptionStatus = status;
-          Object.assign(this.admin.freelancerForm, this.subscriptionPlanDefaults('ipm', plan));
+          Object.assign(this.admin.freelancerForm, this.subscriptionPlanDefaults('ipm', plan, this.admin.freelancerForm.countryId || ''));
         },
 
         applyManagementPlanStatusSelection() {
@@ -7197,7 +7682,7 @@
           const [plan = 'starter', status = 'active'] = selectedPlanStatus.split(':');
           this.admin.managementLimitForm.planStatus = selectedPlanStatus;
           this.admin.managementLimitForm.subscriptionStatus = status;
-          Object.assign(this.admin.managementLimitForm, this.subscriptionPlanDefaults('pmc', plan));
+          Object.assign(this.admin.managementLimitForm, this.subscriptionPlanDefaults('pmc', plan, this.admin.selectedRow?.country_id || ''));
         },
 
         applyManagementAddPlanStatusSelection() {
@@ -7209,7 +7694,7 @@
           const [plan = 'starter', status = 'trial'] = selectedPlanStatus.split(':');
           this.admin.managementAddForm.planStatus = selectedPlanStatus;
           this.admin.managementAddForm.subscriptionStatus = status;
-          Object.assign(this.admin.managementAddForm, this.subscriptionPlanDefaults('pmc', plan));
+          Object.assign(this.admin.managementAddForm, this.subscriptionPlanDefaults('pmc', plan, this.admin.managementAddForm.countryId || ''));
         },
 
         async createLandlordInvite() {
@@ -7250,6 +7735,7 @@
             return;
           }
 
+          const freeDefaults = this.subscriptionPlanDefaults('landlord', 'free', countryId);
           const { error: subscriptionError } = await supabaseClient
             .from('landlord_subscriptions')
             .insert({
@@ -7258,10 +7744,10 @@
               subscription_plan: 'free',
               status: 'active',
               expires_at: '2099-12-31T23:59:59.000Z',
-              property_limit: 1,
-              unit_limit: 1,
-              personal_staff_limit: 0,
-              partner_connection_limit: 1,
+              property_limit: Number(freeDefaults.propertyLimit ?? 1),
+              unit_limit: Number(freeDefaults.unitLimit ?? 1),
+              personal_staff_limit: Number(freeDefaults.personalStaffLimit ?? 0),
+              partner_connection_limit: Number(freeDefaults.partnerConnectionLimit ?? 1),
               notes: '',
               invite_token_id: inviteRow.id,
               updated_by: this.profile.id
@@ -7303,6 +7789,71 @@
 
           this.admin.message = 'Country added.';
           this.admin.selectedCountryId = data.id;
+          this.closeAdminModal();
+          await this.loadSuperAdminData();
+        },
+
+        async savePricingPlan() {
+          this.admin.formError = '';
+          this.admin.saving = true;
+          this.syncPricingFormCountry();
+
+          const form = this.admin.pricingForm;
+          if (!form.countryId || !form.accountType || !form.planKey || !form.planName) {
+            this.admin.formError = 'Country, account type, plan key, and plan name are required.';
+            this.admin.saving = false;
+            return;
+          }
+
+          const payload = {
+            country_id: form.countryId,
+            country_code: String(form.countryCode || '').toUpperCase() || null,
+            country_name: form.countryName || this.adminCountryName(form.countryId),
+            currency_code: String(form.currencyCode || 'USD').toUpperCase(),
+            account_type: form.accountType,
+            plan_key: String(form.planKey || '').trim().toLowerCase(),
+            plan_name: form.planName,
+            display_order: Number(form.displayOrder || 100),
+            monthly_amount: Number(form.monthlyAmount || 0),
+            yearly_amount: Number(form.yearlyAmount || 0),
+            custom_price_label: form.customPriceLabel || null,
+            description: form.description || '',
+            limits_summary: form.limitsSummary || this.pricingPlanLimitsSummary({
+              account_type: form.accountType,
+              property_limit: form.propertyLimit,
+              unit_limit: form.unitLimit,
+              personal_staff_limit: form.personalStaffLimit,
+              partner_connection_limit: form.partnerConnectionLimit,
+              landlord_limit: form.landlordLimit,
+              properties_per_landlord_limit: form.propertiesPerLandlordLimit,
+              staff_limit: form.staffLimit
+            }),
+            property_limit: Number(form.propertyLimit || 0),
+            unit_limit: Number(form.unitLimit || 0),
+            personal_staff_limit: Number(form.personalStaffLimit || 0),
+            partner_connection_limit: Number(form.partnerConnectionLimit || 0),
+            landlord_limit: Number(form.landlordLimit || 0),
+            properties_per_landlord_limit: Number(form.propertiesPerLandlordLimit || 0),
+            staff_limit: Number(form.staffLimit || 0),
+            cta_label: form.ctaLabel || null,
+            cta_href: form.ctaHref || null,
+            popular: Boolean(form.popular),
+            public_active: Boolean(form.publicActive),
+            updated_by: this.profile.id
+          };
+
+          const query = form.id
+            ? supabaseClient.from('pricing_plans').update(payload).eq('id', form.id)
+            : supabaseClient.from('pricing_plans').upsert(payload, { onConflict: 'country_code,account_type,plan_key' });
+          const { error } = await query;
+
+          if (error) {
+            this.admin.formError = error.message;
+            this.admin.saving = false;
+            return;
+          }
+
+          this.admin.message = 'Pricing plan saved.';
           this.closeAdminModal();
           await this.loadSuperAdminData();
         },
@@ -14188,7 +14739,7 @@
             await this.loadLandlordFinanceData();
           }
 
-          if ((page === 'admin-finance' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-enquiries' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
+          if ((page === 'admin-finance' || page === 'admin-pricing' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-enquiries' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             await this.loadSuperAdminData();
           }
@@ -14251,6 +14802,7 @@
             'my-account': 'My Account',
             settings: 'Settings',
             'admin-finance': 'Finance',
+            'admin-pricing': 'Pricing',
             'admin-tenants': 'Tenant Management',
             'admin-enquiries': 'Enquiries',
             'admin-team': 'Admin Staff',

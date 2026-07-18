@@ -6,6 +6,7 @@
   <title>Mushavo Pricing | Country Based Plans</title>
   <meta name="description" content="Mushavo pricing for landlords, individual portfolio managers, and property management companies.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="i18n.js" defer></script>
   <script>
     tailwind.config = {
@@ -143,13 +144,16 @@
   </footer>
 
   <script>
-    const PRICES = {
+    const SUPABASE_URL = 'https://rmbvgtaadkvbsasbvdmb.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJtYnZndGFhZGt2YnNhc2J2ZG1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2NTQ1NjIsImV4cCI6MjA5ODIzMDU2Mn0.kMhXDI85TVAsw_Mb-PO5iaSHipG3vLFmM7DF3TUnf00';
+    const pricingClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let PRICES = {
       ZW: {
         currency: '$',
         label: 'Zimbabwe',
         plans: {
           landlord: [
-            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
+            { name: 'Free', monthly: 0, yearly: 0, limits: '1 property, 1 unit, Finance page, 0 personal staff, 1 IPM or PMC connection', description: 'For one-unit landlords and landlords invited by an IPM or PMC.', cta: 'Sign up for free', href: 'client.html?signup=landlord' },
             { name: 'Starter', monthly: 4, yearly: 44, limits: '2 properties, 8 units, 1 staff, 1 IPM or PMC connection', description: 'For a small landlord who needs more than the free single-unit account.' },
             { name: 'Growth', monthly: 10, yearly: 110, limits: '6 properties, 35 units, 3 staff, 2 IPM or PMC connections', description: 'For growing owners with multiple units.' },
             { name: 'Portfolio', monthly: 22, yearly: 242, limits: '20 properties, 120 units, 8 staff, 5 IPM or PMC connections', description: 'For larger private portfolios.' },
@@ -223,6 +227,52 @@
     const locationNote = document.getElementById('locationNote');
     let selectedBilling = 'monthly';
 
+    function currencySymbol(code) {
+      const normalized = String(code || '').toUpperCase();
+      if (normalized === 'MYR') return 'RM';
+      if (normalized === 'USD') return '$';
+      return normalized ? `${normalized} ` : '$';
+    }
+
+    function buildPricesFromRows(rows) {
+      const next = {};
+      rows.forEach(row => {
+        const countryCode = String(row.country_code || row.country_name || 'GLOBAL').toUpperCase();
+        if (!next[countryCode]) {
+          next[countryCode] = {
+            currency: currencySymbol(row.currency_code),
+            label: row.country_name || row.country_code || 'Global',
+            plans: { landlord: [], ipm: [], pmc: [] },
+            addons: PRICES[countryCode]?.addons || []
+          };
+        }
+        if (!next[countryCode].plans[row.account_type]) next[countryCode].plans[row.account_type] = [];
+        next[countryCode].plans[row.account_type].push({
+          name: row.plan_name,
+          monthly: Number(row.monthly_amount || 0),
+          yearly: Number(row.yearly_amount || 0),
+          limits: row.limits_summary || '',
+          description: row.description || '',
+          customPrice: row.custom_price_label || '',
+          cta: row.cta_label || (row.account_type === 'landlord' && row.plan_key === 'free' ? 'Sign up for free' : 'Enquire'),
+          href: row.cta_href || (row.account_type === 'landlord' && row.plan_key === 'free' ? 'client.html?signup=landlord' : 'contact.html'),
+          popular: Boolean(row.popular)
+        });
+      });
+      Object.values(next).forEach(country => {
+        Object.keys(country.plans).forEach(type => {
+          country.plans[type] = country.plans[type].filter(Boolean);
+        });
+      });
+      return { ...PRICES, ...next };
+    }
+
+    function refreshCountryOptions() {
+      const current = countrySelect.value;
+      countrySelect.innerHTML = Object.entries(PRICES).map(([code, data]) => `<option value="${code}">${data.label}</option>`).join('');
+      countrySelect.value = PRICES[current] ? current : Object.keys(PRICES)[0] || 'ZW';
+    }
+
     function money(country, value) {
       const data = PRICES[country];
       if (value === 0) return 'Free';
@@ -233,6 +283,7 @@
       const country = countrySelect.value;
       const billing = selectedBilling;
       const data = PRICES[country];
+      if (!data) return;
       tabButtons.forEach(button => {
         const active = button.dataset.type === selectedType;
         button.className = `tabButton rounded-2xl px-4 py-3 text-sm font-black transition ${active ? 'bg-brand text-white shadow-lg shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
@@ -241,9 +292,9 @@
         const active = button.dataset.billing === billing;
         button.className = `billingButton rounded-xl px-4 py-2 text-sm font-black transition ${button.dataset.billing === 'yearly' ? 'leading-tight' : ''} ${active ? 'bg-brand text-white shadow-md shadow-emerald-900/10' : 'text-slate-600 hover:bg-white/80'}`;
       });
-      pricingGrid.innerHTML = data.plans[selectedType].map((plan, index) => `
-        <article class="flex min-w-0 flex-col rounded-[2rem] border ${index === 1 ? 'border-emerald-300 bg-white/80' : 'border-white/70 bg-white/60'} p-6 shadow-glass backdrop-blur-xl">
-          ${index === 1 ? '<p class="mb-4 w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-brandDark">Popular</p>' : ''}
+      pricingGrid.innerHTML = (data.plans[selectedType] || []).map((plan, index) => `
+        <article class="flex min-w-0 flex-col rounded-[2rem] border ${plan.popular || index === 1 ? 'border-emerald-300 bg-white/80' : 'border-white/70 bg-white/60'} p-6 shadow-glass backdrop-blur-xl">
+          ${plan.popular || index === 1 ? '<p class="mb-4 w-fit rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-brandDark">Popular</p>' : ''}
           <h2 class="text-2xl font-black">${plan.name}</h2>
           <p class="mt-3 min-h-[3rem] leading-7 text-slate-600">${plan.description}</p>
           <p class="mt-6 text-4xl font-black">${plan.customPrice || money(country, plan[billing])}<span class="text-base font-bold text-slate-500">${plan.customPrice || plan[billing] === 0 ? '' : billing === 'monthly' ? '/mo' : '/yr'}</span></p>
@@ -251,7 +302,7 @@
           <a href="${plan.href || 'contact.html'}" class="mt-6 inline-flex items-center justify-center rounded-2xl ${index === 1 ? 'bg-brand text-white hover:bg-brandDark' : 'border border-slate-200 bg-white/75 text-slate-950 hover:bg-white'} px-5 py-3 font-bold transition">${plan.cta || 'Enquire'}</a>
         </article>
       `).join('');
-      addonsGrid.innerHTML = data.addons.map(([name, price]) => `
+      addonsGrid.innerHTML = (data.addons || []).map(([name, price]) => `
         <div class="rounded-3xl border border-white/70 bg-white/70 p-5 shadow-sm backdrop-blur-xl">
           <p class="font-bold">${name}</p>
           <p class="mt-2 text-2xl font-black text-brandDark">${price}</p>
@@ -296,9 +347,27 @@
       }
     }
 
+    async function loadRemotePricingPlans() {
+      if (!pricingClient) return;
+      try {
+        const { data, error } = await pricingClient
+          .from('pricing_plans')
+          .select('country_code, country_name, currency_code, account_type, plan_key, plan_name, display_order, monthly_amount, yearly_amount, custom_price_label, description, limits_summary, cta_label, cta_href, popular, public_active')
+          .eq('public_active', true)
+          .order('display_order', { ascending: true });
+        if (error || !data?.length) return;
+        PRICES = buildPricesFromRows(data);
+        refreshCountryOptions();
+        render();
+      } catch (error) {
+        console.warn('Pricing plans could not be loaded.', error);
+      }
+    }
+
     document.getElementById('menuButton')?.addEventListener('click', () => document.getElementById('mobileMenu').classList.toggle('hidden'));
+    refreshCountryOptions();
     render();
-    detectCountry();
+    loadRemotePricingPlans().finally(detectCountry);
   </script>
 </body>
 </html>
