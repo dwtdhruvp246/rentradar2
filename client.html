@@ -644,7 +644,8 @@
                         <div class="flex flex-wrap gap-2">
                           <button x-show="!row.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openEditLandlord(row)">Edit</button>
                           <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openSubscriptionModal(row)">Manage Subscription</button>
-                          <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendLandlord(row)">Suspend</button>
+                          <button x-show="row.accepted && !row.archived_at && landlordSubscriptionStatus(row) !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendLandlord(row)">Suspend</button>
+                          <button x-show="row.accepted && !row.archived_at && landlordSubscriptionStatus(row) === 'suspended'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unsuspendLandlord(row)">Unsuspend</button>
                           <button x-show="row.accepted && !row.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteLandlord(row)">Archive</button>
                           <button x-show="row.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveLandlord(row)">Unarchive</button>
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteLandlord(row)">Delete</button>
@@ -1109,7 +1110,8 @@
                         <div class="flex flex-wrap gap-2">
                           <button x-show="!company.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementEdit(company)">Edit</button>
                           <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openManagementLimit(company)">Manage</button>
-                          <button x-show="company.accepted && !company.archived_at && company.subscription_status !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendManagementCompany(company)">Suspend</button>
+                          <button x-show="company.accepted && !company.archived_at && pmcSubscriptionDisplayStatus(company) !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendManagementCompany(company)">Suspend</button>
+                          <button x-show="company.accepted && !company.archived_at && pmcSubscriptionDisplayStatus(company) === 'suspended'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unsuspendManagementCompany(company)">Unsuspend</button>
                           <button x-show="company.accepted && !company.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="archiveManagementCompany(company)">Archive</button>
                           <button x-show="company.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveManagementCompany(company)">Unarchive</button>
                           <button class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="permanentlyDeleteManagementCompany(company)">Delete</button>
@@ -1381,7 +1383,8 @@
                         <div class="flex flex-wrap gap-2">
                           <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminFreelancerEdit(staffRow)">Edit</button>
                           <button x-show="!staffRow.archived_at" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="openAdminStaffLimit(staffRow)">Subscription</button>
-                          <button x-show="staffRow.accepted !== false && !staffRow.archived_at && staffRow.staff_subscription_status !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendAdminStaff(staffRow)">Suspend</button>
+                          <button x-show="staffRow.accepted !== false && !staffRow.archived_at && staffSubscriptionDisplayStatus(staffRow) !== 'suspended'" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="suspendAdminStaff(staffRow)">Suspend</button>
+                          <button x-show="staffRow.accepted !== false && !staffRow.archived_at && staffSubscriptionDisplayStatus(staffRow) === 'suspended'" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unsuspendAdminStaff(staffRow)">Unsuspend</button>
                           <button x-show="staffRow.accepted === false && staffRow.invite_link" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(staffRow.invite_link)">Copy Link</button>
                           <button x-show="staffRow.accepted !== false && !staffRow.archived_at" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" type="button" @click="deleteAdminStaff(staffRow)">Archive</button>
                           <button x-show="staffRow.accepted !== false && staffRow.archived_at" class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100" type="button" @click="unarchiveAdminStaff(staffRow)">Unarchive</button>
@@ -5617,7 +5620,7 @@
             total: landlords.length,
             active: landlords.filter(row => this.landlordSubscriptionStatus(row) === 'active').length,
             trial: landlords.filter(row => this.landlordSubscriptionStatus(row) === 'trial').length,
-            suspended: landlords.filter(row => row.subscription?.status === 'suspended').length
+            suspended: landlords.filter(row => this.landlordSubscriptionStatus(row) === 'suspended').length
           };
         },
 
@@ -5627,7 +5630,7 @@
             total: rows.length,
             active: rows.filter(row => row.accepted && this.pmcSubscriptionDisplayStatus(row) === 'active').length,
             trial: rows.filter(row => row.accepted && this.pmcSubscriptionDisplayStatus(row) === 'trial').length,
-            suspended: rows.filter(row => row.accepted && row.subscription_status === 'suspended').length
+            suspended: rows.filter(row => row.accepted && this.pmcSubscriptionDisplayStatus(row) === 'suspended').length
           };
         },
 
@@ -5799,7 +5802,7 @@
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('landlord_subscriptions')
-              .select('id, landlord_id, country_id, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, status, expires_at, notes, invite_token_id, updated_by, updated_at, created_at')
+              .select('id, landlord_id, country_id, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, status, expires_at, access_suspended_at, access_suspended_by, notes, invite_token_id, updated_by, updated_at, created_at')
               .order('created_at', { ascending: false })
             ,
             supabaseClient
@@ -5820,7 +5823,7 @@
               .select('staff_profile_id, country_id, country:countries(id, name, code, currency_code)'),
             supabaseClient
               .from('profiles')
-              .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, created_at, archived_at, archived_by')
+              .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, access_suspended_at, access_suspended_by, created_at, archived_at, archived_by')
               .eq('role', 'staff'),
             supabaseClient
               .from('invite_tokens')
@@ -5852,7 +5855,7 @@
             ,
             supabaseClient
               .from('management_companies')
-              .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, notes, created_at, archived_at, archived_by, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, phone, email, created_at, archived_at)')
+              .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, access_suspended_at, access_suspended_by, notes, created_at, archived_at, archived_by, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, phone, email, created_at, archived_at)')
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('invite_tokens')
@@ -6094,7 +6097,7 @@
             total: activeAdminLandlords.length,
             active: activeAdminLandlords.filter(row => this.landlordSubscriptionStatus(row) === 'active').length,
             trial: activeAdminLandlords.filter(row => this.landlordSubscriptionStatus(row) === 'trial').length,
-            suspended: activeAdminLandlords.filter(row => row.subscription?.status === 'suspended').length,
+            suspended: activeAdminLandlords.filter(row => this.landlordSubscriptionStatus(row) === 'suspended').length,
             tenants: Array.from(tenantCounts.values()).reduce((sum, count) => sum + count, 0),
             properties: Array.from(propertyCounts.values()).reduce((sum, count) => sum + count, 0),
             staff: Array.from(staffCounts.values()).reduce((sum, count) => sum + count, 0),
@@ -7361,7 +7364,7 @@
           if (!company?.id) return;
           const confirmed = await this.requestConfirm({
             title: 'Suspend PMC',
-            message: `Suspend ${company.company_name}? Their access will be paused until you reactivate the subscription from Manage.`,
+            message: `Suspend ${company.company_name}? Their access will be paused, but their plan and subscription status will stay unchanged.`,
             confirmText: 'Suspend'
           });
           if (!confirmed) return;
@@ -7370,7 +7373,10 @@
           this.admin.message = '';
           const { error } = await supabaseClient
             .from('management_companies')
-            .update({ subscription_status: 'suspended' })
+            .update({
+              access_suspended_at: new Date().toISOString(),
+              access_suspended_by: this.profile.id
+            })
             .eq('id', company.id);
 
           if (error) {
@@ -7379,6 +7385,36 @@
           }
 
           this.admin.message = 'PMC suspended.';
+          await this.loadSuperAdminData();
+        },
+
+        async unsuspendManagementCompany(company) {
+          if (!company?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unsuspend PMC',
+            message: `Restore access for ${company.company_name}? Their plan and subscription status will stay intact.`,
+            confirmText: 'Unsuspend'
+          });
+          if (!confirmed) return;
+
+          const nextStatus = company.subscription_status === 'suspended' ? 'active' : (company.subscription_status || 'trial');
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient
+            .from('management_companies')
+            .update({
+              subscription_status: nextStatus,
+              access_suspended_at: null,
+              access_suspended_by: null
+            })
+            .eq('id', company.id);
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'PMC unsuspended.';
           await this.loadSuperAdminData();
         },
 
@@ -7563,7 +7599,7 @@
           if (!staffRow?.id) return;
           const confirmed = await this.requestConfirm({
             title: 'Suspend IPM',
-            message: `Suspend ${staffRow.full_name || staffRow.email}? Their IPM access will be paused until you reactivate the subscription.`,
+            message: `Suspend ${staffRow.full_name || staffRow.email}? Their IPM access will be paused, but their plan and subscription status will stay unchanged.`,
             confirmText: 'Suspend'
           });
           if (!confirmed) return;
@@ -7572,7 +7608,10 @@
           this.admin.message = '';
           const { error } = await supabaseClient
             .from('profiles')
-            .update({ staff_subscription_status: 'suspended' })
+            .update({
+              access_suspended_at: new Date().toISOString(),
+              access_suspended_by: this.profile.id
+            })
             .eq('id', staffRow.id)
             .eq('role', 'staff')
             .eq('staff_type', 'freelancer');
@@ -7583,6 +7622,38 @@
           }
 
           this.admin.message = 'IPM suspended.';
+          await this.loadSuperAdminData();
+        },
+
+        async unsuspendAdminStaff(staffRow) {
+          if (!staffRow?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Unsuspend IPM',
+            message: `Restore access for ${staffRow.full_name || staffRow.email}? Their plan and subscription status will stay intact.`,
+            confirmText: 'Unsuspend'
+          });
+          if (!confirmed) return;
+
+          const nextStatus = staffRow.staff_subscription_status === 'suspended' ? 'active' : (staffRow.staff_subscription_status || 'active');
+          this.admin.error = '';
+          this.admin.message = '';
+          const { error } = await supabaseClient
+            .from('profiles')
+            .update({
+              staff_subscription_status: nextStatus,
+              access_suspended_at: null,
+              access_suspended_by: null
+            })
+            .eq('id', staffRow.id)
+            .eq('role', 'staff')
+            .eq('staff_type', 'freelancer');
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'IPM unsuspended.';
           await this.loadSuperAdminData();
         },
 
@@ -7983,7 +8054,7 @@
 
           const confirmed = await this.requestConfirm({
             title: 'Suspend landlord',
-            message: `Suspend ${row.full_name}? They will not be able to continue as an active landlord until you reactivate them.`,
+            message: `Suspend ${row.full_name}? Their access will be paused, but their plan and subscription status will stay unchanged.`,
             confirmText: 'Suspend'
           });
           if (!confirmed) return;
@@ -7992,7 +8063,8 @@
           const { error } = await supabaseClient
             .from('landlord_subscriptions')
             .update({
-              status: 'suspended',
+              access_suspended_at: new Date().toISOString(),
+              access_suspended_by: this.profile.id,
               updated_by: this.profile.id
             })
             .eq('id', row.subscription.id);
@@ -8003,6 +8075,40 @@
           }
 
           this.admin.message = 'Landlord suspended.';
+          await this.loadSuperAdminData();
+        },
+
+        async unsuspendLandlord(row) {
+          if (!row.subscription) {
+            this.admin.error = 'Subscription record not found for this landlord.';
+            return;
+          }
+
+          const confirmed = await this.requestConfirm({
+            title: 'Unsuspend landlord',
+            message: `Restore access for ${row.full_name}? Their plan and subscription status will stay intact.`,
+            confirmText: 'Unsuspend'
+          });
+          if (!confirmed) return;
+
+          const nextStatus = row.subscription.status === 'suspended' ? 'active' : (row.subscription.status || 'active');
+          this.admin.error = '';
+          const { error } = await supabaseClient
+            .from('landlord_subscriptions')
+            .update({
+              status: nextStatus,
+              access_suspended_at: null,
+              access_suspended_by: null,
+              updated_by: this.profile.id
+            })
+            .eq('id', row.subscription.id);
+
+          if (error) {
+            this.admin.error = error.message;
+            return;
+          }
+
+          this.admin.message = 'Landlord unsuspended.';
           await this.loadSuperAdminData();
         },
 
@@ -8160,10 +8266,14 @@
           return Number.isFinite(days) && days < 0;
         },
 
+        isSubscriptionAccessSuspended(subscription) {
+          return Boolean(subscription?.access_suspended_at) || subscription?.status === 'suspended';
+        },
+
         landlordSubscriptionStatus(row) {
           if (row?.archived_at) return 'archived';
           if (!row?.accepted) return 'pending';
-          if (row?.subscription?.status === 'suspended') return 'suspended';
+          if (this.isSubscriptionAccessSuspended(row?.subscription)) return 'suspended';
           if (this.isSubscriptionExpired(row?.subscription)) return 'expired';
           return row?.subscription?.status || 'trial';
         },
@@ -8223,7 +8333,7 @@
         staffAccountStatus(staffRow) {
           if (staffRow?.accepted === false) return 'Invited';
           if (staffRow?.archived_at) return 'Archived';
-          if (staffRow?.staff_subscription_status === 'suspended') return 'Suspended';
+          if (staffRow?.access_suspended_at || staffRow?.staff_subscription_status === 'suspended') return 'Suspended';
           if ((staffRow?.staff_type || 'freelancer') === 'freelancer') return 'Active';
           if (!Number(staffRow?.landlord_count || 0)) return 'Pending Approval';
           return 'Active';
@@ -8256,7 +8366,7 @@
         staffSubscriptionDisplayStatus(staffRow) {
           if (staffRow?.archived_at) return 'archived';
           const state = this.staffSubscriptionState(staffRow);
-          if (state.status === 'suspended') return 'suspended';
+          if (staffRow?.access_suspended_at || state.status === 'suspended') return 'suspended';
           if (state.expired) return 'expired';
           return state.status || 'active';
         },
@@ -8268,7 +8378,7 @@
           const planLabel = this.titleCase(plan);
           const statusLabel = state.status === 'free' ? 'Free' : this.titleCase(state.status || 'active');
           const baseLabel = `${planLabel} - ${statusLabel}`;
-          if (state.status === 'suspended') return `${planLabel} - Suspended`;
+          if (staffRow?.access_suspended_at || state.status === 'suspended') return `${planLabel} - Suspended`;
           if (state.expired) return `${planLabel} - Expired`;
           if (state.expiringSoon) return `${baseLabel} - Expiring soon`;
           return baseLabel;
@@ -8276,7 +8386,7 @@
 
         staffSubscriptionBadgeClass(staffRow) {
           const state = this.staffSubscriptionState(staffRow);
-          if (state.status === 'suspended' || state.expired) return 'bg-red-100 text-red-700';
+          if (staffRow?.access_suspended_at || state.status === 'suspended' || state.expired) return 'bg-red-100 text-red-700';
           if (state.expiringSoon) return 'bg-yellow-100 text-amber-700';
           if (state.status === 'active') return 'bg-emerald-100 text-emerald-700';
           if (state.status === 'trial') return 'bg-yellow-100 text-amber-700';
@@ -8288,7 +8398,8 @@
           return {
             subscription_plan: plan,
             status: company?.subscription_status || 'trial',
-            expires_at: company?.subscription_expires_at || null
+            expires_at: company?.subscription_expires_at || null,
+            access_suspended_at: company?.access_suspended_at || null
           };
         },
 
@@ -8316,6 +8427,7 @@
           return this.staffSubscriptionLabel({
             staff_subscription_status: this.profile?.staff_subscription_status || 'free',
             staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null,
+            access_suspended_at: this.profile?.access_suspended_at || null,
             staff_max_landlords: this.profile?.staff_max_landlords || 2
           });
         },
@@ -8324,6 +8436,7 @@
           return this.staffSubscriptionBadgeClass({
             staff_subscription_status: this.profile?.staff_subscription_status || 'free',
             staff_subscription_expires_at: this.profile?.staff_subscription_expires_at || null,
+            access_suspended_at: this.profile?.access_suspended_at || null,
             staff_max_landlords: this.profile?.staff_max_landlords || 2
           });
         },
@@ -8569,7 +8682,7 @@
         },
 
         subscriptionDisplayStatus(subscription = this.subscription) {
-          if (subscription?.status === 'suspended') return 'suspended';
+          if (this.isSubscriptionAccessSuspended(subscription)) return 'suspended';
           if (this.isSubscriptionExpired(subscription)) return 'expired';
           return subscription?.status || 'trial';
         },
@@ -8594,8 +8707,9 @@
         subscriptionExpiringSoon(subscription = this.subscription) {
           if (!subscription?.expires_at) return false;
           if (subscription?.subscription_plan === 'free' && subscription?.status === 'active') return false;
+          if (this.isSubscriptionAccessSuspended(subscription)) return false;
           const days = this.daysUntil(subscription.expires_at);
-          return Number.isFinite(days) && days >= 0 && days <= 7 && subscription.status !== 'suspended';
+          return Number.isFinite(days) && days >= 0 && days <= 7;
         },
 
         subscriptionPlanStatusBadgeClass(subscription = this.subscription) {
@@ -8895,10 +9009,20 @@
           return 'Your Mushavo subscription has expired, and your account access is currently paused. Your data is still safely stored.\n\nPlease contact support to renew your subscription and restore access.';
         },
 
+        accountSuspendedMessage() {
+          return 'Your Mushavo account has been suspended by an administrator.\n\nYour data is still safely stored. Please contact support if you believe this was a mistake or to restore access.';
+        },
+
         markSubscriptionPaused() {
           this.accessPaused = true;
           this.suspendedTitle = 'Subscription Expired';
           this.suspendedMessage = this.subscriptionExpiredMessage();
+        },
+
+        markAccountSuspended() {
+          this.accessPaused = true;
+          this.suspendedTitle = 'Account Suspended';
+          this.suspendedMessage = this.accountSuspendedMessage();
         },
 
         clearSubscriptionPause() {
@@ -12845,6 +12969,7 @@
               subscription_plan: this.inferIpmPlanStatus(this.profile).split(':')[0],
               status: this.profile.staff_subscription_status || 'free',
               expires_at: this.profile.staff_subscription_expires_at || null,
+              access_suspended_at: this.profile.access_suspended_at || null,
               landlord_limit: Number(this.profile.staff_max_landlords || 2),
               notes: 'IPMs can request access to landlords using their landlord code. Extra landlord access depends on the subscription limit set by admin.',
               created_at: this.profile.created_at,
@@ -12853,7 +12978,7 @@
           } else if (this.profile.role === 'management_leader') {
             const result = await supabaseClient
               .from('management_companies')
-              .select('id, leader_profile_id, company_name, subscription_status, subscription_expires_at, max_landlords, max_properties, max_staff, notes, created_at')
+              .select('id, leader_profile_id, company_name, subscription_status, subscription_expires_at, access_suspended_at, access_suspended_by, max_landlords, max_properties, max_staff, notes, created_at')
               .eq('leader_profile_id', this.profile.id)
               .maybeSingle();
 
@@ -12865,6 +12990,7 @@
                 subscription_plan: this.inferPmcPlanStatus(result.data).split(':')[0],
                 status: result.data.subscription_status || 'trial',
                 expires_at: result.data.subscription_expires_at,
+                access_suspended_at: result.data.access_suspended_at || null,
                 landlord_limit: result.data.max_landlords,
                 property_limit: result.data.max_properties,
                 staff_limit: result.data.max_staff,
@@ -12876,7 +13002,7 @@
           } else {
             const result = await supabaseClient
               .from('landlord_subscriptions')
-              .select('id, landlord_id, subscription_plan, status, expires_at, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, notes, updated_at, created_at')
+              .select('id, landlord_id, subscription_plan, status, expires_at, access_suspended_at, access_suspended_by, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, notes, updated_at, created_at')
               .eq('landlord_id', this.profile.id)
               .maybeSingle();
 
@@ -13583,7 +13709,7 @@
         async checkLandlordSubscription(landlordId) {
           const { data, error } = await supabaseClient
             .from('landlord_subscriptions')
-            .select('status, expires_at, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
+            .select('status, expires_at, access_suspended_at, access_suspended_by, notes, subscription_plan, property_limit, unit_limit, personal_staff_limit, partner_connection_limit')
             .eq('landlord_id', landlordId)
             .maybeSingle();
 
@@ -13594,6 +13720,10 @@
           }
 
           this.subscription = data;
+          if (this.isSubscriptionAccessSuspended(data)) {
+            this.markAccountSuspended();
+            return false;
+          }
           const expiresAt = new Date(data.expires_at);
           const activeStatus = data.status === 'active' || data.status === 'trial';
           const freeActivePlan = data.subscription_plan === 'free' && data.status === 'active';
@@ -13606,7 +13736,11 @@
           if (this.profile?.staff_type === 'freelancer') {
             const status = this.profile.staff_subscription_status || 'free';
             const expired = this.profile.staff_subscription_expires_at && this.daysUntil(this.profile.staff_subscription_expires_at) < 0;
-            if (status === 'suspended' || expired) {
+            if (this.profile.access_suspended_at || status === 'suspended') {
+              this.markAccountSuspended();
+              return false;
+            }
+            if (expired) {
               this.markSubscriptionPaused();
               return false;
             }
@@ -13664,7 +13798,7 @@
         async loadManagementPermissions(leaderProfileId) {
           const { data: company, error: companyError } = await supabaseClient
             .from('management_companies')
-            .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, notes, created_at')
+            .select('id, leader_profile_id, country_id, company_name, phone, max_landlords, max_properties, max_staff, subscription_status, subscription_expires_at, access_suspended_at, access_suspended_by, notes, created_at')
             .eq('leader_profile_id', leaderProfileId)
             .is('archived_at', null)
             .maybeSingle();
@@ -13672,8 +13806,8 @@
           if (companyError || !company) return false;
 
           const status = company.subscription_status || 'trial';
-          if (status === 'suspended') {
-            this.markSubscriptionPaused();
+          if (company.access_suspended_at || status === 'suspended') {
+            this.markAccountSuspended();
             return false;
           }
           if (company.subscription_expires_at && this.daysUntil(company.subscription_expires_at) < 0) {
@@ -13684,6 +13818,7 @@
             status,
             subscription_plan: this.inferPmcPlanStatus(company).split(':')[0],
             expires_at: company.subscription_expires_at,
+            access_suspended_at: company.access_suspended_at || null,
             property_limit: company.max_properties,
             notes: company.notes || ''
           };
@@ -13729,7 +13864,7 @@
         },
 
         async loadManagementStaffPermissions(staffProfileId) {
-          const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, company:management_companies!management_staff_permissions_management_company_id_fkey(id, leader_profile_id, country_id, company_name, subscription_status, subscription_expires_at)';
+          const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, company:management_companies!management_staff_permissions_management_company_id_fkey(id, leader_profile_id, country_id, company_name, subscription_status, subscription_expires_at, access_suspended_at)';
           const { data: staffPermission, error: staffError } = await supabaseClient
             .from('management_staff_permissions')
             .select(staffSelect)
@@ -13743,10 +13878,11 @@
             id: staffPermission.management_company_id,
             company_name: 'PMC',
             subscription_status: 'active',
-            subscription_expires_at: null
+            subscription_expires_at: null,
+            access_suspended_at: null
           };
-          if (staffPermission.company?.subscription_status === 'suspended') {
-            this.markSubscriptionPaused();
+          if (staffPermission.company?.access_suspended_at || staffPermission.company?.subscription_status === 'suspended') {
+            this.markAccountSuspended();
             return false;
           }
           if (staffPermission.company?.subscription_expires_at && this.daysUntil(staffPermission.company.subscription_expires_at) < 0) {
