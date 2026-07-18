@@ -588,7 +588,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.landlordStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.landlordStatus" x-effect='$nextTick(() => { $el.value = admin.filters.landlordStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="trial">Trial</option>
@@ -686,7 +686,7 @@
             <div class="grid gap-3 border-b border-slate-200 p-4 md:grid-cols-3">
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.countryId">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.countryId" x-effect='$nextTick(() => { $el.value = admin.pricingFilters.countryId ?? "" })'>
                   <option value="">All countries</option>
                   <template x-for="country in admin.countries" :key="`pricing-country-filter-${country.id}`">
                     <option :value="country.id" x-text="country.name"></option>
@@ -695,7 +695,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Account type</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.accountType">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.accountType" x-effect='$nextTick(() => { $el.value = admin.pricingFilters.accountType ?? "" })'>
                   <option value="">All account types</option>
                   <option value="landlord">Landlords</option>
                   <option value="ipm">IPM</option>
@@ -814,7 +814,7 @@
             <form class="mt-5 grid gap-3 lg:grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_1fr_auto]" @submit.prevent="recordPlatformPayment">
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Payment for</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required x-effect='$nextTick(() => { $el.value = admin.financeForm.payerType ?? "" })'>
                   <option value="landlord">Landlord</option>
                   <option value="management">PMC</option>
                   <option value="staff">IPM</option>
@@ -822,7 +822,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'IPM' : (admin.financeForm.payerType === 'management' ? 'PMC' : 'Landlord')"></span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required x-effect='$nextTick(() => { $el.value = admin.financeForm.accountId ?? "" })'>
                   <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select IPM' : (admin.financeForm.payerType === 'management' ? 'Select PMC' : 'Select landlord')"></option>
                   <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
@@ -867,7 +867,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Payment type</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.financePayerType">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.financePayerType" x-effect='$nextTick(() => { $el.value = admin.filters.financePayerType ?? "" })'>
                   <option value="">All types</option>
                   <option value="landlord">Landlord</option>
                   <option value="management">PMC</option>
@@ -1008,7 +1008,7 @@
                 <div class="grid gap-3 sm:grid-cols-2">
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.countryId" @change="syncPricingFormCountry()" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.countryId" @change="syncPricingFormCountry()" required x-effect='$nextTick(() => { $el.value = admin.pricingForm.countryId ?? "" })'>
                       <option value="">Select country</option>
                       <template x-for="country in admin.countries" :key="`pricing-country-${country.id}`">
                         <option :value="country.id" x-text="country.name"></option>
@@ -1017,7 +1017,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Account type</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.accountType" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.accountType" required x-effect='$nextTick(() => { $el.value = admin.pricingForm.accountType ?? "" })'>
                       <option value="landlord">Landlord</option>
                       <option value="ipm">IPM</option>
                       <option value="pmc">PMC</option>
@@ -1207,7 +1207,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.countryId" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.managementAddForm.countryId ?? "" })'>
                       <option value="">Select country</option>
                       <template x-for="country in admin.countries" :key="`mgmt-country-${country.id}`">
                         <option :value="country.id" x-text="country.name"></option>
@@ -1216,7 +1216,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.planStatus" @change="applyManagementAddPlanStatusSelection()">
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.planStatus" @change="applyManagementAddPlanStatusSelection()" x-effect='$nextTick(() => { $el.value = admin.managementAddForm.planStatus ?? "" })'>
                       <template x-for="option in planStatusOptions('pmc')" :key="`management-add-plan-status-${option.value}`">
                         <option :value="option.value" x-text="option.label"></option>
                       </template>
@@ -1269,7 +1269,7 @@
                 <div class="grid gap-3 sm:grid-cols-2">
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.planStatus" @change="applyManagementPlanStatusSelection()">
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500" x-model="admin.managementLimitForm.planStatus" @change="applyManagementPlanStatusSelection()" x-effect='$nextTick(() => { $el.value = admin.managementLimitForm.planStatus ?? "" })'>
                       <template x-for="option in planStatusOptions('pmc')" :key="`pmc-plan-status-${option.value}`">
                         <option :value="option.value" x-text="option.label"></option>
                       </template>
@@ -1351,7 +1351,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.managementStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.managementStatus" x-effect='$nextTick(() => { $el.value = admin.filters.managementStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="trial">Trial</option>
@@ -1443,7 +1443,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.adminTeamStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.adminTeamStatus" x-effect='$nextTick(() => { $el.value = admin.filters.adminTeamStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="suspended">Suspended</option>
@@ -1535,7 +1535,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.enquiryStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.enquiryStatus" x-effect='$nextTick(() => { $el.value = admin.filters.enquiryStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="new">New</option>
                   <option value="in_progress">In progress</option>
@@ -1545,7 +1545,7 @@
               </label>
               <label class="block" x-show="profile?.role === 'super_admin'">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.selectedCountryId">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.selectedCountryId" x-effect='$nextTick(() => { $el.value = admin.selectedCountryId ?? "" })'>
                   <option value="all">All countries</option>
                   <option value="unassigned">Unassigned</option>
                   <template x-for="country in admin.countries" :key="`enquiry-filter-${country.id}`">
@@ -1627,7 +1627,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Subscription</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.staffStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.staffStatus" x-effect='$nextTick(() => { $el.value = admin.filters.staffStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="free">Free</option>
                   <option value="trial">Trial</option>
@@ -1790,7 +1790,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.countryId" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.freelancerForm.countryId ?? "" })'>
                     <option value="">Select country</option>
                     <template x-for="country in admin.countries" :key="`freelancer-country-${country.id}`">
                       <option :value="country.id" x-text="country.name"></option>
@@ -1807,7 +1807,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection()" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection()" required x-effect='$nextTick(() => { $el.value = admin.freelancerForm.planStatus ?? "" })'>
                     <template x-for="option in planStatusOptions('ipm')" :key="`freelancer-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -1850,7 +1850,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantStatus">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantStatus" x-effect='$nextTick(() => { $el.value = admin.filters.tenantStatus ?? "" })'>
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="archived">Archived</option>
@@ -1860,7 +1860,7 @@
               </label>
               <label class="block md:col-span-2">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Landlord</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantLandlordId">
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.tenantLandlordId" x-effect='$nextTick(() => { $el.value = admin.filters.tenantLandlordId ?? "" })'>
                   <option value="">All landlords</option>
                   <template x-for="row in admin.landlords.filter(item => item.accepted)" :key="`tenant-filter-landlord-${row.profile_id}`">
                     <option :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
@@ -1934,7 +1934,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.planStatus" @change="applyStaffPlanStatusSelection()" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.staffLimitForm.planStatus" @change="applyStaffPlanStatusSelection()" required x-effect='$nextTick(() => { $el.value = admin.staffLimitForm.planStatus ?? "" })'>
                     <template x-for="option in planStatusOptions('ipm')" :key="`ipm-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -1975,7 +1975,7 @@
               <form class="space-y-4" @submit.prevent="createLandlordInvite">
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.addForm.countryId" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.addForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.addForm.countryId ?? "" })'>
                     <option value="">Select country</option>
                     <template x-for="country in admin.countries" :key="`add-${country.id}`">
                       <option :value="country.id" x-text="country.name"></option>
@@ -2045,7 +2045,7 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.editForm.countryId" x-effect="$el.value = admin.editForm.countryId || ''">
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.editForm.countryId" x-effect='$nextTick(() => { $el.value = admin.editForm.countryId ?? "" })'>
                     <option value="">Unassigned</option>
                     <template x-for="country in admin.countries" :key="`edit-${country.id}`">
                       <option :value="country.id" :selected="admin.editForm.countryId === country.id" x-text="country.name"></option>
@@ -2083,7 +2083,7 @@
               <form class="space-y-4" @submit.prevent="saveSubscription">
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection()" required>
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.subscriptionForm.planStatus" @change="applySubscriptionPlanStatusSelection()" required x-effect='$nextTick(() => { $el.value = admin.subscriptionForm.planStatus ?? "" })'>
                     <template x-for="option in planStatusOptions('landlord')" :key="`landlord-plan-status-${option.value}`">
                       <option :value="option.value" x-text="option.label"></option>
                     </template>
@@ -2213,7 +2213,7 @@
                 <span x-show="profile?.role === 'landlord' || profile?.role === 'management_leader'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="subscriptionDashboardBadgeClass()" x-text="subscriptionDashboardLabel()"></span>
                 <span x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffProfileSubscriptionBadgeClass()" x-text="staffProfileSubscriptionLabel()"></span>
                 <div x-show="profile?.role === 'staff' && profile?.staff_type === 'freelancer'" class="hidden items-center gap-2 lg:flex">
-                  <select x-show="staffContext.relationships.length > 0" class="max-w-52 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-500" x-model="staffContext.activeLandlordId" @change="switchStaffLandlord(staffContext.activeLandlordId)">
+                  <select x-show="staffContext.relationships.length > 0" class="max-w-52 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 outline-none focus:border-emerald-500" x-model="staffContext.activeLandlordId" @change="switchStaffLandlord(staffContext.activeLandlordId)" x-effect='$nextTick(() => { $el.value = staffContext.activeLandlordId ?? "" })'>
                     <template x-for="relationship in staffContext.relationships" :key="relationship.id">
                       <option :value="relationship.landlord_id" x-text="relationship.landlord?.full_name || relationship.landlord?.email || 'Landlord'"></option>
                     </template>
@@ -2480,7 +2480,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Sort by</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.filters.sort">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.filters.sort" x-effect='$nextTick(() => { $el.value = propertyUnit.filters.sort ?? "" })'>
                           <option value="property">Property name</option>
                           <option value="landlord">Landlord name</option>
                         </select>
@@ -2688,7 +2688,7 @@
                       <form class="mt-5 grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_0.9fr_0.9fr_0.9fr_auto]" @submit.prevent="assignTenantToSelectedUnit">
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Tenant</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.assignForm.tenantId" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.assignForm.tenantId" required x-effect='$nextTick(() => { $el.value = propertyUnit.assignForm.tenantId ?? "" })'>
                             <option value="">Unassigned tenant</option>
                             <template x-for="tenant in unassignedTenants()" :key="tenant.id">
                               <option :value="tenant.id" x-text="tenant.full_name"></option>
@@ -2723,7 +2723,7 @@
                       <form class="mt-5 grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1.2fr_auto]" @submit.prevent="logPaymentForSelectedUnit">
                         <label class="block lg:col-span-2">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Payment is for</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.paymentForm.rentPeriodKey" @change="syncPaymentPeriodAmount('unitPayment')" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.paymentForm.rentPeriodKey" @change="syncPaymentPeriodAmount('unitPayment')" required x-effect='$nextTick(() => { $el.value = propertyUnit.paymentForm.rentPeriodKey ?? "" })'>
                             <option value="">Select rent period</option>
                             <template x-for="option in unitPaymentPeriodOptions()" :key="option.key">
                               <option :value="option.key" x-text="option.label"></option>
@@ -2744,7 +2744,7 @@
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Method</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.paymentForm.method" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.paymentForm.method" required x-effect='$nextTick(() => { $el.value = propertyUnit.paymentForm.method ?? "" })'>
                             <option value="cash">Cash</option>
                             <option value="bank_transfer">Bank Transfer</option>
                             <option value="mobile_money">Mobile Money</option>
@@ -3051,21 +3051,21 @@
                     <form x-show="canAssignTenantToUnit()" class="grid gap-3 xl:grid-cols-4" @submit.prevent="addLeaseFromPage">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Tenant</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.tenantId" required>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.tenantId" required x-effect='$nextTick(() => { $el.value = tenantLease.leaseForm.tenantId ?? "" })'>
                           <option value="">Select tenant</option>
                           <template x-for="tenant in tenantsAvailableForLease()" :key="tenant.id"><option :value="tenant.id" x-text="tenant.full_name"></option></template>
                         </select>
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Property</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.propertyId" required>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.propertyId" required x-effect='$nextTick(() => { $el.value = tenantLease.leaseForm.propertyId ?? "" })'>
                           <option value="">Select property</option>
                           <template x-for="property in tenantLease.properties" :key="property.id"><option :value="property.id" x-text="property.name"></option></template>
                         </select>
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Vacant unit</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.unitId" @change="prefillLeaseRent" required>
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.unitId" @change="prefillLeaseRent" required x-effect='$nextTick(() => { $el.value = tenantLease.leaseForm.unitId ?? "" })'>
                           <option value="">Select unit</option>
                           <template x-for="unit in vacantUnitsForLeaseForm()" :key="unit.id"><option :value="unit.id" x-text="unit.unit_number"></option></template>
                         </select>
@@ -3273,7 +3273,7 @@
                       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="logManualPayment">
                         <label class="block sm:col-span-2">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Lease</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.leaseId" @change="handleManualPaymentLeaseChange" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.leaseId" @change="handleManualPaymentLeaseChange" required x-effect='$nextTick(() => { $el.value = payments.manualForm.leaseId ?? "" })'>
                             <option value="">Select active lease</option>
                             <template x-for="lease in payments.leases" :key="lease.id">
                               <option :value="lease.id" x-text="manualLeaseLabel(lease)"></option>
@@ -3282,7 +3282,7 @@
                         </label>
                         <label class="block sm:col-span-2">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Payment is for</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.rentPeriodKey" @change="syncPaymentPeriodAmount('manualPayment')" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.rentPeriodKey" @change="syncPaymentPeriodAmount('manualPayment')" required x-effect='$nextTick(() => { $el.value = payments.manualForm.rentPeriodKey ?? "" })'>
                             <option value="">Select rent period</option>
                             <template x-for="option in manualPaymentPeriodOptions()" :key="option.key">
                               <option :value="option.key" x-text="option.label"></option>
@@ -3303,7 +3303,7 @@
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Method</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.method" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="payments.manualForm.method" required x-effect='$nextTick(() => { $el.value = payments.manualForm.method ?? "" })'>
                             <option value="cash">Cash</option>
                             <option value="bank_transfer">Bank Transfer</option>
                             <option value="mobile_money">Mobile Money</option>
@@ -3374,7 +3374,7 @@
                     <div class="mt-5 grid gap-3 lg:grid-cols-4">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Property</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="finance.filters.property" x-effect='$nextTick(() => { $el.value = finance.filters.property ?? "" })'>
                           <option value="">All properties</option>
                           <template x-for="property in financePropertyOptions()" :key="property">
                             <option :value="property" x-text="property"></option>
@@ -3492,7 +3492,7 @@
                     <div class="mt-5 grid gap-3 md:grid-cols-4">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.status">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.status" x-effect='$nextTick(() => { $el.value = maintenance.filters.status ?? "" })'>
                           <option value="">All statuses</option>
                           <option value="open">Open</option>
                           <option value="in_progress">In Progress</option>
@@ -3501,7 +3501,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Priority</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.priority">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.priority" x-effect='$nextTick(() => { $el.value = maintenance.filters.priority ?? "" })'>
                           <option value="">All priorities</option>
                           <option value="low">Low</option>
                           <option value="medium">Medium</option>
@@ -3510,7 +3510,7 @@
                       </label>
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Property</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.propertyId">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.propertyId" x-effect='$nextTick(() => { $el.value = maintenance.filters.propertyId ?? "" })'>
                           <option value="">All properties</option>
                           <template x-for="property in maintenance.properties" :key="property.id">
                             <option :value="property.id" x-text="property.name"></option>
@@ -3519,7 +3519,7 @@
                       </label>
                       <label x-show="canAssignMaintenance()" class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Assigned staff</span>
-                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.assignedTo">
+                        <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.filters.assignedTo" x-effect='$nextTick(() => { $el.value = maintenance.filters.assignedTo ?? "" })'>
                           <option value="">Anyone</option>
                           <option value="unassigned">Unassigned</option>
                           <template x-for="staff in maintenanceStaffOptions()" :key="staff.profile_id">
@@ -3591,7 +3591,7 @@
                       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="logMaintenanceRequest">
                         <label class="block sm:col-span-2">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Unit</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.unitId" @change="maintenance.logForm.assignedTo = ''" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.unitId" @change="maintenance.logForm.assignedTo = ''" required x-effect='$nextTick(() => { $el.value = maintenance.logForm.unitId ?? "" })'>
                             <option value="">Select unit</option>
                             <template x-for="unit in maintenance.units" :key="unit.id">
                               <option :value="unit.id" x-text="maintenanceUnitOptionLabel(unit)"></option>
@@ -3600,7 +3600,7 @@
                         </label>
                         <label class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Priority</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.priority" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.priority" required x-effect='$nextTick(() => { $el.value = maintenance.logForm.priority ?? "" })'>
                             <option value="low">Low</option>
                             <option value="medium">Medium</option>
                             <option value="high">High</option>
@@ -3608,7 +3608,7 @@
                         </label>
                         <label x-show="canAssignMaintenanceForUnit(maintenance.logForm.unitId)" class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Assign to staff</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.assignedTo">
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.logForm.assignedTo" x-effect='$nextTick(() => { $el.value = maintenance.logForm.assignedTo ?? "" })'>
                             <option value="">Unassigned</option>
                             <template x-for="staff in maintenanceStaffForUnit(maintenance.logForm.unitId)" :key="staff.profile_id">
                               <option :value="staff.profile_id" x-text="staff.full_name"></option>
@@ -3646,7 +3646,7 @@
                       <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="saveMaintenanceUpdate">
                         <label x-show="canAddResolutionNotes()" class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Status</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.editForm.status" required>
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.editForm.status" required x-effect='$nextTick(() => { $el.value = maintenance.editForm.status ?? "" })'>
                             <option value="open">Open</option>
                             <option value="in_progress">In Progress</option>
                             <option value="resolved">Resolved</option>
@@ -3654,7 +3654,7 @@
                         </label>
                         <label x-show="canAssignMaintenanceForUnit(maintenance.selectedRequest?.unit_id)" class="block">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Assign to staff</span>
-                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.editForm.assignedTo">
+                          <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="maintenance.editForm.assignedTo" x-effect='$nextTick(() => { $el.value = maintenance.editForm.assignedTo ?? "" })'>
                             <option value="">Unassigned</option>
                             <template x-for="staff in maintenanceStaffForUnit(maintenance.selectedRequest?.unit_id)" :key="staff.profile_id">
                               <option :value="staff.profile_id" x-text="staff.full_name"></option>
@@ -4374,7 +4374,7 @@
                 <form class="grid gap-3 sm:grid-cols-2" @submit.prevent="submitTenantPayment">
                   <label class="block sm:col-span-2">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Payment is for</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.paymentForm.rentPeriodKey" @change="syncPaymentPeriodAmount('tenantPayment')" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.paymentForm.rentPeriodKey" @change="syncPaymentPeriodAmount('tenantPayment')" required x-effect='$nextTick(() => { $el.value = tenant.paymentForm.rentPeriodKey ?? "" })'>
                       <option value="">Select rent period</option>
                       <template x-for="option in tenantPaymentPeriodOptions()" :key="option.key">
                         <option :value="option.key" x-text="option.label"></option>
@@ -4395,7 +4395,7 @@
                   </label>
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Method</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.paymentForm.method" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.paymentForm.method" required x-effect='$nextTick(() => { $el.value = tenant.paymentForm.method ?? "" })'>
                       <option value="cash">Cash</option>
                       <option value="bank_transfer">Bank Transfer</option>
                       <option value="mobile_money">Mobile Money</option>
@@ -4454,7 +4454,7 @@
                 <form class="mt-5 space-y-4" @submit.prevent="submitTenantMaintenance">
                   <label class="block">
                     <span class="mb-2 block text-sm font-medium text-slate-700">Priority</span>
-                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.maintenanceForm.priority" required>
+                    <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenant.maintenanceForm.priority" required x-effect='$nextTick(() => { $el.value = tenant.maintenanceForm.priority ?? "" })'>
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
