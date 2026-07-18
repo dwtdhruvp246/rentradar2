@@ -600,7 +600,7 @@
             </div>
 
             <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
+              <table class="min-w-[1500px] divide-y divide-slate-200 text-left text-[13px]">
                 <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                   <tr>
                     <th class="px-4 py-3 font-semibold">Name</th>
@@ -1428,7 +1428,8 @@
                     <th class="px-4 py-3 font-semibold">Country</th>
                     <th class="px-4 py-3 font-semibold">Account Status</th>
                     <th class="px-4 py-3 font-semibold">Landlords</th>
-                    <th class="px-4 py-3 font-semibold">Limit</th>
+                    <th class="px-4 py-3 font-semibold">Landlord Limit</th>
+                    <th class="px-4 py-3 font-semibold">Properties / Landlord</th>
                     <th class="px-4 py-3 font-semibold">Subscription</th>
                     <th class="px-4 py-3 font-semibold">Expiry</th>
                     <th class="px-4 py-3 font-semibold">Joined</th>
@@ -1437,7 +1438,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No IPM accounts yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="12">No IPM accounts yet.</td></tr>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
@@ -1448,6 +1449,7 @@
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.landlord_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_max_landlords"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_max_properties_per_landlord ?? '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffSubscriptionBadgeClass(staffRow)" x-text="staffSubscriptionLabel(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_subscription_expires_at ? formatDate(staffRow.staff_subscription_expires_at) : '-'"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(staffRow.created_at)"></td>
@@ -1580,6 +1582,10 @@
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="1" step="1" x-model.number="admin.freelancerForm.maxLandlords" required>
                 </label>
                 <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Properties per landlord</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.freelancerForm.maxPropertiesPerLandlord" required>
+                </label>
+                <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.planStatus" @change="applyFreelancerPlanStatusSelection()" required>
                     <template x-for="option in planStatusOptions('ipm')" :key="`freelancer-plan-status-${option.value}`">
@@ -1701,6 +1707,10 @@
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Maximum landlords</span>
                   <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.staffLimitForm.maxLandlords" required>
+                </label>
+                <label class="block">
+                  <span class="mb-2 block text-sm font-medium text-slate-700">Properties per landlord</span>
+                  <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="1" x-model.number="admin.staffLimitForm.maxPropertiesPerLandlord" required>
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Plan / Status</span>
@@ -4559,6 +4569,7 @@
             phone: '',
             countryId: '',
             maxLandlords: 5,
+            maxPropertiesPerLandlord: 5,
             planStatus: 'pro:active',
             subscriptionStatus: 'active',
             expiresAt: ''
@@ -4592,6 +4603,7 @@
           },
           staffLimitForm: {
             maxLandlords: 2,
+            maxPropertiesPerLandlord: 5,
             planStatus: 'pro:active',
             subscriptionStatus: 'free',
             expiresAt: ''
@@ -5185,6 +5197,7 @@
             role: tokenRow.role,
             staff_type: tokenRow.role === 'staff' ? (metadata.staff_type === 'freelancer' ? 'freelancer' : 'landlord') : 'landlord',
             staff_max_landlords: tokenRow.role === 'staff' ? Number(metadata.staff_max_landlords || (metadata.staff_type === 'freelancer' ? 2 : 1)) : 2,
+            staff_max_properties_per_landlord: tokenRow.role === 'staff' ? Number(metadata.staff_max_properties_per_landlord ?? (metadata.staff_type === 'freelancer' ? 5 : 0)) : 0,
             staff_subscription_status: tokenRow.role === 'staff' ? (metadata.staff_subscription_status || (metadata.staff_type === 'freelancer' ? 'free' : 'active')) : 'free',
             staff_subscription_expires_at: tokenRow.role === 'staff' ? (metadata.staff_subscription_expires_at || null) : null
           };
@@ -5956,7 +5969,7 @@
               .select('staff_profile_id, country_id, country:countries(id, name, code, currency_code)'),
             supabaseClient
               .from('profiles')
-              .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_subscription_status, staff_subscription_expires_at, access_suspended_at, access_suspended_by, created_at, archived_at, archived_by')
+              .select('id, landlord_id, country_id, full_name, phone, email, role, staff_type, email_verified, staff_max_landlords, staff_max_properties_per_landlord, staff_subscription_status, staff_subscription_expires_at, access_suspended_at, access_suspended_by, created_at, archived_at, archived_by')
               .eq('role', 'staff'),
             supabaseClient
               .from('invite_tokens')
@@ -6181,6 +6194,7 @@
                 email_verified: false,
                 staff_type: 'freelancer',
                 staff_max_landlords: Number(metadata.staff_max_landlords ?? 2),
+                staff_max_properties_per_landlord: Number(metadata.staff_max_properties_per_landlord ?? 5),
                 staff_subscription_status: metadata.staff_subscription_status || 'free',
                 staff_subscription_expires_at: metadata.staff_subscription_expires_at || null,
                 landlord_count: 0,
@@ -6448,6 +6462,7 @@
               phone: '',
               countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '',
               maxLandlords: 5,
+              maxPropertiesPerLandlord: 5,
               planStatus: 'pro:active',
               subscriptionStatus: 'active',
               expiresAt: ''
@@ -6742,6 +6757,7 @@
             phone: staffRow.phone || '',
             countryId: this.adminStaffCountryId(staffRow) || '',
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
+            maxPropertiesPerLandlord: Number(staffRow.staff_max_properties_per_landlord ?? 5),
             planStatus,
             subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
@@ -6763,6 +6779,7 @@
             country_id: countryId,
             staff_type: 'freelancer',
             staff_max_landlords: Number(this.admin.freelancerForm.maxLandlords || 2),
+            staff_max_properties_per_landlord: Number(this.admin.freelancerForm.maxPropertiesPerLandlord ?? 5),
             staff_subscription_status: this.admin.freelancerForm.subscriptionStatus || 'free',
             staff_subscription_expires_at: this.admin.freelancerForm.expiresAt || null
           };
@@ -6775,6 +6792,7 @@
               phone: payload.phone,
               country_id: countryId,
               staff_max_landlords: payload.staff_max_landlords,
+              staff_max_properties_per_landlord: payload.staff_max_properties_per_landlord,
               staff_subscription_status: payload.staff_subscription_status,
               staff_subscription_expires_at: payload.staff_subscription_expires_at
             };
@@ -7039,9 +7057,9 @@
               portfolio: { propertyLimit: 20, unitLimit: 120, personalStaffLimit: 8, partnerConnectionLimit: 5 }
             },
             ipm: {
-              pro: { maxLandlords: 5 },
-              growth: { maxLandlords: 15 },
-              portfolio: { maxLandlords: 40 }
+              pro: { maxLandlords: 5, maxPropertiesPerLandlord: 5 },
+              growth: { maxLandlords: 15, maxPropertiesPerLandlord: 12 },
+              portfolio: { maxLandlords: 40, maxPropertiesPerLandlord: 30 }
             },
             pmc: {
               starter: { maxLandlords: 3, maxProperties: 15, maxStaff: 5 },
@@ -7121,7 +7139,14 @@
             ? String(staffRow.staff_subscription_status).toLowerCase()
             : 'active';
           const landlords = Number(staffRow?.staff_max_landlords || 0);
-          const plan = landlords <= 5 ? 'pro' : landlords <= 15 ? 'growth' : landlords <= 40 ? 'portfolio' : 'custom';
+          const propertiesPerLandlord = Number(staffRow?.staff_max_properties_per_landlord ?? 0);
+          const plan = landlords <= 5 && propertiesPerLandlord <= 5
+            ? 'pro'
+            : landlords <= 15 && propertiesPerLandlord <= 12
+              ? 'growth'
+              : landlords <= 40 && propertiesPerLandlord <= 30
+                ? 'portfolio'
+                : 'custom';
           return this.subscriptionPlanStatusValue(plan, status, 'ipm');
         },
 
@@ -7301,6 +7326,7 @@
             phone: this.admin.freelancerForm.phone || '',
             country_id: countryId,
             staff_max_landlords: Number(this.admin.freelancerForm.maxLandlords || 2),
+            staff_max_properties_per_landlord: Number(this.admin.freelancerForm.maxPropertiesPerLandlord ?? 5),
             staff_subscription_status: this.admin.freelancerForm.subscriptionStatus || 'free',
             staff_subscription_expires_at: this.admin.freelancerForm.expiresAt || null
           };
@@ -7677,6 +7703,7 @@
           const planStatus = this.inferIpmPlanStatus(staffRow);
           this.admin.staffLimitForm = {
             maxLandlords: Number(staffRow.staff_max_landlords || 2),
+            maxPropertiesPerLandlord: Number(staffRow.staff_max_properties_per_landlord ?? 5),
             planStatus,
             subscriptionStatus: planStatus.split(':')[1] || 'active',
             expiresAt: this.toDateInputValue(staffRow.staff_subscription_expires_at || '')
@@ -7697,6 +7724,7 @@
               phone: this.admin.selectedRow.phone || '',
               country_id: this.admin.selectedRow.country_id || this.admin.selectedRow.primary_country_id || null,
               staff_max_landlords: Number(this.admin.staffLimitForm.maxLandlords || 0),
+              staff_max_properties_per_landlord: Number(this.admin.staffLimitForm.maxPropertiesPerLandlord ?? 0),
               staff_subscription_status: this.admin.staffLimitForm.subscriptionStatus,
               staff_subscription_expires_at: this.admin.staffLimitForm.expiresAt || null
             };
@@ -7725,6 +7753,7 @@
             .from('profiles')
             .update({
               staff_max_landlords: Number(this.admin.staffLimitForm.maxLandlords || 0),
+              staff_max_properties_per_landlord: Number(this.admin.staffLimitForm.maxPropertiesPerLandlord ?? 0),
               staff_subscription_status: this.admin.staffLimitForm.subscriptionStatus,
               staff_subscription_expires_at: this.admin.staffLimitForm.expiresAt || null
             })
@@ -8390,6 +8419,9 @@
             return 'This action is not allowed with the current account settings.';
           }
           if (lower.includes('personal staff') || lower.includes('staff limit') || lower.includes('subscription allows')) {
+            return message;
+          }
+          if (lower.includes('properties per landlord') || lower.includes('can only be assigned')) {
             return message;
           }
           return fallback;
@@ -11209,6 +11241,13 @@
           };
         },
 
+        staffAssignmentPropertyCount(scope) {
+          if (scope?.all_properties) {
+            return (this.staff.properties || []).length;
+          }
+          return (scope?.property_ids || []).length;
+        },
+
         scopeWithinManagementGrant(scope) {
           const activeRelationship = this.managementContext.relationships.find(row => row.landlord_id === this.managementContext.activeLandlordId) || null;
           if (!activeRelationship) return false;
@@ -11263,6 +11302,14 @@
             return 'This property is already assigned to a PMC or IPM. Remove that external assignment first.';
           }
 
+          if (this.profile?.role === 'landlord' && member?.staff_type === 'freelancer') {
+            const maxProperties = Number(member.staff_max_properties_per_landlord ?? 0);
+            const assignedCount = this.staffAssignmentPropertyCount(scope);
+            if (assignedCount > maxProperties) {
+              return `This IPM can only be assigned ${maxProperties} propert${maxProperties === 1 ? 'y' : 'ies'} per landlord. You selected ${assignedCount}.`;
+            }
+          }
+
           return '';
         },
 
@@ -11276,12 +11323,12 @@
           this.staff.loading = true;
           this.staff.error = '';
 
-          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, created_at)';
+          const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, staff_max_properties_per_landlord, created_at)';
           const managementPermissionSelect = 'id, management_company_id, leader_profile_id, landlord_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, status, accepted_at, company:management_companies!management_landlord_permissions_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_permissions_leader_profile_id_fkey(id, full_name, email, phone)';
           const [propertiesResult, permissionsResult, requestsResult, inviteTokensResult, managementPermissionsResult, managementRequestsResult] = await Promise.all([
             supabaseClient.from('properties').select('id, name, address, city').is('archived_at', null).order('name', { ascending: true }),
             supabaseClient.from('staff_permissions').select(permissionSelect).eq('landlord_id', this.currentLandlordId()).order('accepted_at', { ascending: false }),
-            supabaseClient.from('staff_landlord_requests').select('id, staff_profile_id, landlord_id, landlord_code, status, requested_at, reviewed_at, staff_profile:profiles!staff_landlord_requests_staff_profile_id_fkey(id, full_name, phone, email, staff_type, created_at)').eq('landlord_id', this.currentLandlordId()).eq('status', 'pending').order('requested_at', { ascending: false }),
+            supabaseClient.from('staff_landlord_requests').select('id, staff_profile_id, landlord_id, landlord_code, status, requested_at, reviewed_at, staff_profile:profiles!staff_landlord_requests_staff_profile_id_fkey(id, full_name, phone, email, staff_type, staff_max_properties_per_landlord, created_at)').eq('landlord_id', this.currentLandlordId()).eq('status', 'pending').order('requested_at', { ascending: false }),
             supabaseClient.from('invite_tokens').select('id, token, email, role, metadata, created_at, expires_at').eq('landlord_id', this.currentLandlordId()).eq('role', 'staff').eq('used', false).order('created_at', { ascending: false }),
             supabaseClient.from('management_landlord_permissions').select(managementPermissionSelect).eq('landlord_id', this.currentLandlordId()).eq('status', 'approved').order('accepted_at', { ascending: false }),
             supabaseClient.from('management_landlord_requests').select('id, management_company_id, leader_profile_id, landlord_id, landlord_code, status, requested_at, reviewed_at, company:management_companies!management_landlord_requests_management_company_id_fkey(id, company_name, phone), leader:profiles!management_landlord_requests_leader_profile_id_fkey(id, full_name, email, phone)').eq('landlord_id', this.currentLandlordId()).eq('status', 'pending').order('requested_at', { ascending: false })
@@ -11308,6 +11355,7 @@
               email: profile.email,
               phone: profile.phone || '',
               staff_type: profile.staff_type || 'landlord',
+              staff_max_properties_per_landlord: Number(profile.staff_max_properties_per_landlord ?? 0),
               created_at: profile.created_at,
               invited_at: permission.invited_at || profile.created_at,
               accepted_at: permission.accepted_at || profile.created_at,
@@ -11333,6 +11381,7 @@
               email: profile.email || '',
               phone: profile.phone || '',
               staff_type: profile.staff_type || 'freelancer',
+              staff_max_properties_per_landlord: Number(profile.staff_max_properties_per_landlord ?? 5),
               created_at: profile.created_at || request.requested_at,
               invited_at: request.requested_at,
               all_properties: true,
@@ -11371,6 +11420,7 @@
               email: invite.email || '',
               phone: metadata.phone || '',
               staff_type: metadata.staff_type || 'landlord',
+              staff_max_properties_per_landlord: Number(metadata.staff_max_properties_per_landlord ?? 0),
               created_at: invite.created_at,
               invited_at: invite.created_at,
               expires_at: invite.expires_at,
@@ -11706,7 +11756,18 @@
             const { error } = await saveQuery;
 
             if (error) {
-              this.staff.error = error.message;
+              this.staff.error = this.friendlyDatabaseError(error, 'Staff permissions could not be saved. Check property limits and permissions, then try again.');
+              this.staff.saving = false;
+              return;
+            }
+          } else if (member.request_id) {
+            const { error } = await supabaseClient.rpc('approve_staff_landlord_request_with_permissions', {
+              p_request_id: member.request_id,
+              p_permissions: permissions
+            });
+
+            if (error) {
+              this.staff.error = this.friendlyDatabaseError(error, 'Staff request could not be approved. Check property limits and permissions, then try again.');
               this.staff.saving = false;
               return;
             }
@@ -11737,7 +11798,6 @@
         async approveStaffRequest(member) {
           if (!member?.request_id) return;
           this.staff.error = '';
-          this.staff.saving = true;
 
           if (member.staff_type === 'freelancer' && this.externalAssignmentConflict({
             all_properties: Boolean(member.all_properties),
@@ -11748,18 +11808,7 @@
             return;
           }
 
-          const { error } = await supabaseClient.rpc('approve_staff_landlord_request', {
-            p_request_id: member.request_id
-          });
-
-          if (error) {
-            this.staff.error = error.message;
-            this.staff.saving = false;
-            return;
-          }
-
-          this.staff.saving = false;
-          await this.loadStaffData();
+          this.openStaffPermissionsModal(member);
         },
 
         async rejectStaffRequest(member) {
