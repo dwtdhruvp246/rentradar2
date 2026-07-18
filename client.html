@@ -1355,6 +1355,7 @@
                     <th class="px-4 py-3 font-semibold">IPM</th>
                     <th class="px-4 py-3 font-semibold">Email</th>
                     <th class="px-4 py-3 font-semibold">Phone</th>
+                    <th class="px-4 py-3 font-semibold">Country</th>
                     <th class="px-4 py-3 font-semibold">Account Status</th>
                     <th class="px-4 py-3 font-semibold">Landlords</th>
                     <th class="px-4 py-3 font-semibold">Limit</th>
@@ -1366,13 +1367,14 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminStaffProfiles().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="10">No IPM accounts yet.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="11">No IPM accounts yet.</td></tr>
                   </template>
                   <template x-for="staffRow in selectedAdminStaffProfiles()" :key="staffRow.rowKey || staffRow.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="staffRow.full_name || '-'"></p><p class="mt-1 text-xs text-slate-500" x-text="staffRow.accepted === false ? 'Invite pending' : (staffRow.email_verified ? 'Email verified' : 'Account active')"></p></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.email"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.phone || '-'"></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="staffRow.country_name || adminCountryName(adminStaffCountryId(staffRow)) || '-'"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="staffAccountStatusBadgeClass(staffRow)" x-text="staffAccountStatus(staffRow)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.landlord_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="staffRow.staff_max_landlords"></td>
