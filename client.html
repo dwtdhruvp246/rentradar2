@@ -1065,6 +1065,7 @@
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="trial">Trial</option>
+                  <option value="expired">Expired</option>
                   <option value="suspended">Suspended</option>
                   <option value="pending">Pending invite</option>
                   <option value="archived">Archived</option>
@@ -1102,7 +1103,7 @@
                       <td class="px-4 py-3 text-slate-700" x-text="company.tenant_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="company.staff_count || 0"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="`${company.max_landlords || 0} landlords / ${company.max_properties || 0} properties / ${company.max_staff || 0} staff`"></td>
-                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusBadgeClass(company.archived_at ? 'archived' : (company.subscription_status || 'trial'))" x-text="company.archived_at ? 'Archived' : (company.accepted ? titleCase(company.subscription_status || 'trial') : 'Pending')"></span></td>
+                      <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="pmcSubscriptionBadgeClass(company)" x-text="pmcSubscriptionLabel(company)"></span></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(company.subscription_expires_at)"></td>
                       <td class="px-4 py-3">
                         <div class="flex flex-wrap gap-2">
@@ -1337,7 +1338,9 @@
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.filters.staffStatus">
                   <option value="">All statuses</option>
                   <option value="free">Free</option>
+                  <option value="trial">Trial</option>
                   <option value="active">Active</option>
+                  <option value="expired">Expired</option>
                   <option value="suspended">Suspended</option>
                   <option value="archived">Archived</option>
                 </select>
@@ -5492,7 +5495,7 @@
 
           const status = this.admin.filters.staffStatus || '';
           if (status === 'archived') rows = rows.filter(row => row.archived_at);
-          if (status && status !== 'archived') rows = rows.filter(row => !row.archived_at && (row.staff_subscription_status || 'free') === status);
+          if (status && status !== 'archived') rows = rows.filter(row => !row.archived_at && this.staffSubscriptionDisplayStatus(row) === status);
           return rows;
         },
 
@@ -5539,7 +5542,7 @@
           const status = this.admin.filters.managementStatus || '';
           if (status === 'pending') rows = rows.filter(row => !row.accepted && !row.archived_at);
           if (status === 'archived') rows = rows.filter(row => row.archived_at);
-          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && (row.subscription_status || 'trial') === status);
+          if (status && !['pending', 'archived'].includes(status)) rows = rows.filter(row => row.accepted && !row.archived_at && this.pmcSubscriptionDisplayStatus(row) === status);
           return rows;
         },
 
@@ -5622,8 +5625,8 @@
           const rows = this.selectedAdminManagementCompanies().filter(row => !row.archived_at);
           return {
             total: rows.length,
-            active: rows.filter(row => row.accepted && row.subscription_status === 'active').length,
-            trial: rows.filter(row => row.accepted && (row.subscription_status || 'trial') === 'trial').length,
+            active: rows.filter(row => row.accepted && this.pmcSubscriptionDisplayStatus(row) === 'active').length,
+            trial: rows.filter(row => row.accepted && this.pmcSubscriptionDisplayStatus(row) === 'trial').length,
             suspended: rows.filter(row => row.accepted && row.subscription_status === 'suspended').length
           };
         },
@@ -8250,6 +8253,14 @@
           return state;
         },
 
+        staffSubscriptionDisplayStatus(staffRow) {
+          if (staffRow?.archived_at) return 'archived';
+          const state = this.staffSubscriptionState(staffRow);
+          if (state.status === 'suspended') return 'suspended';
+          if (state.expired) return 'expired';
+          return state.status || 'active';
+        },
+
         staffSubscriptionLabel(staffRow) {
           const planStatus = this.inferIpmPlanStatus(staffRow);
           const [plan = 'pro'] = String(planStatus || 'pro:active').split(':');
@@ -8270,6 +8281,35 @@
           if (state.status === 'active') return 'bg-emerald-100 text-emerald-700';
           if (state.status === 'trial') return 'bg-yellow-100 text-amber-700';
           return 'bg-slate-100 text-slate-700';
+        },
+
+        pmcSubscriptionObject(company) {
+          const plan = this.inferPmcPlanStatus(company).split(':')[0] || 'starter';
+          return {
+            subscription_plan: plan,
+            status: company?.subscription_status || 'trial',
+            expires_at: company?.subscription_expires_at || null
+          };
+        },
+
+        pmcSubscriptionDisplayStatus(company) {
+          if (company?.archived_at) return 'archived';
+          if (!company?.accepted) return 'pending';
+          return this.subscriptionDisplayStatus(this.pmcSubscriptionObject(company));
+        },
+
+        pmcSubscriptionLabel(company) {
+          const status = this.pmcSubscriptionDisplayStatus(company);
+          if (status === 'pending') return 'Pending';
+          if (status === 'archived') return 'Archived';
+          return this.subscriptionPlanStatusLabel(this.pmcSubscriptionObject(company));
+        },
+
+        pmcSubscriptionBadgeClass(company) {
+          const status = this.pmcSubscriptionDisplayStatus(company);
+          if (status === 'pending') return 'bg-yellow-100 text-amber-700';
+          if (status === 'archived') return 'bg-slate-100 text-slate-700';
+          return this.subscriptionPlanStatusBadgeClass(this.pmcSubscriptionObject(company));
         },
 
         staffProfileSubscriptionLabel() {
