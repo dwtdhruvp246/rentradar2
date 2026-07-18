@@ -2045,10 +2045,10 @@
                 </label>
                 <label class="block">
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
-                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.editForm.countryId">
+                  <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.editForm.countryId" x-effect="$el.value = admin.editForm.countryId || ''">
                     <option value="">Unassigned</option>
                     <template x-for="country in admin.countries" :key="`edit-${country.id}`">
-                      <option :value="country.id" x-text="country.name"></option>
+                      <option :value="country.id" :selected="admin.editForm.countryId === country.id" x-text="country.name"></option>
                     </template>
                   </select>
                 </label>
@@ -5740,6 +5740,20 @@
           return this.admin.countries.find(country => country.id === countryId)?.name || 'Unassigned';
         },
 
+        resolveAdminCountryId(value) {
+          const raw = String(value || '').trim();
+          if (!raw) return '';
+          const countries = this.admin?.countries || [];
+          const direct = countries.find(country => String(country.id || '') === raw);
+          if (direct) return direct.id;
+          const normalized = raw.toLowerCase();
+          const matched = countries.find(country =>
+            String(country.name || '').toLowerCase() === normalized
+            || String(country.code || '').toLowerCase() === normalized
+          );
+          return matched?.id || '';
+        },
+
         normalizeCountryIds(value) {
           const values = Array.isArray(value)
             ? value
@@ -7330,10 +7344,13 @@
           this.admin.message = '';
           this.admin.formError = '';
           this.admin.selectedRow = row;
-          const country = row.country_id
+          const country = this.resolveAdminCountryId(
+            row.country_id
             || row.subscription?.country_id
-            || this.admin.countries.find(item => String(item.name || '').toLowerCase() === String(row.country_name || '').toLowerCase())?.id
-            || '';
+            || row.country_name
+            || row.subscription?.country_name
+            || ''
+          );
           this.admin.editForm = {
             fullName: row.full_name || '',
             phone: row.phone || '',
@@ -8621,6 +8638,7 @@
           if (!this.admin.selectedRow) return;
           this.admin.formError = '';
           this.admin.saving = true;
+          const selectedCountryId = this.resolveAdminCountryId(this.admin.editForm.countryId);
 
           if (this.admin.selectedRow.accepted) {
             const { error } = await supabaseClient
@@ -8628,7 +8646,7 @@
               .update({
                 full_name: this.admin.editForm.fullName,
                 phone: this.admin.editForm.phone || null,
-                country_id: this.admin.editForm.countryId || null
+                country_id: selectedCountryId || null
               })
               .eq('id', this.admin.selectedRow.profile_id);
 
@@ -8641,7 +8659,7 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: this.admin.editForm.countryId || null })
+                .update({ country_id: selectedCountryId || null })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
@@ -8651,10 +8669,10 @@
               }
             }
 
-            if (this.admin.editForm.countryId) {
+            if (selectedCountryId) {
               const { error: paymentCountryError } = await supabaseClient
                 .from('platform_payments')
-                .update({ country_id: this.admin.editForm.countryId })
+                .update({ country_id: selectedCountryId })
                 .eq('landlord_id', this.admin.selectedRow.profile_id)
                 .is('country_id', null);
 
@@ -8670,13 +8688,13 @@
               ...currentMetadata,
               full_name: this.admin.editForm.fullName,
               phone: this.admin.editForm.phone || '',
-              country_id: this.admin.editForm.countryId || null
+              country_id: selectedCountryId || null
             };
 
             const { error } = await supabaseClient
               .from('invite_tokens')
               .update({
-                country_id: this.admin.editForm.countryId || null,
+                country_id: selectedCountryId || null,
                 metadata: nextMetadata
               })
               .eq('id', this.admin.selectedRow.invite_id);
@@ -8690,7 +8708,7 @@
             if (this.admin.selectedRow.subscription?.id) {
               const { error: subscriptionCountryError } = await supabaseClient
                 .from('landlord_subscriptions')
-                .update({ country_id: this.admin.editForm.countryId || null })
+                .update({ country_id: selectedCountryId || null })
                 .eq('id', this.admin.selectedRow.subscription.id);
 
               if (subscriptionCountryError) {
