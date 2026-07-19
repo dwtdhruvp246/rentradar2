@@ -5703,14 +5703,50 @@
             const direction = th.dataset.sortDirection === 'asc' ? 'desc' : 'asc';
             Array.from(headerRow.children).forEach(cell => cell.removeAttribute('data-sort-direction'));
             th.dataset.sortDirection = direction;
+            table.dataset.sortColumnIndex = String(columnIndex);
+            table.dataset.sortDirection = direction;
 
-            const rows = Array.from(tbody.rows).filter(row => row.cells.length > columnIndex && !row.querySelector('[colspan]'));
-            rows.sort((a, b) => this.compareTableCellValues(
-              a.cells[columnIndex]?.innerText || '',
-              b.cells[columnIndex]?.innerText || '',
-              direction
-            ));
-            rows.forEach(row => tbody.appendChild(row));
+            this.applyTableSort(table);
+            this.$nextTick(() => this.applyTableSort(table));
+            requestAnimationFrame(() => this.applyTableSort(table));
+            setTimeout(() => this.applyTableSort(table), 60);
+          });
+
+          const observer = new MutationObserver(mutations => {
+            const tables = new Set();
+            mutations.forEach(mutation => {
+              const target = mutation.target instanceof Element ? mutation.target : mutation.target?.parentElement;
+              const table = target?.closest?.('table[data-sort-column-index]');
+              if (table && table.dataset.sorting !== 'true') tables.add(table);
+            });
+            tables.forEach(table => requestAnimationFrame(() => this.applyTableSort(table)));
+          });
+          observer.observe(document.body, { childList: true, subtree: true });
+        },
+
+        applyTableSort(table) {
+          const tbody = table?.tBodies?.[0];
+          const columnIndex = Number(table?.dataset?.sortColumnIndex);
+          const direction = table?.dataset?.sortDirection || 'asc';
+          if (!tbody || !Number.isInteger(columnIndex) || columnIndex < 0) return;
+
+          const rows = Array.from(tbody.rows).filter(row => row.cells.length > columnIndex && !row.querySelector('[colspan]'));
+          if (rows.length < 2) return;
+
+          const sortedRows = [...rows].sort((a, b) => this.compareTableCellValues(
+            a.cells[columnIndex]?.textContent || '',
+            b.cells[columnIndex]?.textContent || '',
+            direction
+          ));
+          const changed = sortedRows.some((row, index) => row !== rows[index]);
+          if (!changed) return;
+
+          const fragment = document.createDocumentFragment();
+          sortedRows.forEach(row => fragment.appendChild(row));
+          table.dataset.sorting = 'true';
+          tbody.appendChild(fragment);
+          requestAnimationFrame(() => {
+            delete table.dataset.sorting;
           });
         },
 
