@@ -4954,6 +4954,7 @@
           adminTeamStaff: [],
           staffProfiles: [],
           staffRequests: [],
+          noteAssignees: [],
           notes: [],
           noteFilters: {
             search: '',
@@ -6465,7 +6466,7 @@
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult, adminNotesResult, pricingPlansResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult, adminNotesResult, noteAssigneesResult, pricingPlansResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -6563,6 +6564,9 @@
               .order('created_at', { ascending: false })
             ,
             supabaseClient
+              .rpc('admin_note_assignees')
+            ,
+            supabaseClient
               .from('pricing_plans')
               .select('id, country_id, country_code, country_name, currency_code, account_type, plan_key, plan_name, display_order, monthly_amount, yearly_amount, custom_price_label, description, limits_summary, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, landlord_limit, properties_per_landlord_limit, staff_limit, cta_label, cta_href, popular, public_active, updated_by, updated_at, created_at')
               .order('display_order', { ascending: true })
@@ -6578,12 +6582,16 @@
           this.admin.countries = countriesResult.data || [];
           this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
           this.admin.notes = adminNotesResult.error ? [] : (adminNotesResult.data || []);
+          this.admin.noteAssignees = noteAssigneesResult.error ? [] : (noteAssigneesResult.data || []);
           this.admin.pricingPlans = pricingPlansResult.error ? this.defaultPricingPlans() : (pricingPlansResult.data || this.defaultPricingPlans());
           if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
             this.admin.error = enquiriesResult.error.message;
           }
           if (adminNotesResult.error && this.currentPage === 'admin-notes') {
             this.admin.error = adminNotesResult.error.message;
+          }
+          if (noteAssigneesResult.error && this.currentPage === 'admin-notes') {
+            this.admin.error = noteAssigneesResult.error.message;
           }
           if (pricingPlansResult.error && this.currentPage === 'admin-pricing') {
             this.admin.error = pricingPlansResult.error.message;
@@ -6991,6 +6999,9 @@
         },
 
         adminNoteAssignees() {
+          const fromRpc = this.admin.noteAssignees || [];
+          if (fromRpc.length) return fromRpc;
+
           const accepted = (this.admin.adminTeamStaff || []).filter(row => row.accepted !== false && !row.archived_at && row.staff_subscription_status !== 'suspended');
           if (this.profile?.role === 'admin_staff') {
             return accepted.filter(row => row.profile_id === this.profile.id || row.id === this.profile.id);
