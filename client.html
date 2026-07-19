@@ -5753,22 +5753,42 @@
         compareTableCellValues(a, b, direction = 'asc') {
           const cleanA = String(a || '').trim();
           const cleanB = String(b || '').trim();
-          const numericA = Number(cleanA.replace(/[^0-9.-]+/g, ''));
-          const numericB = Number(cleanB.replace(/[^0-9.-]+/g, ''));
-          const bothNumeric = cleanA && cleanB && Number.isFinite(numericA) && Number.isFinite(numericB);
+          const dateA = this.parseSortableDateValue(cleanA);
+          const dateB = this.parseSortableDateValue(cleanB);
+          const bothDates = Number.isFinite(dateA) && Number.isFinite(dateB);
+          const numericA = this.parseSortableNumberValue(cleanA);
+          const numericB = this.parseSortableNumberValue(cleanB);
+          const bothNumeric = Number.isFinite(numericA) && Number.isFinite(numericB);
           let result = 0;
-          if (bothNumeric) {
+          if (bothDates) {
+            result = dateA - dateB;
+          } else if (bothNumeric) {
             result = numericA - numericB;
           } else {
-            const dateA = Date.parse(cleanA);
-            const dateB = Date.parse(cleanB);
-            if (Number.isFinite(dateA) && Number.isFinite(dateB)) {
-              result = dateA - dateB;
-            } else {
-              result = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
-            }
+            result = cleanA.localeCompare(cleanB, undefined, { numeric: true, sensitivity: 'base' });
           }
           return direction === 'asc' ? result : -result;
+        },
+
+        parseSortableNumberValue(value) {
+          const clean = String(value || '').trim();
+          if (!clean) return NaN;
+          const normalized = clean
+            .replace(/^(usd|myr|rm)\s*/i, '')
+            .replace(/[$€£¥₹]/g, '')
+            .replace(/,/g, '')
+            .trim();
+          if (!/^[+-]?\d+(?:\.\d+)?$/.test(normalized)) return NaN;
+          return Number(normalized);
+        },
+
+        parseSortableDateValue(value) {
+          const clean = String(value || '').trim();
+          if (!clean) return NaN;
+          const looksDateLike = /(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)|\d{1,4}[\/-]\d{1,2}[\/-]\d{1,4}/i.test(clean);
+          if (!looksDateLike) return NaN;
+          const parsed = Date.parse(clean);
+          return Number.isFinite(parsed) ? parsed : NaN;
         },
 
         adminCountryName(countryId) {
