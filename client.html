@@ -485,11 +485,13 @@
               </div>
             </div>
             <div class="flex w-full min-w-0 flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-dashboard' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-dashboard')">Dashboard</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'landlord-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('landlord-management')">Landlords</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-finance' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-finance')">Finance</button>
               <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-pricing' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-pricing')">Pricing</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-tenants' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-tenants')">Tenants</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-enquiries' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-enquiries')">Enquiries</button>
+              <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-notes' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-notes')">Notes</button>
               <button x-show="profile?.role === 'super_admin'" class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-team' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-team')">Staff</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-staff' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-staff')">IPM</button>
               <button class="rounded-lg px-3 py-2 text-sm font-semibold" type="button" :class="currentPage === 'admin-management' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'" @click="navigate('admin-management')">PMC</button>
@@ -501,6 +503,203 @@
             <a class="font-semibold text-emerald-700 hover:underline" :href="supportMailto()">Contact Support</a>
           </div>
         </header>
+
+        <section x-show="currentPage === 'admin-dashboard'" id="super-admin-dashboard" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+              <p class="mt-1 text-sm text-slate-600">A quick view of landlords, finance, enquiries, IPM, PMC, and admin notes.</p>
+            </div>
+            <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <template x-for="card in adminDashboardCards()" :key="card.label">
+              <div class="rounded-2xl border border-white/70 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+                <p class="text-sm font-medium text-slate-500" x-text="card.label"></p>
+                <p class="mt-2 text-3xl font-bold" :class="card.className" x-text="card.value"></p>
+                <p class="mt-1 text-xs text-slate-500" x-text="card.caption"></p>
+              </div>
+            </template>
+          </div>
+
+          <div class="mt-6 grid gap-6 xl:grid-cols-2">
+            <section class="rounded-2xl border border-white/70 bg-white/75 shadow-soft backdrop-blur-xl">
+              <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                <div>
+                  <h2 class="text-base font-bold text-slate-900">Finance Snapshot</h2>
+                  <p class="mt-1 text-xs text-slate-500">Latest platform payments recorded.</p>
+                </div>
+                <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="navigate('admin-finance')">View Finance</button>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                  <thead class="bg-slate-50/80 text-xs uppercase tracking-wide text-slate-500">
+                    <tr><th class="px-4 py-3 text-left">Payer</th><th class="px-4 py-3 text-left">Type</th><th class="px-4 py-3 text-left">Amount</th><th class="px-4 py-3 text-left">Date</th></tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <template x-for="payment in adminRecentPayments(5)" :key="payment.id">
+                      <tr><td class="px-4 py-3 font-semibold text-slate-900" x-text="adminPaymentPayerName(payment)"></td><td class="px-4 py-3 text-slate-600" x-text="adminPayerTypeLabel(payment.payer_type)"></td><td class="px-4 py-3 text-emerald-700" x-text="formatCurrency(payment.amount_paid)"></td><td class="px-4 py-3 text-slate-600" x-text="formatDate(payment.paid_at)"></td></tr>
+                    </template>
+                    <tr x-show="adminRecentPayments(1).length === 0"><td colspan="4" class="px-4 py-8 text-center text-slate-500">No payments recorded yet.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="rounded-2xl border border-white/70 bg-white/75 shadow-soft backdrop-blur-xl">
+              <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+                <div>
+                  <h2 class="text-base font-bold text-slate-900">Enquiries</h2>
+                  <p class="mt-1 text-xs text-slate-500">Newest website enquiries by country.</p>
+                </div>
+                <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="navigate('admin-enquiries')">View Enquiries</button>
+              </div>
+              <div class="divide-y divide-slate-100">
+                <template x-for="enquiry in adminRecentEnquiries(5)" :key="enquiry.id">
+                  <div class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-semibold text-slate-900" x-text="enquiry.full_name || enquiry.email"></p>
+                      <p class="mt-1 text-xs text-slate-500" x-text="`${enquiry.country?.name || enquiry.country_name || 'Unassigned'} - ${titleCase(enquiry.enquiry_type || 'Support')}`"></p>
+                    </div>
+                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="enquiryStatusBadgeClass(enquiry.status)" x-text="titleCase(enquiry.status || 'new')"></span>
+                  </div>
+                </template>
+                <div x-show="adminRecentEnquiries(1).length === 0" class="px-5 py-8 text-center text-sm text-slate-500">No enquiries yet.</div>
+              </div>
+            </section>
+          </div>
+
+          <div class="mt-6 grid gap-6 lg:grid-cols-3">
+            <section class="rounded-2xl border border-white/70 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h2 class="text-base font-bold text-slate-900">Notes</h2>
+                  <p class="mt-1 text-sm text-slate-500" x-text="`${adminNoteSummary().open} open, ${adminNoteSummary().done} done`"></p>
+                </div>
+                <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="navigate('admin-notes')">Open Notes</button>
+              </div>
+              <p class="mt-5 text-3xl font-bold text-slate-900" x-text="adminNoteSummary().assigned"></p>
+              <p class="mt-1 text-xs text-slate-500">notes assigned to you</p>
+            </section>
+            <section class="rounded-2xl border border-white/70 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+              <h2 class="text-base font-bold text-slate-900">IPM</h2>
+              <p class="mt-5 text-3xl font-bold text-slate-900" x-text="adminPartnerSummary('ipm').total"></p>
+              <p class="mt-1 text-xs text-slate-500" x-text="`${adminPartnerSummary('ipm').active} active, ${adminPartnerSummary('ipm').expired} expired, ${adminPartnerSummary('ipm').suspended} suspended`"></p>
+            </section>
+            <section class="rounded-2xl border border-white/70 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+              <h2 class="text-base font-bold text-slate-900">PMC</h2>
+              <p class="mt-5 text-3xl font-bold text-slate-900" x-text="adminPartnerSummary('pmc').total"></p>
+              <p class="mt-1 text-xs text-slate-500" x-text="`${adminPartnerSummary('pmc').active} active, ${adminPartnerSummary('pmc').expired} expired, ${adminPartnerSummary('pmc').suspended} suspended`"></p>
+            </section>
+          </div>
+        </section>
+
+        <section x-show="currentPage === 'admin-notes'" id="super-admin-notes" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
+          <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-900">Notes</h1>
+              <p class="mt-1 text-sm text-slate-600">Keep private notes or assign tasks to admin staff members.</p>
+            </div>
+            <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadSuperAdminData" :disabled="admin.loading">Refresh</button>
+          </div>
+
+          <template x-if="admin.error">
+            <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="admin.error"></div>
+          </template>
+          <template x-if="admin.message">
+            <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="admin.message"></div>
+          </template>
+
+          <section class="rounded-2xl border border-white/70 bg-white/75 p-5 shadow-soft backdrop-blur-xl">
+            <h2 class="text-lg font-bold text-slate-900" x-text="admin.noteForm.id ? 'Edit Note' : 'New Note'"></h2>
+            <div class="mt-4 grid gap-4 lg:grid-cols-2">
+              <label class="block text-sm font-medium text-slate-700">Title
+                <input class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteForm.title" type="text">
+              </label>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="block text-sm font-medium text-slate-700">Note type
+                  <select class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteForm.visibility">
+                    <option value="personal">Personal note</option>
+                    <option value="assigned">Assign to staff</option>
+                  </select>
+                </label>
+                <label class="block text-sm font-medium text-slate-700">Due date
+                  <input class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteForm.dueDate" type="date">
+                </label>
+              </div>
+            </div>
+            <label class="mt-4 block text-sm font-medium text-slate-700">Assign to
+              <select class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteForm.assignedTo" :disabled="admin.noteForm.visibility !== 'assigned'">
+                <option value="">Select admin staff</option>
+                <template x-for="staff in adminNoteAssignees()" :key="staff.id">
+                  <option :value="staff.id" x-text="staff.full_name || staff.email"></option>
+                </template>
+              </select>
+            </label>
+            <label class="mt-4 block text-sm font-medium text-slate-700">Details
+              <textarea class="mt-2 min-h-28 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteForm.body"></textarea>
+            </label>
+            <div class="mt-5 flex flex-wrap justify-end gap-3">
+              <button x-show="admin.noteForm.id" class="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="resetAdminNoteForm">Cancel Edit</button>
+              <button class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="saveAdminNote" :disabled="admin.saving" x-text="admin.noteForm.id ? 'Save Note' : 'Add Note'"></button>
+            </div>
+          </section>
+
+          <section class="mt-6 rounded-2xl border border-white/70 bg-white/75 shadow-soft backdrop-blur-xl">
+            <div class="grid gap-4 border-b border-slate-200 p-4 md:grid-cols-3">
+              <label class="block text-sm font-medium text-slate-700">Search
+                <input class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteFilters.search" type="search" placeholder="Title, details, staff">
+              </label>
+              <label class="block text-sm font-medium text-slate-700">Status
+                <select class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteFilters.status">
+                  <option value="">All statuses</option>
+                  <option value="open">Open</option>
+                  <option value="done">Done</option>
+                </select>
+              </label>
+              <label class="block text-sm font-medium text-slate-700">Assigned
+                <select class="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100" x-model="admin.noteFilters.assignedTo">
+                  <option value="">Anyone</option>
+                  <option :value="profile?.id">Me</option>
+                  <template x-for="staff in adminNoteAssignees()" :key="staff.id">
+                    <option :value="staff.id" x-text="staff.full_name || staff.email"></option>
+                  </template>
+                </select>
+              </label>
+            </div>
+            <div class="divide-y divide-slate-100">
+              <template x-for="note in filteredAdminNotes()" :key="note.id">
+                <article class="p-5">
+                  <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <label class="flex min-w-0 items-start gap-3">
+                      <input class="mt-1 h-5 w-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" type="checkbox" :checked="note.status === 'done'" @change="toggleAdminNoteDone(note)">
+                      <span class="min-w-0">
+                        <span class="block break-words text-base font-bold text-slate-900" x-text="note.title"></span>
+                        <span class="mt-1 block whitespace-pre-line break-words text-sm text-slate-600" x-text="note.body || '-'"></span>
+                        <span class="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                          <span x-text="`Created by ${note.creator?.full_name || note.creator?.email || 'Admin'}`"></span>
+                          <span x-show="note.assignee" x-text="`Assigned to ${note.assignee?.full_name || note.assignee?.email}`"></span>
+                          <span x-show="note.due_date" x-text="`Due ${formatDate(note.due_date)}`"></span>
+                        </span>
+                      </span>
+                    </label>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="note.status === 'done' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'" x-text="note.status === 'done' ? 'Done' : 'Open'"></span>
+                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="editAdminNote(note)">Edit</button>
+                      <button x-show="canDeleteAdminNote(note)" class="rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100" type="button" @click="deleteAdminNote(note)">Delete</button>
+                    </div>
+                  </div>
+                </article>
+              </template>
+              <div x-show="filteredAdminNotes().length === 0" class="px-5 py-10 text-center text-sm text-slate-500">No notes found.</div>
+            </div>
+          </section>
+        </section>
 
         <section x-show="currentPage === 'landlord-management'" id="super-admin-landlord-management" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 xl:max-w-[calc(100vw-4rem)] 2xl:max-w-[1800px]">
           <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -4755,6 +4954,20 @@
           adminTeamStaff: [],
           staffProfiles: [],
           staffRequests: [],
+          notes: [],
+          noteFilters: {
+            search: '',
+            status: '',
+            assignedTo: ''
+          },
+          noteForm: {
+            id: '',
+            title: '',
+            body: '',
+            visibility: 'personal',
+            assignedTo: '',
+            dueDate: ''
+          },
           financeStats: {
             totalRevenue: 0,
             thisMonth: 0,
@@ -5644,7 +5857,7 @@
           if (!page) return false;
 
           if (this.currentShell === 'super_admin') {
-            const pages = ['landlord-management', 'admin-finance', 'admin-pricing', 'admin-tenants', 'admin-enquiries', 'admin-staff', 'admin-management'];
+            const pages = ['admin-dashboard', 'landlord-management', 'admin-finance', 'admin-pricing', 'admin-tenants', 'admin-enquiries', 'admin-notes', 'admin-staff', 'admin-management'];
             if (this.profile?.role === 'super_admin') pages.push('admin-team');
             return pages.includes(page);
           }
@@ -6252,7 +6465,7 @@
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
-          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult, pricingPlansResult] = await Promise.all([
+          const [countriesResult, profilesResult, invitesResult, subscriptionsResult, internalNotesResult, adminTeamProfilesResult, adminTeamInvitesResult, adminTeamCountriesResult, staffProfilesResult, staffInvitesResult, staffPermissionsResult, tenantsResult, tenantLeasesResult, propertiesResult, platformPaymentsResult, managementCompaniesResult, managementInvitesResult, managementPermissionsResult, managementStaffResult, enquiriesResult, adminNotesResult, pricingPlansResult] = await Promise.all([
             supabaseClient
               .from('countries')
               .select('id, name, code, currency_code, created_at')
@@ -6345,6 +6558,11 @@
               .order('created_at', { ascending: false })
             ,
             supabaseClient
+              .from('admin_notes')
+              .select('id, title, body, visibility, assigned_to, created_by, status, due_date, completed_at, completed_by, updated_by, updated_at, created_at, assignee:profiles!admin_notes_assigned_to_fkey(id, full_name, email), creator:profiles!admin_notes_created_by_fkey(id, full_name, email), completer:profiles!admin_notes_completed_by_fkey(id, full_name, email)')
+              .order('created_at', { ascending: false })
+            ,
+            supabaseClient
               .from('pricing_plans')
               .select('id, country_id, country_code, country_name, currency_code, account_type, plan_key, plan_name, display_order, monthly_amount, yearly_amount, custom_price_label, description, limits_summary, property_limit, unit_limit, personal_staff_limit, partner_connection_limit, landlord_limit, properties_per_landlord_limit, staff_limit, cta_label, cta_href, popular, public_active, updated_by, updated_at, created_at')
               .order('display_order', { ascending: true })
@@ -6359,9 +6577,13 @@
 
           this.admin.countries = countriesResult.data || [];
           this.admin.enquiries = enquiriesResult.error ? [] : (enquiriesResult.data || []);
+          this.admin.notes = adminNotesResult.error ? [] : (adminNotesResult.data || []);
           this.admin.pricingPlans = pricingPlansResult.error ? this.defaultPricingPlans() : (pricingPlansResult.data || this.defaultPricingPlans());
           if (enquiriesResult.error && this.currentPage === 'admin-enquiries') {
             this.admin.error = enquiriesResult.error.message;
+          }
+          if (adminNotesResult.error && this.currentPage === 'admin-notes') {
+            this.admin.error = adminNotesResult.error.message;
           }
           if (pricingPlansResult.error && this.currentPage === 'admin-pricing') {
             this.admin.error = pricingPlansResult.error.message;
@@ -6702,6 +6924,243 @@
           };
 
           this.admin.loading = false;
+        },
+
+        adminPaymentPayerName(payment) {
+          if (!payment) return '-';
+          if (payment.payer_type === 'management') return payment.management_company?.company_name || payment.management_company?.leader?.full_name || 'PMC';
+          if (payment.payer_type === 'staff') return payment.staff?.full_name || payment.staff?.email || 'IPM';
+          return payment.landlord?.full_name || payment.landlord?.email || 'Landlord';
+        },
+
+        adminPayerTypeLabel(type) {
+          if (type === 'management') return 'PMC';
+          if (type === 'staff') return 'IPM';
+          return 'Landlord';
+        },
+
+        adminRecentPayments(limit = 5) {
+          return this.restrictRowsToAdminStaffCountries(this.admin.financePayments || [])
+            .slice()
+            .sort((a, b) => new Date(b.paid_at || b.created_at || 0).getTime() - new Date(a.paid_at || a.created_at || 0).getTime())
+            .slice(0, limit);
+        },
+
+        adminRecentEnquiries(limit = 5) {
+          return this.restrictRowsToAdminStaffCountries(this.admin.enquiries || [])
+            .slice()
+            .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+            .slice(0, limit);
+        },
+
+        adminPartnerAccountStatus(row, accountType) {
+          if (!row) return 'unknown';
+          if (row.archived_at) return 'archived';
+          if (row.access_suspended_at || row.subscription_status === 'suspended' || row.staff_subscription_status === 'suspended') return 'suspended';
+          const expiry = accountType === 'pmc' ? row.subscription_expires_at : row.staff_subscription_expires_at;
+          if (expiry && this.daysUntil(expiry) < 0) return 'expired';
+          const status = accountType === 'pmc' ? row.subscription_status : row.staff_subscription_status;
+          if (status === 'trial') return 'trial';
+          return 'active';
+        },
+
+        adminPartnerSummary(accountType) {
+          const rows = accountType === 'pmc' ? this.admin.managementCompanies : this.admin.staffProfiles;
+          const scopedRows = this.restrictRowsToAdminStaffCountries(rows || [], row => accountType === 'pmc' ? row.country_id : this.adminStaffCountryId(row));
+          const summary = { total: 0, active: 0, trial: 0, expired: 0, suspended: 0 };
+          scopedRows.forEach(row => {
+            if (row.accepted === false || row.archived_at) return;
+            const status = this.adminPartnerAccountStatus(row, accountType);
+            summary.total += 1;
+            if (summary[status] !== undefined) summary[status] += 1;
+          });
+          return summary;
+        },
+
+        adminDashboardCards() {
+          const finance = this.adminFinanceSummary();
+          const enquiries = this.restrictRowsToAdminStaffCountries(this.admin.enquiries || []);
+          const openEnquiries = enquiries.filter(row => !['resolved', 'archived'].includes(row.status || 'new')).length;
+          const notes = this.adminNoteSummary();
+          return [
+            { label: 'Landlords', value: this.admin.stats.total, caption: `${this.admin.stats.active} active, ${this.admin.stats.trial} trial`, className: 'text-slate-900' },
+            { label: 'Platform Revenue', value: this.formatCurrency(finance.totalRevenue), caption: `${this.formatCurrency(finance.thisMonth)} this month`, className: 'text-emerald-700' },
+            { label: 'Open Enquiries', value: openEnquiries, caption: `${enquiries.length} total enquiries`, className: 'text-amber-700' },
+            { label: 'Open Notes', value: notes.open, caption: `${notes.assigned} assigned to you`, className: 'text-slate-900' }
+          ];
+        },
+
+        adminNoteAssignees() {
+          const accepted = (this.admin.adminTeamStaff || []).filter(row => row.accepted !== false && !row.archived_at && row.staff_subscription_status !== 'suspended');
+          if (this.profile?.role === 'admin_staff') {
+            return accepted.filter(row => row.profile_id === this.profile.id || row.id === this.profile.id);
+          }
+          return accepted;
+        },
+
+        adminNoteSummary() {
+          const notes = this.admin.notes || [];
+          return {
+            open: notes.filter(note => note.status !== 'done').length,
+            done: notes.filter(note => note.status === 'done').length,
+            assigned: notes.filter(note => note.status !== 'done' && note.assigned_to === this.profile?.id).length
+          };
+        },
+
+        filteredAdminNotes() {
+          const search = String(this.admin.noteFilters.search || '').trim().toLowerCase();
+          const status = this.admin.noteFilters.status || '';
+          const assignedTo = this.admin.noteFilters.assignedTo || '';
+          return (this.admin.notes || []).filter(note => {
+            const text = [note.title, note.body, note.assignee?.full_name, note.assignee?.email, note.creator?.full_name, note.creator?.email].join(' ').toLowerCase();
+            if (search && !text.includes(search)) return false;
+            if (status && note.status !== status) return false;
+            if (assignedTo && note.assigned_to !== assignedTo) return false;
+            return true;
+          }).sort((a, b) => {
+            if ((a.status === 'done') !== (b.status === 'done')) return a.status === 'done' ? 1 : -1;
+            return new Date(b.updated_at || b.created_at || 0).getTime() - new Date(a.updated_at || a.created_at || 0).getTime();
+          });
+        },
+
+        resetAdminNoteForm() {
+          this.admin.noteForm = {
+            id: '',
+            title: '',
+            body: '',
+            visibility: 'personal',
+            assignedTo: '',
+            dueDate: ''
+          };
+        },
+
+        editAdminNote(note) {
+          this.admin.message = '';
+          this.admin.error = '';
+          this.admin.noteForm = {
+            id: note.id,
+            title: note.title || '',
+            body: note.body || '',
+            visibility: note.visibility || (note.assigned_to ? 'assigned' : 'personal'),
+            assignedTo: note.assigned_to || '',
+            dueDate: note.due_date || ''
+          };
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+
+        canDeleteAdminNote(note) {
+          return this.profile?.role === 'super_admin' || note?.created_by === this.profile?.id;
+        },
+
+        async saveAdminNote() {
+          const title = String(this.admin.noteForm.title || '').trim();
+          const body = String(this.admin.noteForm.body || '').trim();
+          const visibility = this.admin.noteForm.visibility || 'personal';
+          const assignedTo = visibility === 'assigned' ? this.admin.noteForm.assignedTo : null;
+          this.admin.error = '';
+          this.admin.message = '';
+
+          if (!title) {
+            this.admin.error = 'Enter a note title.';
+            return;
+          }
+
+          if (visibility === 'assigned' && !assignedTo) {
+            this.admin.error = 'Select the admin staff member for this note.';
+            return;
+          }
+
+          this.admin.saving = true;
+          const payload = {
+            title,
+            body,
+            visibility,
+            assigned_to: assignedTo,
+            due_date: this.admin.noteForm.dueDate || null,
+            updated_by: this.profile?.id || null
+          };
+
+          let result;
+          if (this.admin.noteForm.id) {
+            result = await supabaseClient
+              .from('admin_notes')
+              .update(payload)
+              .eq('id', this.admin.noteForm.id)
+              .select('id, title, body, visibility, assigned_to, created_by, status, due_date, completed_at, completed_by, updated_by, updated_at, created_at, assignee:profiles!admin_notes_assigned_to_fkey(id, full_name, email), creator:profiles!admin_notes_created_by_fkey(id, full_name, email), completer:profiles!admin_notes_completed_by_fkey(id, full_name, email)')
+              .single();
+          } else {
+            result = await supabaseClient
+              .from('admin_notes')
+              .insert({
+                ...payload,
+                created_by: this.profile?.id
+              })
+              .select('id, title, body, visibility, assigned_to, created_by, status, due_date, completed_at, completed_by, updated_by, updated_at, created_at, assignee:profiles!admin_notes_assigned_to_fkey(id, full_name, email), creator:profiles!admin_notes_created_by_fkey(id, full_name, email), completer:profiles!admin_notes_completed_by_fkey(id, full_name, email)')
+              .single();
+          }
+
+          this.admin.saving = false;
+          if (result.error) {
+            this.admin.error = this.friendlyDatabaseError(result.error, 'Note could not be saved.');
+            return;
+          }
+
+          if (this.admin.noteForm.id) {
+            this.admin.notes = this.admin.notes.map(note => note.id === result.data.id ? result.data : note);
+            this.admin.message = 'Note updated.';
+          } else {
+            this.admin.notes = [result.data, ...this.admin.notes];
+            this.admin.message = 'Note added.';
+          }
+          this.resetAdminNoteForm();
+        },
+
+        async toggleAdminNoteDone(note) {
+          if (!note?.id) return;
+          const done = note.status !== 'done';
+          this.admin.error = '';
+          const { data, error } = await supabaseClient
+            .from('admin_notes')
+            .update({
+              status: done ? 'done' : 'open',
+              completed_at: done ? new Date().toISOString() : null,
+              completed_by: done ? this.profile?.id : null,
+              updated_by: this.profile?.id || null
+            })
+            .eq('id', note.id)
+            .select('id, title, body, visibility, assigned_to, created_by, status, due_date, completed_at, completed_by, updated_by, updated_at, created_at, assignee:profiles!admin_notes_assigned_to_fkey(id, full_name, email), creator:profiles!admin_notes_created_by_fkey(id, full_name, email), completer:profiles!admin_notes_completed_by_fkey(id, full_name, email)')
+            .single();
+
+          if (error) {
+            this.admin.error = this.friendlyDatabaseError(error, 'Note status could not be updated.');
+            return;
+          }
+
+          this.admin.notes = this.admin.notes.map(row => row.id === data.id ? data : row);
+        },
+
+        async deleteAdminNote(note) {
+          if (!note?.id) return;
+          const confirmed = await this.requestConfirm({
+            title: 'Delete note',
+            message: `Delete "${note.title}"? This note will be removed from the admin notes list.`,
+            confirmText: 'Delete Note',
+            tone: 'danger'
+          });
+          if (!confirmed) return;
+
+          const { error } = await supabaseClient
+            .from('admin_notes')
+            .delete()
+            .eq('id', note.id);
+
+          if (error) {
+            this.admin.error = this.friendlyDatabaseError(error, 'Note could not be deleted.');
+            return;
+          }
+
+          this.admin.notes = this.admin.notes.filter(row => row.id !== note.id);
+          this.admin.message = 'Note deleted.';
         },
 
         async updateEnquiryStatus(enquiry, status) {
@@ -14386,7 +14845,7 @@
             }
             this.currentShell = 'super_admin';
             if (profile.role === 'admin_staff') this.admin.selectedCountryId = profile.country_ids?.[0] || profile.country_id;
-            this.currentPage = this.resolveActivePage('landlord-management', previousShell, previousPage);
+            this.currentPage = this.resolveActivePage('admin-dashboard', previousShell, previousPage);
             this.pageTitle = this.titleForPage(this.currentPage);
             this.storeCurrentPage(this.currentPage);
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
@@ -14813,7 +15272,7 @@
             await this.loadLandlordFinanceData();
           }
 
-          if ((page === 'admin-finance' || page === 'admin-pricing' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-enquiries' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
+          if ((page === 'admin-dashboard' || page === 'admin-finance' || page === 'admin-pricing' || page === 'landlord-management' || page === 'admin-tenants' || page === 'admin-enquiries' || page === 'admin-notes' || page === 'admin-team' || page === 'admin-staff' || page === 'admin-management') && this.currentShell === 'super_admin') {
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             await this.loadSuperAdminData();
           }
@@ -14875,10 +15334,12 @@
             notifications: 'Notifications',
             'my-account': 'My Account',
             settings: 'Settings',
+            'admin-dashboard': 'Dashboard',
             'admin-finance': 'Finance',
             'admin-pricing': 'Pricing',
             'admin-tenants': 'Tenant Management',
             'admin-enquiries': 'Enquiries',
+            'admin-notes': 'Notes',
             'admin-team': 'Admin Staff',
             'admin-staff': 'IPM Management',
             'admin-management': 'Property Management Companies',
