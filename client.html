@@ -186,6 +186,18 @@
     }
     @media (max-width: 640px) {
       h1 { line-height: 1.15; }
+      header .brand-logo {
+        height: 4.75rem !important;
+        max-width: 7.5rem !important;
+      }
+      header .mushavo-language-control {
+        margin-left: 0 !important;
+        width: 100%;
+      }
+      header .mushavo-language-control select {
+        width: 100%;
+        min-width: 0;
+      }
       #super-admin-shell header > div:first-child,
       #tenant-shell header > div:first-child,
       #landlord-staff-shell header {
@@ -193,13 +205,61 @@
         min-height: 4rem;
       }
       #super-admin-shell header > div:first-child {
+        flex-wrap: wrap;
         align-items: center;
       }
+      #super-admin-shell header > div:first-child > div:first-child {
+        order: 1;
+        flex: 1 1 auto;
+      }
+      #super-admin-shell header > div:first-child > div:nth-child(2) {
+        order: 2;
+      }
+      #super-admin-shell header > div:first-child > .mushavo-language-control {
+        order: 3;
+        flex: 1 1 100%;
+      }
       #super-admin-shell header > div:first-child > div:last-child {
-        width: auto;
         justify-content: flex-end;
         overflow-x: visible;
         padding-bottom: 0;
+      }
+      #landlord-staff-shell header {
+        align-items: stretch;
+      }
+      #landlord-staff-shell header > div:first-child {
+        order: 1;
+        width: 100%;
+        flex: 0 0 100%;
+      }
+      #landlord-staff-shell header > .mushavo-language-control {
+        order: 2;
+        flex: 0 0 100%;
+      }
+      #landlord-staff-shell header > div:last-child {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+      }
+      #landlord-staff-shell header > div:last-child > span {
+        max-width: 100%;
+      }
+      #tenant-shell header > div:first-child {
+        align-items: stretch;
+      }
+      #tenant-shell header > div:first-child > div:first-child {
+        order: 1;
+        width: 100%;
+        flex: 0 0 100%;
+      }
+      #tenant-shell header > div:first-child > .mushavo-language-control {
+        order: 2;
+        flex: 0 0 100%;
+      }
+      #tenant-shell header > div:first-child > div:last-child {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
       }
       #super-admin-shell header button,
       #tenant-shell header button,
@@ -212,10 +272,6 @@
       #landlord-staff-shell header > div:last-child,
       #tenant-shell header > div:last-child {
         gap: 0.5rem;
-      }
-      #landlord-staff-shell header > div:last-child > span {
-        max-width: 52vw;
-        white-space: normal;
       }
       .overflow-x-auto {
         margin-inline: -0.25rem;
