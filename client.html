@@ -4514,6 +4514,7 @@
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Property</dt><dd class="font-medium text-slate-900" x-text="tenantPropertyLabel()"></dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Unit</dt><dd class="font-medium text-slate-900" x-text="tenantUnitLabelFromActiveLease()"></dd></div>
                     <div class="flex justify-between gap-4"><dt class="text-slate-500">Address</dt><dd class="text-right font-medium text-slate-900" x-text="tenantPropertyAddress()"></dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-slate-500">Landlord</dt><dd class="text-right font-medium text-slate-900" x-text="tenantLandlordName()"></dd></div>
                   </dl>
                   <div x-show="tenant.contacts.length" class="mt-5 border-t border-slate-200 pt-4">
                     <h3 class="text-sm font-semibold text-slate-900">Assigned Contact</h3>
@@ -5355,6 +5356,7 @@
           error: '',
           tenantRows: [],
           tenantRow: null,
+          landlord: null,
           activeLease: null,
           leases: [],
           payments: [],
@@ -13187,6 +13189,7 @@
 
           if (this.tenant.tenantRows.length === 0) {
             this.tenant.tenantRow = null;
+            this.tenant.landlord = null;
             this.tenant.activeLease = null;
             this.tenant.leases = [];
             this.tenant.payments = [];
@@ -13214,6 +13217,11 @@
           this.tenant.leases = (leases || []).map(lease => this.normalizeLease(lease));
           this.tenant.activeLease = this.tenant.leases.find(lease => lease.status === 'active') || this.tenant.leases[0] || null;
           this.tenant.tenantRow = this.tenant.tenantRows.find(row => row.id === this.tenant.activeLease?.tenant_id) || this.tenant.tenantRows[0] || null;
+          this.tenant.landlord = null;
+          if (this.tenant.activeLease?.landlord_id) {
+            const { data: landlordRows, error: landlordError } = await supabaseClient.rpc('current_tenant_landlord');
+            if (!landlordError) this.tenant.landlord = Array.isArray(landlordRows) ? landlordRows[0] || null : landlordRows || null;
+          }
           this.tenant.contacts = [];
           if (this.tenant.activeLease?.unit_id) {
             const { data: contacts, error: contactsError } = await supabaseClient.rpc('tenant_unit_contacts', {
@@ -13228,6 +13236,7 @@
             this.tenant.paymentSubmissions = [];
             this.tenant.maintenanceRequests = [];
             this.tenant.contacts = [];
+            this.tenant.landlord = null;
             this.tenant.loading = false;
             return;
           }
@@ -13311,6 +13320,10 @@
         tenantPropertyAddress() {
           const property = this.tenantPropertyFromActiveLease();
           return [property?.address, property?.city].filter(Boolean).join(', ') || '-';
+        },
+
+        tenantLandlordName() {
+          return this.tenant.landlord?.full_name || '-';
         },
 
         tenantCurrentBalance() {
