@@ -2646,14 +2646,17 @@
                         <h1 class="text-xl font-bold text-slate-900">Properties</h1>
                         <p class="mt-1 text-sm text-slate-500">Create properties and open one to filter its units.</p>
                       </div>
-                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      <div class="flex flex-wrap gap-2">
+                        <button x-show="canAddProperties() && !propertyUnit.showPropertyForm && !propertyUnit.editPropertyId" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="propertyUnit.showPropertyForm = true">Add Property</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      </div>
                     </div>
 
                     <template x-if="propertyUnit.error">
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="propertyUnit.error"></div>
                     </template>
 
-                    <form data-property-form x-show="canAddProperties() || (propertyUnit.editPropertyId && canEditProperties())" class="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]" @submit.prevent="submitPropertyForm">
+                    <form data-property-form x-show="(canAddProperties() && propertyUnit.showPropertyForm) || (propertyUnit.editPropertyId && canEditProperties())" x-transition class="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto]" @submit.prevent="submitPropertyForm">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Property name</span>
                         <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.propertyForm.name" required>
@@ -2668,7 +2671,7 @@
                       </label>
                       <div class="flex flex-col gap-2 self-end sm:flex-row md:flex-col xl:flex-row">
                         <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="propertyUnit.saving" x-text="propertyUnit.editPropertyId ? 'Save Changes' : 'Add Property'"></button>
-                        <button x-show="propertyUnit.editPropertyId" class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="cancelPropertyEdit">Cancel</button>
+                        <button x-show="propertyUnit.editPropertyId || propertyUnit.showPropertyForm" class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="cancelPropertyEdit">Cancel</button>
                       </div>
                     </form>
 
@@ -3066,20 +3069,24 @@
                         <h1 class="text-xl font-bold text-slate-900">Tenants</h1>
                         <p class="mt-1 text-sm text-slate-500">Invite tenants and review their lease and payment history.</p>
                       </div>
-                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      <div class="flex flex-wrap gap-2">
+                        <button x-show="canAddTenants() && !tenantLease.showTenantInvitePanel" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="tenantLease.showTenantInvitePanel = true; tenantLease.generatedInviteLink = ''">Add Tenant</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      </div>
                     </div>
 
                     <template x-if="tenantLease.error">
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenantLease.error"></div>
                     </template>
 
-                    <div x-show="canAddTenants()" class="mb-5 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+                    <div x-show="canAddTenants() && tenantLease.showTenantInvitePanel" x-transition class="mb-5 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
                       <div class="flex flex-col gap-3 lg:flex-row lg:items-end">
                         <label class="block flex-1">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Find existing tenant by email</span>
                           <input class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" x-model.trim="tenantLease.lookup.email" placeholder="tenant@email.com">
                         </label>
                         <button class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="searchTenantByEmail" :disabled="tenantLease.saving">Search Tenant</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60" type="button" @click="closeTenantInvitePanel" :disabled="tenantLease.saving">Cancel</button>
                       </div>
                       <template x-if="tenantLease.lookup.result">
                         <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
@@ -3245,14 +3252,17 @@
                         <h1 class="text-xl font-bold text-slate-900">Leases</h1>
                         <p class="mt-1 text-sm text-slate-500">Create leases and review lease-level payment history.</p>
                       </div>
-                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      <div class="flex flex-wrap gap-2">
+                        <button x-show="canAssignTenantToUnit() && !tenantLease.showLeaseForm" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="tenantLease.showLeaseForm = true">Add Lease</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
+                      </div>
                     </div>
 
                     <template x-if="tenantLease.error">
                       <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="tenantLease.error"></div>
                     </template>
 
-                    <form x-show="canAssignTenantToUnit()" class="grid gap-3 xl:grid-cols-4" @submit.prevent="addLeaseFromPage">
+                    <form x-show="canAssignTenantToUnit() && tenantLease.showLeaseForm" x-transition class="grid gap-3 xl:grid-cols-4" @submit.prevent="addLeaseFromPage">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Tenant</span>
                         <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantLease.leaseForm.tenantId" required x-effect='$nextTick(() => { $el.value = tenantLease.leaseForm.tenantId ?? "" })'>
@@ -3295,9 +3305,12 @@
                         <input x-ref="leaseDocumentInput" class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none file:mr-3 file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-slate-700 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="file" accept="application/pdf,.pdf" @change="handleLeaseDocumentSelection($event, 'new')">
                         <span class="mt-1 block text-xs text-slate-500">PDF only, max 20 MB.</span>
                       </label>
-                      <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="tenantLease.saving">Add Lease</button>
+                      <div class="flex flex-col gap-2 self-end sm:flex-row xl:flex-col 2xl:flex-row">
+                        <button class="rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="submit" :disabled="tenantLease.saving">Add Lease</button>
+                        <button class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60" type="button" @click="tenantLease.showLeaseForm = false" :disabled="tenantLease.saving">Cancel</button>
+                      </div>
                     </form>
-                    <label x-show="canAssignTenantToUnit()" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <label x-show="canAssignTenantToUnit() && tenantLease.showLeaseForm" class="mt-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
                       <input class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" type="checkbox" x-model="tenantLease.leaseForm.depositPaid">
                       Deposit paid
                     </label>
@@ -3693,7 +3706,7 @@
                         <p class="mt-1 text-sm text-slate-500">Track requests, assign staff, and close out repairs.</p>
                       </div>
                       <div class="flex flex-wrap gap-2">
-                        <button x-show="canCreateMaintenance()" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openMaintenanceLogModal">Log Request</button>
+                        <button x-show="canCreateMaintenance()" class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600" type="button" @click="openMaintenanceLogModal">Add Maintenance</button>
                         <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="refreshCurrentPage">Refresh</button>
                       </div>
                     </div>
@@ -5151,6 +5164,7 @@
           tenants: [],
           leases: [],
           detailMode: '',
+          showPropertyForm: false,
           propertyForm: {
             name: '',
             address: '',
@@ -5404,7 +5418,9 @@
             email: '',
             result: null
           },
+          showTenantInvitePanel: false,
           showNewTenantForm: false,
+          showLeaseForm: false,
           filters: {
             search: ''
           },
@@ -10555,6 +10571,7 @@
           }
 
           this.propertyUnit.propertyForm = { name: '', address: '', city: '' };
+          this.propertyUnit.showPropertyForm = false;
           this.propertyUnit.saving = false;
           await this.loadPropertyUnitData();
           await this.loadDashboardData();
@@ -10564,6 +10581,7 @@
           if (!property || !this.canEditProperties()) return;
           this.propertyUnit.error = '';
           this.propertyUnit.editPropertyId = property.id;
+          this.propertyUnit.showPropertyForm = true;
           this.propertyUnit.propertyForm = {
             name: property.name || '',
             address: property.address || '',
@@ -10576,6 +10594,7 @@
 
         cancelPropertyEdit() {
           this.propertyUnit.editPropertyId = '';
+          this.propertyUnit.showPropertyForm = false;
           this.propertyUnit.propertyForm = { name: '', address: '', city: '' };
           this.propertyUnit.editPropertyForm = { name: '', address: '', city: '' };
         },
@@ -13557,6 +13576,14 @@
           await this.loadTenantLeaseData();
         },
 
+        closeTenantInvitePanel() {
+          this.tenantLease.showTenantInvitePanel = false;
+          this.tenantLease.showNewTenantForm = false;
+          this.tenantLease.generatedInviteLink = '';
+          this.tenantLease.lookup = { email: '', result: null };
+          this.tenantLease.tenantForm = { fullName: '', phone: '', email: '', idNumber: '' };
+        },
+
         async searchTenantByEmail() {
           this.tenantLease.error = '';
           this.tenantLease.generatedInviteLink = '';
@@ -14306,6 +14333,7 @@
               documentFile: null
             };
             if (this.$refs.leaseDocumentInput) this.$refs.leaseDocumentInput.value = '';
+            this.tenantLease.showLeaseForm = false;
             await this.loadTenantLeaseData();
             await this.loadPropertyUnitData();
             await this.loadDashboardData();
