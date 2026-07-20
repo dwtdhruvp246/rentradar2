@@ -12702,6 +12702,16 @@
         openStaffInviteModal() {
           this.staff.error = '';
           this.staff.generatedInviteLink = '';
+
+          if (this.profile?.role === 'landlord') {
+            const personalStaffLimit = Number(this.subscription?.personal_staff_limit ?? 0);
+            const currentPersonalStaff = this.personalStaffUsageCount();
+            if (currentPersonalStaff >= personalStaffLimit) {
+              this.staff.error = this.landlordPersonalStaffLimitMessage(personalStaffLimit, currentPersonalStaff);
+              return;
+            }
+          }
+
           this.staff.selectedMember = null;
           this.staff.form = this.defaultStaffForm();
           this.staff.modal = 'invite';
