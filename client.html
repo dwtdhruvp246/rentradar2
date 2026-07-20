@@ -2928,6 +2928,11 @@
                               <option :value="option.key" x-text="option.label"></option>
                             </template>
                           </select>
+                          <span class="mt-1 block text-xs text-slate-500" x-show="propertyUnit.paymentForm.rentPeriodKey === 'historical'">Use this for old rent payments made before the account started using Mushavo.</span>
+                        </label>
+                        <label class="block" x-show="propertyUnit.paymentForm.rentPeriodKey === 'historical'">
+                          <span class="mb-2 block text-sm font-medium text-slate-700">Historical rent month</span>
+                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="month" x-model="propertyUnit.paymentForm.historicalMonth" :required="propertyUnit.paymentForm.rentPeriodKey === 'historical'">
                         </label>
                         <label class="block lg:col-span-2" x-show="propertyUnit.paymentForm.rentPeriodKey === 'other'">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Describe what this payment is for</span>
@@ -3487,6 +3492,11 @@
                               <option :value="option.key" x-text="option.label"></option>
                             </template>
                           </select>
+                          <span class="mt-1 block text-xs text-slate-500" x-show="payments.manualForm.rentPeriodKey === 'historical'">Use this for old rent payments made before the account started using Mushavo.</span>
+                        </label>
+                        <label class="block sm:col-span-2" x-show="payments.manualForm.rentPeriodKey === 'historical'">
+                          <span class="mb-2 block text-sm font-medium text-slate-700">Historical rent month</span>
+                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="month" x-model="payments.manualForm.historicalMonth" :required="payments.manualForm.rentPeriodKey === 'historical'">
                         </label>
                         <label class="block sm:col-span-2" x-show="payments.manualForm.rentPeriodKey === 'other'">
                           <span class="mb-2 block text-sm font-medium text-slate-700">Describe what this payment is for</span>
@@ -5180,6 +5190,7 @@
           paymentForm: {
             amount: 0,
             rentPeriodKey: '',
+            historicalMonth: '',
             otherDescription: '',
             date: '',
             method: 'cash',
@@ -5224,6 +5235,7 @@
             leaseId: '',
             amount: 0,
             rentPeriodKey: '',
+            historicalMonth: '',
             otherDescription: '',
             date: '',
             method: 'cash',
@@ -9847,7 +9859,7 @@
             paymentAccess
               ? supabaseClient
                 .from('payments')
-                .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+                .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
                 .order('payment_date', { ascending: false })
                 .limit(8)
               : Promise.resolve({ data: [], error: null }),
@@ -10939,7 +10951,7 @@
 
           const [paymentsResult, maintenanceResult, assignedStaffResult] = await Promise.all([
             activeLease && this.canViewFinancials()
-              ? supabaseClient.from('payments').select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size)').eq('lease_id', activeLease.id).order('payment_date', { ascending: false })
+              ? supabaseClient.from('payments').select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size)').eq('lease_id', activeLease.id).order('payment_date', { ascending: false })
               : Promise.resolve({ data: [], error: null }),
             supabaseClient.from('maintenance_requests').select('id, unit_id, lease_id, description, photo_url, photo_path, photo_name, photo_size, photo_uploaded_by, photo_uploaded_at, status, priority, resolution_notes, created_at, resolved_at').eq('unit_id', unit.id).is('archived_at', null).order('created_at', { ascending: false }),
             this.canViewUnitAssignedStaff()
@@ -11071,6 +11083,7 @@
           this.propertyUnit.paymentForm = {
             amount: Number(this.propertyUnit.currentLease.monthly_rent || 0),
             rentPeriodKey: '',
+            historicalMonth: '',
             otherDescription: '',
             date: this.toIsoDate(new Date()),
             method: 'cash',
@@ -11108,6 +11121,9 @@
               rent_period_end: periodPayload.end,
               rent_period_label: periodPayload.label,
               notes: this.propertyUnit.paymentForm.notes || null,
+              payment_purpose: periodPayload.purpose,
+              purpose_description: periodPayload.purposeDescription,
+              is_historical: periodPayload.isHistorical,
               recorded_by: this.profile.id
             })
             .select('id')
@@ -11151,6 +11167,9 @@
           return {
             ...payment,
             lease,
+            payment_purpose: payment.payment_purpose || (payment.rent_period_start ? 'rent' : 'other'),
+            purpose_description: payment.purpose_description || null,
+            is_historical: Boolean(payment.is_historical),
             recordedByName: recordedByMap.get(payment.recorded_by) || (payment.recorded_by === this.profile?.id ? this.profile.full_name : '')
           };
         },
@@ -11158,6 +11177,8 @@
         normalizeSubmission(submission) {
           return {
             ...submission,
+            payment_purpose: submission.payment_purpose || (submission.rent_period_start ? 'rent' : 'other'),
+            purpose_description: submission.purpose_description || null,
             tenant: submission.tenants || null,
             lease: this.normalizeLease(submission.leases || null)
           };
@@ -11172,12 +11193,12 @@
           const [pendingResult, verifiedResult, leasesResult] = await Promise.all([
             supabaseClient
               .from('payment_submissions')
-              .select('id, lease_id, tenant_id, amount_claimed, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, reference_note, proof_image_url, proof_image_path, proof_image_name, proof_image_size, proof_image_uploaded_by, proof_image_uploaded_at, status, rejection_reason, reviewed_by, reviewed_at, created_at, tenants(id, full_name, email), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+              .select('id, lease_id, tenant_id, amount_claimed, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, reference_note, proof_image_url, proof_image_path, proof_image_name, proof_image_size, proof_image_uploaded_by, proof_image_uploaded_at, status, rejection_reason, reviewed_by, reviewed_at, created_at, tenants(id, full_name, email), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
               .eq('status', 'pending')
               .order('created_at', { ascending: false }),
             supabaseClient
               .from('payments')
-              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, proof_file_path, proof_file_name, proof_file_size, proof_file_uploaded_by, proof_file_uploaded_at, recorded_by, created_at, payment_submissions(id, proof_image_url, proof_image_path, proof_image_name, proof_image_size), leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
               .order('payment_date', { ascending: false }),
             supabaseClient
               .from('leases')
@@ -11218,7 +11239,7 @@
 
           const { data, error } = await supabaseClient
             .from('payments')
-            .select('id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, created_at, leases(id, tenants(id, full_name, email), units(id, unit_number, properties(id, name, address, city)))')
+            .select('id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, created_at, leases(id, tenants(id, full_name, email), units(id, unit_number, properties(id, name, address, city)))')
             .order('payment_date', { ascending: false });
 
           if (error) {
@@ -11419,7 +11440,7 @@
           return '-';
         },
 
-        buildRentPeriodOptions(lease, payments = [], submissions = []) {
+        buildRentPeriodOptions(lease, payments = [], submissions = [], config = {}) {
           if (!lease?.start_date) return [];
 
           const leaseStart = this.monthStart(lease.start_date);
@@ -11487,6 +11508,19 @@
             });
           }
 
+          if (config.includeHistorical) {
+            options.push({
+              key: 'historical',
+              start: null,
+              end: null,
+              label: 'Historical rent month',
+              saveLabel: 'Historical rent',
+              amount: monthlyRent,
+              status: 'historical',
+              isHistorical: true
+            });
+          }
+
           options.push({
             key: 'other',
             start: null,
@@ -11502,12 +11536,12 @@
         },
 
         unitPaymentPeriodOptions() {
-          return this.buildRentPeriodOptions(this.propertyUnit.currentLease, this.propertyUnit.payments);
+          return this.buildRentPeriodOptions(this.propertyUnit.currentLease, this.propertyUnit.payments, [], { includeHistorical: true });
         },
 
         manualPaymentPeriodOptions() {
           const lease = this.payments.leases.find(row => row.id === this.payments.manualForm.leaseId);
-          return this.buildRentPeriodOptions(lease, this.payments.verifiedPayments, this.payments.pendingSubmissions);
+          return this.buildRentPeriodOptions(lease, this.payments.verifiedPayments, this.payments.pendingSubmissions, { includeHistorical: true });
         },
 
         tenantPaymentPeriodOptions() {
@@ -11542,20 +11576,46 @@
             return {
               start: null,
               end: null,
-              label: `Other: ${description}`
+              label: `Other: ${description}`,
+              purpose: 'other',
+              purposeDescription: description,
+              isHistorical: false
+            };
+          }
+
+          if (selectedPeriod.isHistorical) {
+            const form = this.paymentPeriodForm(scope);
+            const month = String(form?.historicalMonth || '').trim();
+            if (!/^\d{4}-\d{2}$/.test(month)) return { error: 'Select the historical rent month.' };
+            const startDate = this.monthStart(`${month}-01`);
+            if (!startDate) return { error: 'Select a valid historical rent month.' };
+            const baseLabel = `${this.rentPeriodBaseLabel(startDate)} rent`;
+            return {
+              start: this.toIsoDate(startDate),
+              end: this.toIsoDate(this.monthEnd(startDate)),
+              label: `${baseLabel} - historical`,
+              purpose: 'rent',
+              purposeDescription: 'Historical rent record',
+              isHistorical: true
             };
           }
 
           return {
             start: selectedPeriod.start,
             end: selectedPeriod.end,
-            label: selectedPeriod.saveLabel
+            label: selectedPeriod.saveLabel,
+            purpose: 'rent',
+            purposeDescription: null,
+            isHistorical: false
           };
         },
 
         syncPaymentPeriodAmount(scope) {
           const selected = this.selectedPaymentPeriod(scope);
           if (!selected) return;
+          const form = this.paymentPeriodForm(scope);
+          if (form && !selected.isHistorical) form.historicalMonth = '';
+          if (form && !selected.isOther) form.otherDescription = '';
           if (selected.isOther) return;
           if (scope === 'unitPayment') this.propertyUnit.paymentForm.amount = selected.amount;
           if (scope === 'manualPayment') this.payments.manualForm.amount = selected.amount;
@@ -11578,6 +11638,7 @@
             leaseId: '',
             amount: 0,
             rentPeriodKey: '',
+            historicalMonth: '',
             otherDescription: '',
             date: this.toIsoDate(new Date()),
             method: 'cash',
@@ -11633,6 +11694,9 @@
               rent_period_end: periodPayload.end,
               rent_period_label: periodPayload.label,
               notes: this.payments.manualForm.notes || null,
+              payment_purpose: periodPayload.purpose,
+              purpose_description: periodPayload.purposeDescription,
+              is_historical: periodPayload.isHistorical,
               recorded_by: this.profile.id
             })
             .select('id')
@@ -11730,7 +11794,7 @@
           if (!normalized.lease && payment.id) {
             const { data, error } = await supabaseClient
               .from('payments')
-              .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+              .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
               .eq('id', payment.id)
               .maybeSingle();
 
@@ -11764,6 +11828,7 @@
             const amountPaid = Number(receiptPayment.amount_paid || 0);
             const monthlyRent = Number(lease.monthly_rent || 0);
             const isRentPayment = Boolean(receiptPayment.rent_period_start)
+              && (receiptPayment.payment_purpose || 'rent') === 'rent'
               && !/^other(?::|$)/i.test(String(receiptPayment.rent_period_label || '').trim());
             const remainingBalance = isRentPayment ? Math.max(monthlyRent - amountPaid, 0) : null;
             const receiptNumber = receiptPayment.receipt_number || `RR-${receiptPayment.id?.slice(0, 8) || Date.now()}`;
@@ -13170,12 +13235,12 @@
           const [paymentsResult, submissionsResult, maintenanceResult] = await Promise.all([
             supabaseClient
               .from('payments')
-              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
+              .select('id, lease_id, submission_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, recorded_by, created_at, leases(id, monthly_rent, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city)))')
               .in('lease_id', leaseIds)
               .order('payment_date', { ascending: false }),
             supabaseClient
               .from('payment_submissions')
-              .select('id, lease_id, tenant_id, amount_claimed, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, reference_note, proof_image_url, proof_image_path, proof_image_name, proof_image_size, proof_image_uploaded_by, proof_image_uploaded_at, status, rejection_reason, reviewed_at, created_at')
+              .select('id, lease_id, tenant_id, amount_claimed, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, reference_note, proof_image_url, proof_image_path, proof_image_name, proof_image_size, proof_image_uploaded_by, proof_image_uploaded_at, status, rejection_reason, reviewed_at, created_at')
               .in('lease_id', leaseIds)
               .order('created_at', { ascending: false }),
             supabaseClient
@@ -13258,6 +13323,7 @@
               payment.lease_id === activeLease.id
               && Boolean(payment.rent_period_start)
               && this.monthKey(payment.rent_period_start) === currentRentMonth
+              && (payment.payment_purpose || 'rent') === 'rent'
               && !/^other(?::|$)/i.test(String(payment.rent_period_label || '').trim())
             ))
             .reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0);
@@ -13299,6 +13365,8 @@
               rent_period_start: periodPayload.start,
               rent_period_end: periodPayload.end,
               rent_period_label: periodPayload.label,
+              payment_purpose: periodPayload.purpose,
+              purpose_description: periodPayload.purposeDescription,
               reference_note: this.tenant.paymentForm.reference || null,
               status: 'pending'
             })
@@ -14145,7 +14213,7 @@
 
           const { data, error } = await supabaseClient
             .from('payments')
-            .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, created_at')
+            .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, created_at')
             .in('lease_id', leaseIds)
             .order('payment_date', { ascending: false });
 
@@ -14232,7 +14300,7 @@
           if (this.$refs.selectedLeaseDocumentInput) this.$refs.selectedLeaseDocumentInput.value = '';
           const { data, error } = await supabaseClient
             .from('payments')
-            .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, notes, receipt_number, created_at')
+            .select('id, lease_id, amount_paid, payment_date, payment_method, rent_period_start, rent_period_end, rent_period_label, payment_purpose, purpose_description, is_historical, notes, receipt_number, created_at')
             .eq('lease_id', lease.id)
             .order('payment_date', { ascending: false });
 
