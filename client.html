@@ -305,8 +305,8 @@
         <section class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-soft">
           <div class="mb-8">
             <img class="brand-logo mx-auto mb-5 h-48 w-auto" src="mushavo-logo.png" alt="Mushavo logo">
-            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authMode === 'staff-signup' ? 'Staff signup' : (authMode === 'landlord-signup' ? 'Create free landlord account' : 'Sign in to Mushavo')"></h1>
-            <p class="mt-2 text-sm leading-6 text-slate-500" x-text="authMode === 'staff-signup' ? 'Create a staff account and request access with a landlord code.' : (authMode === 'landlord-signup' ? 'For landlords only. Start with 1 property, 1 unit, finance tracking, and 1 IPM or PMC connection.' : 'Access your Mushavo account or create a free landlord account.')"></p>
+            <h1 class="text-2xl font-bold tracking-normal text-slate-900" x-text="authTitle()"></h1>
+            <p class="mt-2 text-sm leading-6 text-slate-500" x-text="authDescription()"></p>
           </div>
 
           <template x-if="successMessage">
@@ -347,7 +347,8 @@
             </button>
             <div class="space-y-2 border-t border-slate-100 pt-4 text-center">
               <button class="w-full rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100" type="button" @click="authMode = 'landlord-signup'; authError = ''; successMessage = ''">Create free landlord account</button>
-              <p class="text-xs leading-5 text-slate-500">Only landlords can sign up directly. IPM, PMC, staff, and tenant accounts require an invite.</p>
+              <button class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50" type="button" @click="authMode = 'tenant-signup'; authError = ''; successMessage = ''">Create tenant account</button>
+              <p class="text-xs leading-5 text-slate-500">Landlords and tenants can create accounts directly. IPM, PMC, and staff accounts are invite-only.</p>
             </div>
           </form>
 
@@ -379,6 +380,43 @@
             </div>
             <button class="flex w-full items-center justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="submit" :disabled="authLoading">
               <span x-show="!authLoading">Sign up for free</span>
+              <span x-show="authLoading">Creating...</span>
+            </button>
+            <button class="w-full text-center text-sm font-semibold text-slate-700 hover:underline" type="button" @click="authMode = 'login'; authError = ''; successMessage = ''">Back to sign in</button>
+          </form>
+
+          <form x-show="authMode === 'tenant-signup'" class="space-y-4" @submit.prevent="signUpTenant">
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" autocomplete="name" x-model.trim="tenantSignupForm.fullName" required>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" autocomplete="email" x-model.trim="tenantSignupForm.email" required>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="tenantSignupForm.phone" required>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">National ID number</span>
+              <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenantSignupForm.idNumber" required>
+            </label>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Password</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="password" minlength="8" autocomplete="new-password" x-model="tenantSignupForm.password" required>
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Confirm</span>
+                <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="password" minlength="8" autocomplete="new-password" x-model="tenantSignupForm.confirmPassword" required>
+              </label>
+            </div>
+            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-5 text-emerald-800">
+              Create your tenant profile first. When a landlord, IPM, or PMC requests to link you to a unit, you can accept from your Mushavo account.
+            </div>
+            <button class="flex w-full items-center justify-center rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60" type="submit" :disabled="authLoading">
+              <span x-show="!authLoading">Create tenant account</span>
               <span x-show="authLoading">Creating...</span>
             </button>
             <button class="w-full text-center text-sm font-semibold text-slate-700 hover:underline" type="button" @click="authMode = 'login'; authError = ''; successMessage = ''">Back to sign in</button>
@@ -478,10 +516,10 @@
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
                 <input
-                  class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600 outline-none"
+                  class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
                   type="text"
                   x-model="invite.form.fullName"
-                  readonly>
+                  required>
               </label>
 
               <label class="block">
@@ -492,6 +530,27 @@
                   x-model="invite.form.email"
                   readonly>
               </label>
+
+              <template x-if="invite.tokenRow?.role === 'tenant'">
+                <div class="space-y-5">
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
+                    <input
+                      class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      type="tel"
+                      x-model.trim="invite.form.phone"
+                      required>
+                  </label>
+                  <label class="block">
+                    <span class="mb-2 block text-sm font-medium text-slate-700">National ID number</span>
+                    <input
+                      class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                      type="text"
+                      x-model.trim="invite.form.idNumber"
+                      required>
+                  </label>
+                </div>
+              </template>
 
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Password</span>
@@ -2498,6 +2557,12 @@
                   </template>
                 </nav>
                 <div class="border-t border-slate-200 p-4 text-xs text-slate-500">
+                  <template x-if="mobileMenuPlanStatusLabel()">
+                    <div class="mb-4 rounded-xl border border-emerald-100 bg-emerald-50/80 p-3">
+                      <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Plan / Status</p>
+                      <span class="mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="mobileMenuPlanStatusBadgeClass()" x-text="mobileMenuPlanStatusLabel()"></span>
+                    </div>
+                  </template>
                   <p x-text="copyrightText()"></p>
                   <a class="mt-2 inline-flex font-semibold text-emerald-700 hover:underline" :href="supportMailto()">Contact Support</a>
                   <button class="mt-4 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-50" type="button" @click="logout">Logout</button>
@@ -3022,38 +3087,62 @@
                     </template>
 
                     <template x-if="propertyUnit.detailMode === 'assign'">
-                      <form class="mt-5 grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_0.9fr_0.9fr_0.9fr_auto]" @submit.prevent="assignTenantToSelectedUnit">
-                        <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Tenant</span>
+                      <div class="mt-5 space-y-4">
+                        <section class="rounded-xl border border-emerald-100 bg-emerald-50/70 p-4">
+                          <div class="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+                            <label class="block">
+                              <span class="mb-2 block text-sm font-medium text-slate-700">Find or invite tenant by email</span>
+                              <input class="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="email" x-model.trim="propertyUnit.assignForm.tenantEmail" placeholder="tenant@email.com">
+                            </label>
+                            <button class="rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="searchTenantForUnitAssignment" :disabled="propertyUnit.saving">Search Tenant</button>
+                          </div>
+                          <template x-if="propertyUnit.assignForm.tenantLookup">
+                            <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
+                              <p class="text-sm font-semibold text-emerald-900" x-text="propertyUnit.assignForm.tenantLookup.account_found ? 'Tenant account found on Mushavo.' : 'No tenant account found.'"></p>
+                              <p class="mt-1 text-sm text-emerald-800" x-text="propertyUnit.assignForm.tenantLookup.account_found ? `${propertyUnit.assignForm.tenantLookup.full_name || 'Tenant'} - ${propertyUnit.assignForm.tenantLookup.email}` : 'Create an invite link and send it to the tenant so they can create their Mushavo tenant account.'"></p>
+                              <div class="mt-3 flex flex-wrap gap-2">
+                                <button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="createUnitTenantInvite" :disabled="propertyUnit.saving" x-text="propertyUnit.assignForm.tenantLookup.account_found ? 'Send Link Request' : 'Create Invite Link'"></button>
+                                <button x-show="propertyUnit.assignForm.tenantInviteLink" class="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(propertyUnit.assignForm.tenantInviteLink)">Copy Link</button>
+                              </div>
+                              <p x-show="propertyUnit.assignForm.tenantInviteLink" class="mt-3 break-all rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800" x-text="propertyUnit.assignForm.tenantInviteLink"></p>
+                            </div>
+                          </template>
+                        </section>
+
+                        <form class="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_0.9fr_0.9fr_0.9fr_auto]" @submit.prevent="assignTenantToSelectedUnit">
+                          <label class="block">
+                            <span class="mb-2 block text-sm font-medium text-slate-700">Accepted tenant</span>
                           <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="propertyUnit.assignForm.tenantId" required x-effect='$nextTick(() => { $el.value = propertyUnit.assignForm.tenantId ?? "" })'>
-                            <option value="">Unassigned tenant</option>
+                            <option value="">Select accepted tenant</option>
                             <template x-for="tenant in unassignedTenants()" :key="tenant.id">
                               <option :value="tenant.id" x-text="tenant.full_name"></option>
                             </template>
                           </select>
-                        </label>
-                        <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Start date</span>
-                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="propertyUnit.assignForm.startDate" required>
-                        </label>
-                        <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">End date</span>
-                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="propertyUnit.assignForm.endDate" required>
-                        </label>
-                        <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Monthly rent</span>
-                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="propertyUnit.assignForm.rent" required>
-                        </label>
-                        <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700">Deposit</span>
-                          <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="propertyUnit.assignForm.depositAmount">
-                        </label>
-                        <label class="flex self-end items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
-                          <input class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" type="checkbox" x-model="propertyUnit.assignForm.depositPaid">
-                          Deposit paid
-                        </label>
-                        <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600" type="submit">Assign</button>
-                      </form>
+                            <span class="mt-1 block text-xs text-slate-500">After the tenant accepts the invite, refresh or wait for realtime sync and select them here.</span>
+                          </label>
+                          <label class="block">
+                            <span class="mb-2 block text-sm font-medium text-slate-700">Start date</span>
+                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="propertyUnit.assignForm.startDate" required>
+                          </label>
+                          <label class="block">
+                            <span class="mb-2 block text-sm font-medium text-slate-700">End date</span>
+                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="date" x-model="propertyUnit.assignForm.endDate" required>
+                          </label>
+                          <label class="block">
+                            <span class="mb-2 block text-sm font-medium text-slate-700">Monthly rent</span>
+                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="propertyUnit.assignForm.rent" required>
+                          </label>
+                          <label class="block">
+                            <span class="mb-2 block text-sm font-medium text-slate-700">Deposit</span>
+                            <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0" step="0.01" x-model.number="propertyUnit.assignForm.depositAmount">
+                          </label>
+                          <label class="flex self-end items-center gap-2 rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-medium text-slate-700">
+                            <input class="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500" type="checkbox" x-model="propertyUnit.assignForm.depositPaid">
+                            Deposit paid
+                          </label>
+                          <button class="self-end rounded-lg bg-emerald-500 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-600" type="submit">Assign</button>
+                        </form>
+                      </div>
                     </template>
 
                     <template x-if="propertyUnit.detailMode === 'payment' && canViewFinancials()">
@@ -4914,7 +5003,15 @@
                   <template x-for="notification in notifications.items" :key="notification.id">
                     <button class="flex w-full items-start gap-3 px-5 py-4 text-left hover:bg-slate-50" type="button" :class="notification.is_read ? 'bg-white' : 'bg-emerald-50/60'" @click="openNotification(notification)">
                       <span class="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" :class="notification.is_read ? 'bg-slate-100 text-slate-500' : 'bg-emerald-500 text-white'" x-html="navIcon(notificationIcon(notification.type))"></span>
-                      <span class="min-w-0 flex-1"><span class="block text-sm font-semibold text-slate-900" x-text="notificationTypeLabel(notification.type)"></span><span class="mt-1 block text-sm text-slate-600" x-text="notification.message"></span><span class="mt-1 block text-xs text-slate-500" x-text="formatDateTime(notification.created_at)"></span></span>
+                      <span class="min-w-0 flex-1">
+                        <span class="block text-sm font-semibold text-slate-900" x-text="notificationTypeLabel(notification.type)"></span>
+                        <span class="mt-1 block text-sm text-slate-600" x-text="notification.message"></span>
+                        <span x-show="notification.type === 'tenant_link_request'" class="mt-3 flex flex-wrap gap-2">
+                          <span role="button" tabindex="0" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700" @click.stop="respondTenantLinkRequest(notification, true)" @keydown.enter.stop.prevent="respondTenantLinkRequest(notification, true)">Accept</span>
+                          <span role="button" tabindex="0" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100" @click.stop="respondTenantLinkRequest(notification, false)" @keydown.enter.stop.prevent="respondTenantLinkRequest(notification, false)">Reject</span>
+                        </span>
+                        <span class="mt-1 block text-xs text-slate-500" x-text="formatDateTime(notification.created_at)"></span>
+                      </span>
                     </button>
                   </template>
                 </div>
@@ -5096,6 +5193,14 @@
           password: '',
           confirmPassword: ''
         },
+        tenantSignupForm: {
+          fullName: '',
+          email: '',
+          phone: '',
+          idNumber: '',
+          password: '',
+          confirmPassword: ''
+        },
         staffSignupForm: {
           fullName: '',
           phone: '',
@@ -5114,6 +5219,8 @@
           form: {
             fullName: '',
             email: '',
+            phone: '',
+            idNumber: '',
             password: '',
             confirmPassword: ''
           }
@@ -5386,6 +5493,9 @@
           },
           assignForm: {
             tenantId: '',
+            tenantEmail: '',
+            tenantLookup: null,
+            tenantInviteLink: '',
             startDate: '',
             endDate: '',
             rent: 0,
@@ -5713,6 +5823,26 @@
           return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timerId));
         },
 
+        authTitle() {
+          const titles = {
+            login: 'Sign in to Mushavo',
+            'landlord-signup': 'Create landlord account',
+            'tenant-signup': 'Create tenant account',
+            'staff-signup': 'Create staff account'
+          };
+          return titles[this.authMode] || titles.login;
+        },
+
+        authDescription() {
+          const descriptions = {
+            login: 'Access is invite-only for staff, IPM, and PMC accounts. Landlords and tenants can create accounts directly.',
+            'landlord-signup': 'Create your free landlord account with all required details.',
+            'tenant-signup': 'Create your tenant profile so landlords, IPMs, and PMCs can request to link you to a unit.',
+            'staff-signup': 'Use your landlord code to request staff access.'
+          };
+          return descriptions[this.authMode] || descriptions.login;
+        },
+
         hasInviteHash() {
           const hash = window.location.hash || '';
           return hash.startsWith('#invite=');
@@ -5757,6 +5887,8 @@
           this.invite.tokenRow = tokenRow;
           this.invite.form.fullName = metadata.full_name || metadata.fullName || '';
           this.invite.form.email = tokenRow.email || '';
+          this.invite.form.phone = metadata.phone || '';
+          this.invite.form.idNumber = metadata.id_number || metadata.idNumber || '';
           this.invite.form.password = '';
           this.invite.form.confirmPassword = '';
           this.invite.loading = false;
@@ -5780,6 +5912,11 @@
             return;
           }
 
+          if (this.invite.tokenRow.role === 'tenant' && (!this.invite.form.fullName || !this.invite.form.phone || !this.invite.form.idNumber)) {
+            this.invite.submitError = 'Name, phone number, and national ID number are required for tenant accounts.';
+            return;
+          }
+
           this.invite.submitting = true;
           await supabaseClient.auth.signOut();
 
@@ -5790,7 +5927,7 @@
             id: userId,
             landlord_id: null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
-            phone: metadata.phone || null,
+            phone: this.invite.form.phone || metadata.phone || null,
             email: inviteEmail,
             role: 'tenant'
           });
@@ -5834,7 +5971,10 @@
               }
 
               const { error: tenantLinkError } = await supabaseClient.rpc('accept_tenant_invite', {
-                p_invite_id: tokenRow.id
+                p_invite_id: tokenRow.id,
+                p_full_name: this.invite.form.fullName,
+                p_phone: this.invite.form.phone,
+                p_id_number: this.invite.form.idNumber
               });
 
               if (tenantLinkError) {
@@ -5878,7 +6018,7 @@
             landlord_id: ['staff', 'management_staff'].includes(tokenRow.role) ? tokenRow.landlord_id : null,
             country_id: ['landlord', 'management_leader', 'admin_staff'].includes(tokenRow.role) || (tokenRow.role === 'staff' && metadata.staff_type === 'freelancer') ? (metadata.country_id || tokenRow.country_id || null) : null,
             full_name: this.invite.form.fullName || metadata.full_name || metadata.fullName || inviteEmail,
-            phone: metadata.phone || null,
+            phone: tokenRow.role === 'tenant' ? (this.invite.form.phone || metadata.phone || null) : (metadata.phone || null),
             email: inviteEmail,
             role: tokenRow.role,
             staff_type: tokenRow.role === 'staff' ? (metadata.staff_type === 'freelancer' ? 'freelancer' : 'landlord') : 'landlord',
@@ -6001,7 +6141,10 @@
 
           if (tokenRow.role === 'tenant') {
             const { error: tenantError } = await supabaseClient.rpc('accept_tenant_invite', {
-              p_invite_id: tokenRow.id
+              p_invite_id: tokenRow.id,
+              p_full_name: this.invite.form.fullName,
+              p_phone: this.invite.form.phone,
+              p_id_number: this.invite.form.idNumber
             });
 
             if (tenantError) {
@@ -6089,6 +6232,7 @@
 
           if (this.currentShell !== 'app') return false;
 
+          if (page === 'tenants') return false;
           if (page === 'dashboard' || page === 'notifications' || page === 'settings') return true;
           if (page === 'my-account') return ['landlord', 'management_leader'].includes(this.profile?.role) || (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer');
           if (page === 'finance') return this.profile?.role === 'landlord' || Boolean(this.permissions.can_view_finance);
@@ -6099,7 +6243,7 @@
 
         restorePage(defaultPage) {
           const storedPage = this.readStoredPage();
-          const normalizedPage = storedPage === 'units' ? 'properties' : storedPage;
+          const normalizedPage = storedPage === 'units' || storedPage === 'tenants' ? 'properties' : storedPage;
           return this.isPageAllowed(normalizedPage) ? normalizedPage : defaultPage;
         },
 
@@ -10043,6 +10187,26 @@
           });
         },
 
+        mobileMenuPlanStatusLabel() {
+          if (this.profile?.role === 'landlord' || this.profile?.role === 'management_leader') {
+            return this.subscriptionDashboardLabel();
+          }
+          if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') {
+            return this.staffProfileSubscriptionLabel();
+          }
+          return '';
+        },
+
+        mobileMenuPlanStatusBadgeClass() {
+          if (this.profile?.role === 'landlord' || this.profile?.role === 'management_leader') {
+            return this.subscriptionDashboardBadgeClass();
+          }
+          if (this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer') {
+            return this.staffProfileSubscriptionBadgeClass();
+          }
+          return 'bg-slate-100 text-slate-700';
+        },
+
         async copyText(text) {
           if (!text) return;
 
@@ -10067,7 +10231,6 @@
           const items = [
             { page: 'dashboard', label: 'Dashboard', icon: 'dashboard', visible: true },
             { page: 'properties', label: 'Properties', icon: 'building', visible: this.canShowAppPage('properties') },
-            { page: 'tenants', label: 'Tenants', icon: 'users', visible: this.canShowAppPage('tenants') },
             { page: 'leases', label: 'Leases', icon: 'file', visible: this.canShowAppPage('leases') },
             { page: 'payments', label: 'Payments', icon: 'card', visible: this.canShowAppPage('payments') },
             { page: 'finance', label: 'Finance', icon: 'chart', visible: this.canShowAppPage('finance') },
@@ -10114,7 +10277,6 @@
 
           const permissionMap = {
             properties: true,
-            tenants: true,
             leases: true,
             payments: true,
             finance: true,
@@ -11358,12 +11520,91 @@
           this.propertyUnit.detailMode = 'assign';
           this.propertyUnit.assignForm = {
             tenantId: '',
+            tenantEmail: '',
+            tenantLookup: null,
+            tenantInviteLink: '',
             startDate: this.toIsoDate(new Date()),
             endDate: '',
             rent: Number(unit.monthly_rent || 0),
             depositAmount: 0,
             depositPaid: false
           };
+        },
+
+        async searchTenantForUnitAssignment() {
+          this.propertyUnit.error = '';
+          this.propertyUnit.assignForm.tenantLookup = null;
+          this.propertyUnit.assignForm.tenantInviteLink = '';
+
+          const email = String(this.propertyUnit.assignForm.tenantEmail || '').trim().toLowerCase();
+          if (!email) {
+            this.propertyUnit.error = 'Enter the tenant email address first.';
+            return;
+          }
+
+          this.propertyUnit.saving = true;
+          const { data, error } = await supabaseClient.rpc('search_tenant_by_email', {
+            p_email: email
+          });
+          this.propertyUnit.saving = false;
+
+          if (error) {
+            this.propertyUnit.error = this.friendlyDatabaseError(error, 'Tenant search could not be completed. Check your permissions and try again.');
+            return;
+          }
+
+          const lookup = Array.isArray(data) ? data[0] : data;
+          this.propertyUnit.assignForm.tenantLookup = lookup || {
+            tenant_profile_id: null,
+            full_name: '',
+            email,
+            phone: '',
+            account_found: false
+          };
+        },
+
+        async createUnitTenantInvite() {
+          this.propertyUnit.error = '';
+          this.successMessage = '';
+
+          const lookup = this.propertyUnit.assignForm.tenantLookup;
+          const email = String(lookup?.email || this.propertyUnit.assignForm.tenantEmail || '').trim().toLowerCase();
+          const landlordId = this.currentLandlordId();
+
+          if (!landlordId) {
+            this.propertyUnit.error = 'Select a landlord before creating a tenant request.';
+            return;
+          }
+
+          if (!email) {
+            this.propertyUnit.error = 'Search the tenant email before creating an invite.';
+            return;
+          }
+
+          const fallbackName = email.split('@')[0] || 'Tenant';
+          this.propertyUnit.saving = true;
+          const { data, error } = await supabaseClient.rpc('create_tenant_invite', {
+            p_landlord_id: landlordId,
+            p_full_name: lookup?.full_name || fallbackName,
+            p_phone: lookup?.phone || '',
+            p_email: email,
+            p_id_number: ''
+          });
+          this.propertyUnit.saving = false;
+
+          if (error) {
+            this.propertyUnit.error = this.friendlyDatabaseError(error, 'Tenant invite could not be created. Check your plan limits and permissions, then try again.');
+            return;
+          }
+
+          const inviteRow = Array.isArray(data) ? data[0] : data;
+          this.propertyUnit.assignForm.tenantInviteLink = this.buildInviteLink(inviteRow?.invite_token || '');
+          this.successMessage = lookup?.account_found
+            ? 'Tenant link request created. Copy the link and send it to the tenant to accept.'
+            : 'Tenant invite link created. Copy and send it to the tenant to create their account.';
+
+          await this.loadTenantLeaseData();
+          await this.loadPropertyUnitData();
         },
 
         unassignedTenants() {
@@ -14875,6 +15116,34 @@
           this.notifications.saving = false;
         },
 
+        async respondTenantLinkRequest(notification, accept) {
+          if (!notification?.related_id) return;
+
+          this.notifications.error = '';
+          this.notifications.saving = true;
+
+          const { error } = await supabaseClient.rpc('respond_tenant_link_request', {
+            p_tenant_id: notification.related_id,
+            p_accept: Boolean(accept)
+          });
+
+          if (error) {
+            this.notifications.error = this.cleanErrorMessage(error.message);
+            this.notifications.saving = false;
+            return;
+          }
+
+          await this.loadNotifications();
+          await this.loadUnreadCount(this.profile.id);
+          if (accept) {
+            await this.loadTenantData();
+            this.successMessage = 'Tenant request accepted.';
+          } else {
+            this.successMessage = 'Tenant request rejected.';
+          }
+          this.notifications.saving = false;
+        },
+
         async openNotification(notification) {
           if (!notification) return;
 
@@ -14938,7 +15207,8 @@
             lease_expiring: 'Lease Expiring',
             maintenance_new: 'Maintenance Request',
             maintenance_updated: 'Maintenance Updated',
-            rent_due: 'Rent Due'
+            rent_due: 'Rent Due',
+            tenant_link_request: 'Tenant Link Request'
           };
           return labels[type] || this.titleCase(type);
         },
@@ -15176,9 +15446,49 @@
           return { available: true, message: '' };
         },
 
+        async checkTenantSignupIdentityAvailable(email, phone, idNumber) {
+          const normalizedEmail = String(email || '').trim().toLowerCase();
+          const normalizedPhone = String(phone || '').replace(/\D/g, '');
+          const normalizedId = String(idNumber || '').trim();
+
+          if (!normalizedEmail || normalizedPhone.length < 6 || !normalizedId) {
+            return {
+              available: false,
+              message: 'Enter a valid email, phone number, and national ID number before creating the account.'
+            };
+          }
+
+          const { data, error } = await supabaseClient.rpc('tenant_signup_identity_exists', {
+            p_email: normalizedEmail,
+            p_phone: phone || '',
+            p_id_number: normalizedId
+          });
+
+          if (error) {
+            return {
+              available: false,
+              message: 'Mushavo could not safely check whether this tenant account already exists. Please contact Mushavo support.'
+            };
+          }
+
+          if (data === true) {
+            return {
+              available: false,
+              message: 'Your account already exists. Please contact Mushavo support.'
+            };
+          }
+
+          return { available: true, message: '' };
+        },
+
         async signUpLandlord() {
           this.authError = '';
           this.successMessage = '';
+
+          if (!this.landlordSignupForm.fullName || !this.landlordSignupForm.phone || !this.landlordSignupForm.email || !this.landlordSignupForm.password || !this.landlordSignupForm.confirmPassword) {
+            this.authError = 'All landlord signup details are required.';
+            return;
+          }
 
           if (this.landlordSignupForm.password !== this.landlordSignupForm.confirmPassword) {
             this.authError = 'Passwords do not match.';
@@ -15251,6 +15561,97 @@
           this.authMode = 'login';
           this.authLoading = false;
           this.successMessage = 'Free landlord account created. Sign in to start with your first property and unit.';
+        },
+
+        async signUpTenant() {
+          this.authError = '';
+          this.successMessage = '';
+
+          if (!this.tenantSignupForm.fullName || !this.tenantSignupForm.email || !this.tenantSignupForm.phone || !this.tenantSignupForm.idNumber || !this.tenantSignupForm.password || !this.tenantSignupForm.confirmPassword) {
+            this.authError = 'All tenant signup details are required.';
+            return;
+          }
+
+          if (this.tenantSignupForm.password !== this.tenantSignupForm.confirmPassword) {
+            this.authError = 'Passwords do not match.';
+            return;
+          }
+
+          if (this.tenantSignupForm.password.length < 8) {
+            this.authError = 'Password must be at least 8 characters.';
+            return;
+          }
+
+          this.authLoading = true;
+          const availability = await this.checkTenantSignupIdentityAvailable(
+            this.tenantSignupForm.email,
+            this.tenantSignupForm.phone,
+            this.tenantSignupForm.idNumber
+          );
+
+          if (!availability.available) {
+            this.authError = availability.message;
+            this.authLoading = false;
+            return;
+          }
+
+          await supabaseClient.auth.signOut();
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: this.tenantSignupForm.email,
+            password: this.tenantSignupForm.password,
+            options: {
+              data: {
+                mushavo_signup: 'tenant_direct',
+                full_name: this.tenantSignupForm.fullName,
+                phone: this.tenantSignupForm.phone,
+                id_number: this.tenantSignupForm.idNumber
+              }
+            }
+          });
+
+          if (error) {
+            this.authError = /already registered|already exists|user exists/i.test(error.message || '')
+              ? 'Your account already exists. Please contact Mushavo support.'
+              : error.message;
+            this.authLoading = false;
+            return;
+          }
+
+          if (!data.session || !data.user) {
+            this.authLoading = false;
+            this.successMessage = 'Check your email to verify your tenant account, then sign in to finish setup.';
+            this.authMode = 'login';
+            return;
+          }
+
+          const { error: registerError } = await supabaseClient.rpc('register_tenant_account', {
+            p_full_name: this.tenantSignupForm.fullName,
+            p_phone: this.tenantSignupForm.phone,
+            p_id_number: this.tenantSignupForm.idNumber
+          });
+
+          if (registerError) {
+            this.authError = /already exists|phone number|email|national id|duplicate/i.test(registerError.message || '')
+              ? 'Your account already exists. Please contact Mushavo support.'
+              : this.friendlyDatabaseError(registerError, 'Your tenant account could not be created. Please contact Mushavo support.');
+            this.authLoading = false;
+            return;
+          }
+
+          await supabaseClient.auth.signOut();
+          this.loginForm.email = this.tenantSignupForm.email;
+          this.tenantSignupForm = {
+            fullName: '',
+            email: '',
+            phone: '',
+            idNumber: '',
+            password: '',
+            confirmPassword: ''
+          };
+          this.authMode = 'login';
+          this.authLoading = false;
+          this.successMessage = 'Tenant account created. Sign in to view requests and your unit details.';
         },
 
         async signUpStaff() {
@@ -15367,6 +15768,23 @@
               const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
                 p_full_name: authUser.user_metadata?.full_name || authUser.email || 'Landlord',
                 p_phone: authUser.user_metadata?.phone || ''
+              });
+              if (!registerError) {
+                const retry = await supabaseClient
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', authUser.id)
+                  .maybeSingle();
+                profile = retry.data;
+                profileError = retry.error;
+              }
+            }
+
+            if ((profileError || !profile) && authUser.user_metadata?.mushavo_signup === 'tenant_direct') {
+              const { error: registerError } = await supabaseClient.rpc('register_tenant_account', {
+                p_full_name: authUser.user_metadata?.full_name || authUser.email || 'Tenant',
+                p_phone: authUser.user_metadata?.phone || '',
+                p_id_number: authUser.user_metadata?.id_number || ''
               });
               if (!registerError) {
                 const retry = await supabaseClient
@@ -15815,7 +16233,7 @@
           if (this.currentShell === 'app') {
             if (this.currentPage === 'dashboard') await this.loadDashboardData();
           if (this.currentPage === 'properties') await this.loadPropertyUnitData();
-            if (this.currentPage === 'tenants' || this.currentPage === 'leases') await this.loadTenantLeaseData();
+            if (this.currentPage === 'leases') await this.loadTenantLeaseData();
             if (this.currentPage === 'payments') await this.loadPaymentsData();
             if (this.currentPage === 'finance') await this.loadLandlordFinanceData();
             if (this.currentPage === 'maintenance') await this.loadMaintenanceData();
@@ -15850,7 +16268,7 @@
             await this.loadPropertyUnitData();
           }
 
-          if ((page === 'tenants' || page === 'leases') && this.currentShell === 'app') {
+          if (page === 'leases' && this.currentShell === 'app') {
             await this.loadTenantLeaseData();
           }
 
