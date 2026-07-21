@@ -1112,10 +1112,10 @@
               <h2 class="text-lg font-bold text-slate-900" x-text="admin.financeForm.id ? 'Edit Payment' : 'Record Payment'"></h2>
               <button x-show="admin.financeForm.id" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="resetAdminFinanceForm">Cancel Edit</button>
             </div>
-            <form class="mt-5 grid gap-3 lg:grid-cols-[0.8fr_1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_1fr_auto]" @submit.prevent="recordPlatformPayment">
+            <form class="mt-5 grid gap-3 lg:grid-cols-[0.8fr_1.2fr_1.2fr_0.8fr_0.8fr_0.8fr_0.8fr_1fr_auto]" @submit.prevent="recordPlatformPayment">
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700">Payment for</span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''" required x-effect='$nextTick(() => { $el.value = admin.financeForm.payerType ?? "" })'>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.payerType" @change="admin.financeForm.accountId = ''; resetAdminFinancePlanSelection()" required x-effect='$nextTick(() => { $el.value = admin.financeForm.payerType ?? "" })'>
                   <option value="landlord">Landlord</option>
                   <option value="management">PMC</option>
                   <option value="staff">IPM</option>
@@ -1123,7 +1123,7 @@
               </label>
               <label class="block">
                 <span class="mb-2 block text-sm font-medium text-slate-700" x-text="admin.financeForm.payerType === 'staff' ? 'IPM' : (admin.financeForm.payerType === 'management' ? 'PMC' : 'Landlord')"></span>
-                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" required x-effect='$nextTick(() => { $el.value = admin.financeForm.accountId ?? "" })'>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.accountId" @change="resetAdminFinancePlanSelection()" required x-effect='$nextTick(() => { $el.value = admin.financeForm.accountId ?? "" })'>
                   <option value="" x-text="admin.financeForm.payerType === 'staff' ? 'Select IPM' : (admin.financeForm.payerType === 'management' ? 'Select PMC' : 'Select landlord')"></option>
                   <template x-for="row in adminCountryLandlords().filter(item => item.accepted)" :key="row.profile_id">
                     <option x-show="admin.financeForm.payerType === 'landlord'" :value="row.profile_id" x-text="`${row.full_name} - ${row.email}`"></option>
@@ -1133,6 +1133,15 @@
                   </template>
                   <template x-for="staffRow in selectedAdminAcceptedStaffProfiles()" :key="`finance-staff-${staffRow.id}`">
                     <option x-show="admin.financeForm.payerType === 'staff'" :value="staffRow.id" x-text="`${staffRow.full_name || staffRow.email} - ${staffRow.email} (${adminCountryName(adminStaffCountryId(staffRow))})`"></option>
+                  </template>
+                </select>
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-medium text-slate-700">Payment is for</span>
+                <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.financeForm.pricingPlanChoice" @change="applyAdminFinancePlanSelection()" required x-effect='$nextTick(() => { $el.value = admin.financeForm.pricingPlanChoice ?? "" })'>
+                  <option value="">Select subscription plan</option>
+                  <template x-for="option in adminFinancePlanOptions()" :key="option.value">
+                    <option :value="option.value" x-text="option.label"></option>
                   </template>
                 </select>
               </label>
@@ -1183,6 +1192,7 @@
                     <th class="px-4 py-3 font-semibold">Country</th>
                     <th class="px-4 py-3 font-semibold">Type</th>
                     <th class="px-4 py-3 font-semibold">Account</th>
+                    <th class="px-4 py-3 font-semibold">Subscription Plan</th>
                     <th class="px-4 py-3 font-semibold">Amount</th>
                     <th class="px-4 py-3 font-semibold">Paid Date</th>
                     <th class="px-4 py-3 font-semibold">Period</th>
@@ -1192,13 +1202,14 @@
                 </thead>
                 <tbody class="divide-y divide-slate-200">
                   <template x-if="!admin.loading && selectedAdminFinancePayments().length === 0">
-                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No platform payments recorded.</td></tr>
+                    <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="9">No platform payments recorded.</td></tr>
                   </template>
                   <template x-for="payment in selectedAdminFinancePayments()" :key="payment.id">
                     <tr class="odd:bg-white even:bg-slate-50/60">
                       <td class="px-4 py-3 text-slate-700" x-text="adminCountryName(payment.country_id)"></td>
                       <td class="px-4 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="paymentPayerBadgeClass(payment.payer_type)" x-text="paymentPayerTypeLabel(payment)"></span></td>
                       <td class="px-4 py-3"><p class="font-semibold text-slate-900" x-text="adminPaymentAccountName(payment)"></p><p class="mt-1 text-xs text-slate-500" x-text="adminPaymentAccountEmail(payment)"></p></td>
+                      <td class="px-4 py-3 text-slate-700" x-text="platformPaymentPlanLabel(payment)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatCurrency(payment.amount_paid)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.paid_at)"></td>
                       <td class="px-4 py-3 text-slate-700" x-text="`${formatDate(payment.period_start)} - ${formatDate(payment.period_end)}`"></td>
@@ -1249,6 +1260,7 @@
                 <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                   <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                     <tr>
+                      <th class="px-4 py-3 font-semibold">Subscription Plan</th>
                       <th class="px-4 py-3 font-semibold">Amount</th>
                       <th class="px-4 py-3 font-semibold">Paid Date</th>
                       <th class="px-4 py-3 font-semibold">From</th>
@@ -1260,11 +1272,12 @@
                   <tbody class="divide-y divide-slate-200">
                     <template x-if="admin.paymentHistory.rows.length === 0">
                       <tr>
-                        <td class="px-4 py-8 text-center text-sm text-slate-500" colspan="6">No payments recorded for this account yet.</td>
+                        <td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No payments recorded for this account yet.</td>
                       </tr>
                     </template>
                     <template x-for="payment in admin.paymentHistory.rows" :key="`payment-history-${payment.id}`">
                       <tr class="odd:bg-white even:bg-slate-50/60">
+                        <td class="px-4 py-3 text-slate-700" x-text="platformPaymentPlanLabel(payment)"></td>
                         <td class="px-4 py-3 font-semibold text-slate-900" x-text="formatCurrency(payment.amount_paid)"></td>
                         <td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.paid_at)"></td>
                         <td class="px-4 py-3 text-slate-700" x-text="formatDate(payment.period_start)"></td>
@@ -5182,6 +5195,7 @@
             staffId: '',
             managementCompanyId: '',
             countryId: '',
+            pricingPlanChoice: '',
             amount: 0,
             paidAt: '',
             periodStart: '',
@@ -6738,7 +6752,7 @@
               .is('archived_at', null),
             supabaseClient
               .from('platform_payments')
-              .select('id, payer_type, landlord_id, staff_id, management_company_id, country_id, amount_paid, paid_at, period_start, period_end, notes, recorded_by, created_at, landlord:profiles!platform_payments_landlord_id_fkey(id, country_id, full_name, email), staff:profiles!platform_payments_staff_id_fkey(id, country_id, full_name, email), management_company:management_companies!platform_payments_management_company_id_fkey(id, country_id, company_name, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, email))')
+              .select('id, payer_type, landlord_id, staff_id, management_company_id, country_id, payment_for, pricing_plan_id, plan_key, plan_name, billing_cycle, amount_paid, paid_at, period_start, period_end, notes, recorded_by, created_at, landlord:profiles!platform_payments_landlord_id_fkey(id, country_id, full_name, email), staff:profiles!platform_payments_staff_id_fkey(id, country_id, full_name, email), management_company:management_companies!platform_payments_management_company_id_fkey(id, country_id, company_name, leader:profiles!management_companies_leader_profile_id_fkey(id, full_name, email)), pricing_plan:pricing_plans!platform_payments_pricing_plan_id_fkey(id, plan_key, plan_name, account_type, currency_code, monthly_amount, yearly_amount)')
               .order('paid_at', { ascending: false })
             ,
             supabaseClient
@@ -7956,6 +7970,7 @@
             staffId: '',
             managementCompanyId: '',
             countryId: '',
+            pricingPlanChoice: '',
             amount: 0,
             paidAt: today,
             periodStart: today,
@@ -7975,12 +7990,28 @@
           const staff = payerType === 'staff' ? this.admin.staffProfiles.find(row => row.id === accountId) || null : null;
           const managementCompany = payerType === 'management' ? this.admin.managementCompanies.find(row => row.id === accountId) || null : null;
           const staffCountryId = this.adminStaffCountryId(staff);
+          const selectedPlan = this.findAdminFinancePlanOption(this.admin.financeForm.pricingPlanChoice);
+          if (!selectedPlan) {
+            this.admin.error = 'Select which subscription plan this payment is for.';
+            this.admin.saving = false;
+            return;
+          }
+          if (Number(this.admin.financeForm.amount || 0) <= 0) {
+            this.admin.error = 'Enter the payment amount before saving.';
+            this.admin.saving = false;
+            return;
+          }
           const payload = {
             payer_type: payerType,
             landlord_id: payerType === 'landlord' ? accountId : null,
             staff_id: payerType === 'staff' ? accountId : null,
             management_company_id: payerType === 'management' ? accountId : null,
             country_id: landlord?.country_id || staffCountryId || managementCompany?.country_id || this.admin.financeForm.countryId || null,
+            payment_for: 'subscription',
+            pricing_plan_id: selectedPlan?.plan?.id || null,
+            plan_key: selectedPlan?.plan?.plan_key || null,
+            plan_name: selectedPlan?.plan?.plan_name || null,
+            billing_cycle: selectedPlan?.cycle || null,
             amount_paid: Number(this.admin.financeForm.amount || 0),
             paid_at: this.admin.financeForm.paidAt,
             period_start: this.admin.financeForm.periodStart,
@@ -8027,6 +8058,7 @@
             staffId: payment.staff_id || '',
             managementCompanyId: payment.management_company_id || '',
             countryId: payment.country_id || payment.landlord?.country_id || payment.staff?.country_id || payment.management_company?.country_id || '',
+            pricingPlanChoice: this.adminFinancePlanChoiceForPayment(payment),
             amount: Number(payment.amount_paid || 0),
             paidAt: String(payment.paid_at || '').slice(0, 10),
             periodStart: String(payment.period_start || '').slice(0, 10),
@@ -8223,6 +8255,96 @@
               return row.country_id === countryId || (countryCode && String(row.country_code || '').toUpperCase() === countryCode);
             })
             .sort((a, b) => Number(a.display_order || 100) - Number(b.display_order || 100));
+        },
+
+        pricingPlanStableKey(plan = {}) {
+          if (plan.id) return `id:${plan.id}`;
+          return [
+            'plan',
+            String(plan.country_id || ''),
+            String(plan.country_code || '').toUpperCase(),
+            String(plan.account_type || ''),
+            String(plan.plan_key || '')
+          ].join(':');
+        },
+
+        adminFinanceAccountType() {
+          const payerType = this.admin?.financeForm?.payerType || 'landlord';
+          if (payerType === 'staff') return 'ipm';
+          if (payerType === 'management') return 'pmc';
+          return 'landlord';
+        },
+
+        adminFinanceSelectedAccountCountryId() {
+          const form = this.admin?.financeForm || {};
+          const accountId = form.accountId || form.landlordId || form.staffId || form.managementCompanyId || '';
+          if (!accountId) return form.countryId || (this.admin?.selectedCountryId && !['all', 'unassigned'].includes(this.admin.selectedCountryId) ? this.admin.selectedCountryId : '');
+          if ((form.payerType || 'landlord') === 'staff') {
+            return this.adminStaffCountryId((this.admin.staffProfiles || []).find(row => row.id === accountId)) || form.countryId || '';
+          }
+          if (form.payerType === 'management') {
+            return (this.admin.managementCompanies || []).find(row => row.id === accountId)?.country_id || form.countryId || '';
+          }
+          return (this.admin.landlords || []).find(row => row.profile_id === accountId)?.country_id || form.countryId || '';
+        },
+
+        adminFinancePlanOptions() {
+          const accountType = this.adminFinanceAccountType();
+          const countryId = this.adminFinanceSelectedAccountCountryId();
+          const rows = this.pricingPlanRows(accountType, countryId);
+          const options = [];
+          rows.forEach(plan => {
+            const baseKey = this.pricingPlanStableKey(plan);
+            ['monthly', 'yearly'].forEach(cycle => {
+              const amountKey = cycle === 'yearly' ? 'yearly_amount' : 'monthly_amount';
+              const amount = Number(plan[amountKey] || 0);
+              if (amount <= 0 && !plan.custom_price_label) return;
+              const priceLabel = this.formatPricingAmount(plan.currency_code, amount, plan.custom_price_label);
+              const cycleLabel = cycle === 'yearly' ? 'Yearly' : 'Monthly';
+              options.push({
+                value: `${baseKey}|${cycle}`,
+                label: `${plan.plan_name || this.titleCase(plan.plan_key)} - ${cycleLabel} (${priceLabel})`,
+                plan,
+                cycle,
+                amount
+              });
+            });
+          });
+          return options;
+        },
+
+        findAdminFinancePlanOption(value = '') {
+          if (!value) return null;
+          return this.adminFinancePlanOptions().find(option => option.value === value) || null;
+        },
+
+        resetAdminFinancePlanSelection() {
+          this.admin.financeForm.pricingPlanChoice = '';
+          this.admin.financeForm.amount = 0;
+        },
+
+        applyAdminFinancePlanSelection() {
+          const option = this.findAdminFinancePlanOption(this.admin.financeForm.pricingPlanChoice);
+          if (!option) return;
+          this.admin.financeForm.amount = Number(option.amount || 0);
+        },
+
+        adminFinancePlanChoiceForPayment(payment = {}) {
+          if (!payment?.plan_key && !payment?.pricing_plan_id) return '';
+          const accountType = payment.payer_type === 'staff' ? 'ipm' : payment.payer_type === 'management' ? 'pmc' : 'landlord';
+          const cycle = payment.billing_cycle || 'monthly';
+          const rows = this.pricingPlanRows(accountType, payment.country_id || '');
+          const plan = rows.find(row => payment.pricing_plan_id && row.id === payment.pricing_plan_id)
+            || rows.find(row => String(row.plan_key || '').toLowerCase() === String(payment.plan_key || '').toLowerCase())
+            || this.pricingPlanRows(accountType, '').find(row => String(row.plan_key || '').toLowerCase() === String(payment.plan_key || '').toLowerCase());
+          return plan ? `${this.pricingPlanStableKey(plan)}|${cycle}` : '';
+        },
+
+        platformPaymentPlanLabel(payment = {}) {
+          const name = payment.plan_name || payment.pricing_plan?.plan_name || (payment.plan_key ? this.titleCase(payment.plan_key) : '');
+          const cycle = payment.billing_cycle ? this.titleCase(payment.billing_cycle) : '';
+          if (!name && !cycle) return 'Subscription';
+          return [name || 'Subscription', cycle].filter(Boolean).join(' - ');
         },
 
         pricingPlanFor(accountType = 'landlord', plan = 'custom', countryId = '') {
@@ -12115,6 +12237,7 @@
             const accountEmail = this.adminPaymentAccountEmail(payment);
             const amountPaid = Number(payment?.amount_paid || 0);
             const period = `${this.formatDate(payment?.period_start)} - ${this.formatDate(payment?.period_end)}`;
+            const planLabel = this.platformPaymentPlanLabel(payment);
 
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(20);
@@ -12136,6 +12259,7 @@
               ['Email', accountEmail || '-'],
               ['Type', this.paymentPayerTypeLabel(payment)],
               ['Country', this.adminCountryName(payment?.country_id)],
+              ['Subscription Plan', planLabel],
               ['Amount Paid', this.formatCurrency(amountPaid)],
               ['Payment Period', period],
               ['Paid Date', this.formatDate(payment?.paid_at)]
