@@ -4993,6 +4993,11 @@
         subscription: null,
         authMode: 'login',
         unreadRefreshTimer: null,
+        realtimeChannel: null,
+        realtimeRefreshTimer: null,
+        realtimeProfileTimer: null,
+        realtimeUnreadTimer: null,
+        realtimeRefreshInProgress: false,
         confirmDialog: {
           open: false,
           title: 'Confirm action',
@@ -14851,6 +14856,142 @@
           }
         },
 
+        realtimeTables() {
+          return [
+            'profiles',
+            'countries',
+            'pricing_plans',
+            'landlord_subscriptions',
+            'landlord_subscription_admin_notes',
+            'properties',
+            'units',
+            'tenants',
+            'leases',
+            'payments',
+            'payment_submissions',
+            'platform_payments',
+            'partner_payments',
+            'maintenance_requests',
+            'notifications',
+            'staff_permissions',
+            'staff_landlord_requests',
+            'management_companies',
+            'management_landlord_permissions',
+            'management_landlord_requests',
+            'management_staff_permissions',
+            'invite_tokens',
+            'admin_notes',
+            'enquiries',
+            'admin_staff_country_assignments'
+          ];
+        },
+
+        accountRealtimeTables() {
+          return new Set([
+            'profiles',
+            'landlord_subscriptions',
+            'staff_permissions',
+            'staff_landlord_requests',
+            'management_companies',
+            'management_landlord_permissions',
+            'management_landlord_requests',
+            'management_staff_permissions',
+            'admin_staff_country_assignments'
+          ]);
+        },
+
+        startRealtimeSync() {
+          this.stopRealtimeSync();
+          if (!this.user?.id || ['login', 'invite', 'suspended'].includes(this.currentShell)) return;
+
+          const channel = supabaseClient.channel(`mushavo-live-${this.user.id}`);
+          this.realtimeTables().forEach(table => {
+            channel.on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table },
+              payload => this.handleRealtimeChange(payload)
+            );
+          });
+
+          channel.subscribe(status => {
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              this.scheduleRealtimeRefresh();
+            }
+          });
+
+          this.realtimeChannel = channel;
+        },
+
+        stopRealtimeSync() {
+          if (this.realtimeRefreshTimer) {
+            window.clearTimeout(this.realtimeRefreshTimer);
+            this.realtimeRefreshTimer = null;
+          }
+          if (this.realtimeProfileTimer) {
+            window.clearTimeout(this.realtimeProfileTimer);
+            this.realtimeProfileTimer = null;
+          }
+          if (this.realtimeUnreadTimer) {
+            window.clearTimeout(this.realtimeUnreadTimer);
+            this.realtimeUnreadTimer = null;
+          }
+          if (this.realtimeChannel) {
+            supabaseClient.removeChannel(this.realtimeChannel);
+            this.realtimeChannel = null;
+          }
+          this.realtimeRefreshInProgress = false;
+        },
+
+        handleRealtimeChange(payload) {
+          const table = payload?.table || '';
+          if (!this.user || ['login', 'invite', 'suspended'].includes(this.currentShell)) return;
+
+          if (table === 'notifications') {
+            this.scheduleUnreadRealtimeRefresh();
+          }
+
+          if (this.accountRealtimeTables().has(table)) {
+            this.scheduleRealtimeProfileRefresh();
+            return;
+          }
+
+          this.scheduleRealtimeRefresh();
+        },
+
+        scheduleUnreadRealtimeRefresh() {
+          if (!this.profile?.id) return;
+          window.clearTimeout(this.realtimeUnreadTimer);
+          this.realtimeUnreadTimer = window.setTimeout(async () => {
+            await this.loadUnreadCount(this.profile.id);
+            if (this.currentPage === 'notifications' || this.currentPage === 'tenant-notifications') {
+              await this.loadNotifications();
+            }
+          }, 500);
+        },
+
+        scheduleRealtimeRefresh() {
+          if (this.realtimeRefreshTimer) window.clearTimeout(this.realtimeRefreshTimer);
+          this.realtimeRefreshTimer = window.setTimeout(async () => {
+            if (!this.user || this.realtimeRefreshInProgress || ['login', 'invite', 'suspended'].includes(this.currentShell)) return;
+            this.realtimeRefreshInProgress = true;
+            try {
+              await this.refreshCurrentPage();
+              if (this.profile?.id) await this.loadUnreadCount(this.profile.id);
+            } finally {
+              this.realtimeRefreshInProgress = false;
+            }
+          }, 700);
+        },
+
+        scheduleRealtimeProfileRefresh() {
+          if (this.realtimeProfileTimer) window.clearTimeout(this.realtimeProfileTimer);
+          this.realtimeProfileTimer = window.setTimeout(async () => {
+            if (!this.user || ['login', 'invite'].includes(this.currentShell)) return;
+            const activeUser = this.user;
+            await this.loadAuthenticatedUser(activeUser);
+          }, 900);
+        },
+
         async signIn() {
           this.authError = '';
           this.successMessage = '';
@@ -15082,6 +15223,7 @@
           const previousPage = this.currentPage;
 
           this.booting = true;
+          this.stopRealtimeSync();
           this.user = authUser;
           this.authError = '';
           this.clearSubscriptionPause();
@@ -15168,6 +15310,7 @@
             this.storeCurrentPage(this.currentPage);
             if (!this.admin.financeForm.paidAt) this.resetAdminFinanceForm();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15192,6 +15335,7 @@
             this.startUnreadRefresh(profile.id);
             this.loadSettingsData();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15223,6 +15367,7 @@
             this.startUnreadRefresh(profile.id);
             this.loadSettingsData();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15252,6 +15397,7 @@
             this.startUnreadRefresh(profile.id);
             this.loadSettingsData();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15281,6 +15427,7 @@
             this.startUnreadRefresh(profile.id);
             this.loadSettingsData();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15294,6 +15441,7 @@
             this.startUnreadRefresh(profile.id);
             this.loadSettingsData();
             this.booting = false;
+            this.startRealtimeSync();
             await this.refreshCurrentPage();
             return;
           }
@@ -15680,6 +15828,7 @@
 
         resetSessionState() {
           this.stopUnreadRefresh();
+          this.stopRealtimeSync();
           this.clearStoredPage();
           this.user = null;
           this.profile = null;
