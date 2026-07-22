@@ -3373,7 +3373,7 @@
                               <tr>
                                 <td class="px-4 py-3 font-semibold text-slate-900" x-text="tenant.full_name || '-'"></td>
                                 <td class="px-4 py-3 text-slate-700" x-text="tenant.email"></td>
-                                <td class="px-4 py-3"><span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700" x-text="tenant.profile_id ? 'Waiting for tenant' : 'Invite not accepted'"></span></td>
+                                <td class="px-4 py-3"><span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700" x-text="tenant.invite_token ? 'Invite not accepted' : 'Waiting for tenant'"></span></td>
                                 <td class="px-4 py-3 text-slate-700" x-text="formatDate(tenant.created_at)"></td>
                                 <td class="px-4 py-3">
                                   <button x-show="!tenant.profile_id && tenant.invite_token" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(buildInviteLink(tenant.invite_token))">Copy Invite Link</button>
@@ -5067,6 +5067,7 @@
                   <h1 class="text-xl font-bold text-slate-900">Notifications</h1>
                   <button class="rounded-lg bg-emerald-500 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-60" type="button" @click="markAllNotificationsRead" :disabled="notifications.saving || unreadCount === 0">Mark All Read</button>
                 </div>
+                <template x-if="notifications.error"><div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="notifications.error"></div></template>
               </section>
               <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
                 <div class="divide-y divide-slate-200">
@@ -5077,10 +5078,11 @@
                       <span class="min-w-0 flex-1">
                         <span class="block text-sm font-semibold text-slate-900" x-text="notificationTypeLabel(notification.type)"></span>
                         <span class="mt-1 block text-sm text-slate-600" x-text="notification.message"></span>
-                        <span x-show="notification.type === 'tenant_link_request'" class="mt-3 flex flex-wrap gap-2">
+                        <span x-show="notification.type === 'tenant_link_request' && tenantRequestStatus(notification) === 'pending'" class="mt-3 flex flex-wrap gap-2">
                           <button type="button" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" @click.stop="respondTenantLinkRequest(notification, true)" :disabled="notifications.saving">Accept</button>
                           <button type="button" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60" @click.stop="respondTenantLinkRequest(notification, false)" :disabled="notifications.saving">Reject</button>
                         </span>
+                        <span x-show="notification.type === 'tenant_link_request' && tenantRequestStatus(notification) !== 'pending'" class="mt-3 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold" :class="tenantRequestStatus(notification) === 'accepted' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'" x-text="tenantRequestStatus(notification) === 'accepted' ? 'Accepted' : 'Rejected'"></span>
                         <span class="mt-1 block text-xs text-slate-500" x-text="formatDateTime(notification.created_at)"></span>
                       </span>
                     </div>
@@ -5096,6 +5098,41 @@
                 <h1 class="text-xl font-bold text-slate-900">Settings</h1>
                 <template x-if="settings.error"><div class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="settings.error"></div></template>
                 <template x-if="settings.message"><div class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700" x-text="settings.message"></div></template>
+              </section>
+              <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 class="text-sm font-semibold text-slate-900">Accepted Landlords</h2>
+                    <p class="mt-1 text-sm text-slate-500">Landlords whose requests you accepted. A landlord can be dropped after the linked unit is marked vacant.</p>
+                  </div>
+                  <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadTenantSettingsLandlords">Refresh</button>
+                </div>
+                <template x-if="settings.tenantLandlords.length === 0">
+                  <p class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">No accepted landlords yet.</p>
+                </template>
+                <div class="grid gap-3 md:grid-cols-2">
+                  <template x-for="relationship in settings.tenantLandlords" :key="relationship.tenant_id">
+                    <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                          <h3 class="break-words text-sm font-bold text-slate-900" x-text="relationship.landlord_name || 'Landlord'"></h3>
+                          <p class="mt-1 break-all text-xs text-slate-500" x-text="relationship.landlord_email || '-'"></p>
+                          <p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord_phone || '-'"></p>
+                        </div>
+                        <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold" :class="relationship.can_drop ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'" x-text="relationship.can_drop ? 'Vacant' : 'Connected'"></span>
+                      </div>
+                      <dl class="mt-4 space-y-2 text-sm">
+                        <div class="flex justify-between gap-3"><dt class="text-slate-500">Property</dt><dd class="text-right font-medium text-slate-900" x-text="relationship.property_name || 'Not assigned yet'"></dd></div>
+                        <div class="flex justify-between gap-3"><dt class="text-slate-500">Unit</dt><dd class="text-right font-medium text-slate-900" x-text="relationship.unit_number || 'Not assigned yet'"></dd></div>
+                        <div class="flex justify-between gap-3"><dt class="text-slate-500">Lease Status</dt><dd class="text-right font-medium text-slate-900" x-text="titleCase(relationship.lease_status || 'none')"></dd></div>
+                      </dl>
+                      <div class="mt-4">
+                        <button x-show="relationship.can_drop" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropTenantLandlord(relationship)">Drop Landlord</button>
+                        <p x-show="!relationship.can_drop" class="text-xs text-slate-500">Drop becomes available after the unit is marked vacant.</p>
+                      </div>
+                    </article>
+                  </template>
+                </div>
               </section>
               <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                 <h2 class="text-sm font-semibold text-slate-900">Profile</h2>
@@ -15220,7 +15257,7 @@
 
           const { data, error } = await supabaseClient
             .from('notifications')
-            .select('id, profile_id, landlord_id, type, message, related_id, is_read, created_at')
+            .select('id, profile_id, landlord_id, type, message, related_id, response_status, is_read, created_at')
             .eq('profile_id', this.profile.id)
             .order('created_at', { ascending: false })
             .limit(80);
@@ -15270,11 +15307,14 @@
           });
 
           if (error) {
-            this.notifications.error = this.cleanErrorMessage(error.message);
+            this.notifications.error = this.friendlyDatabaseError(error, 'This tenant request could not be updated. Please refresh and try again.');
             this.notifications.saving = false;
             return;
           }
 
+          notification.response_status = accept ? 'accepted' : 'rejected';
+          notification.is_read = true;
+          this.notifications.items = this.notifications.items.map(item => item.id === notification.id ? { ...item, response_status: notification.response_status, is_read: true } : item);
           await this.loadNotifications();
           await this.loadUnreadCount(this.profile.id);
           if (accept) {
@@ -15286,6 +15326,12 @@
             this.successMessage = 'Tenant request rejected.';
           }
           this.notifications.saving = false;
+        },
+
+        tenantRequestStatus(notification) {
+          if (notification?.type !== 'tenant_link_request') return '';
+          const status = String(notification?.response_status || 'pending').toLowerCase();
+          return ['accepted', 'rejected'].includes(status) ? status : 'pending';
         },
 
         async openNotification(notification) {
