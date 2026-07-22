@@ -3167,7 +3167,7 @@
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="propertyUnit.paymentForm.otherDescription" :required="propertyUnit.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                         </label>
                         <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="propertyUnit.paymentForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
+                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="paymentAmountLabel('unitPayment')"></span>
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="propertyUnit.paymentForm.amount" required>
                         </label>
                         <label class="block">
@@ -3740,7 +3740,7 @@
                       <div class="mb-5 flex items-start justify-between gap-4">
                         <div>
                           <h2 class="text-lg font-bold text-slate-900">Log Payment Manually</h2>
-                          <p class="mt-1 text-sm text-slate-500">Record a verified rent payment against an active lease. Do not record refundable deposits here.</p>
+                          <p class="mt-1 text-sm text-slate-500">Record a verified rent payment or unpaid refundable deposit against an active lease.</p>
                         </div>
                         <button class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" type="button" @click="closePaymentModal" aria-label="Close modal">
                           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
@@ -3775,7 +3775,7 @@
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="payments.manualForm.otherDescription" :required="payments.manualForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                         </label>
                         <label class="block">
-                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="payments.manualForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
+                          <span class="mb-2 block text-sm font-medium text-slate-700" x-text="paymentAmountLabel('manualPayment')"></span>
                           <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="payments.manualForm.amount" required>
                         </label>
                         <label class="block">
@@ -4953,7 +4953,7 @@
                     <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" x-model.trim="tenant.paymentForm.otherDescription" :required="tenant.paymentForm.rentPeriodKey === 'other'" placeholder="Example: repair fee, deposit top-up, late fee">
                   </label>
                   <label class="block">
-                    <span class="mb-2 block text-sm font-medium text-slate-700" x-text="tenant.paymentForm.rentPeriodKey === 'other' ? 'Amount' : 'Rent amount'"></span>
+                    <span class="mb-2 block text-sm font-medium text-slate-700" x-text="paymentAmountLabel('tenantPayment')"></span>
                     <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="number" min="0.01" step="0.01" x-model.number="tenant.paymentForm.amount" required>
                   </label>
                   <label class="block">
@@ -11896,7 +11896,7 @@
               .order('payment_date', { ascending: false }),
             supabaseClient
               .from('leases')
-              .select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, status, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city))')
+              .select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, status, tenants(id, full_name, email), units(id, unit_number, property_id, properties(id, name, address, city))')
               .eq('status', 'active')
               .order('created_at', { ascending: false })
           ]);
@@ -11954,6 +11954,9 @@
               period: this.paymentPeriodLabel(payment),
               notes: payment.notes || '',
               receipt: payment.receipt_number,
+              purpose: payment.payment_purpose || (payment.rent_period_start ? 'rent' : 'other'),
+              purposeDescription: payment.purpose_description || '',
+              isRevenue: this.isRevenuePayment(payment),
               tenant: lease.tenants?.full_name || '-',
               unit: unit.unit_number || '-',
               property: property.name || 'Unassigned property',
@@ -11964,9 +11967,10 @@
           const now = new Date();
           const monthKey = now.toISOString().slice(0, 7);
           const yearKey = String(now.getFullYear());
-          const totalRevenue = payments.reduce((sum, payment) => sum + payment.amount, 0);
+          const revenuePayments = payments.filter(payment => payment.isRevenue);
+          const totalRevenue = revenuePayments.reduce((sum, payment) => sum + payment.amount, 0);
           const byPropertyMap = new Map();
-          payments.forEach(payment => {
+          revenuePayments.forEach(payment => {
             const current = byPropertyMap.get(payment.property) || { property: payment.property, count: 0, total: 0 };
             current.count += 1;
             current.total += payment.amount;
@@ -11977,9 +11981,9 @@
           this.finance.byProperty = Array.from(byPropertyMap.values()).sort((a, b) => b.total - a.total);
           this.finance.stats = {
             totalRevenue,
-            monthRevenue: payments.filter(payment => String(payment.date || '').slice(0, 7) === monthKey).reduce((sum, payment) => sum + payment.amount, 0),
-            yearRevenue: payments.filter(payment => String(payment.date || '').slice(0, 4) === yearKey).reduce((sum, payment) => sum + payment.amount, 0),
-            averagePayment: payments.length ? totalRevenue / payments.length : 0
+            monthRevenue: revenuePayments.filter(payment => String(payment.date || '').slice(0, 7) === monthKey).reduce((sum, payment) => sum + payment.amount, 0),
+            yearRevenue: revenuePayments.filter(payment => String(payment.date || '').slice(0, 4) === yearKey).reduce((sum, payment) => sum + payment.amount, 0),
+            averagePayment: revenuePayments.length ? totalRevenue / revenuePayments.length : 0
           };
           this.finance.loading = false;
         },
@@ -12004,7 +12008,7 @@
         },
 
         filteredFinanceSummary() {
-          const payments = this.filteredFinancePayments();
+          const payments = this.filteredFinancePayments().filter(payment => payment.isRevenue);
           const now = new Date();
           const monthKey = now.toISOString().slice(0, 7);
           const yearKey = String(now.getFullYear());
@@ -12019,7 +12023,7 @@
 
         filteredFinanceByProperty() {
           const byPropertyMap = new Map();
-          this.filteredFinancePayments().forEach(payment => {
+          this.filteredFinancePayments().filter(payment => payment.isRevenue).forEach(payment => {
             const current = byPropertyMap.get(payment.property) || { property: payment.property, count: 0, total: 0 };
             current.count += 1;
             current.total += Number(payment.amount || 0);
@@ -12030,7 +12034,7 @@
 
         financeChartBars() {
           const byMonth = new Map();
-          this.filteredFinancePayments().forEach(payment => {
+          this.filteredFinancePayments().filter(payment => payment.isRevenue).forEach(payment => {
             const month = String(payment.date || '').slice(0, 7);
             if (!month) return;
             byMonth.set(month, (byMonth.get(month) || 0) + Number(payment.amount || 0));
@@ -12127,8 +12131,48 @@
           return new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' }).format(date);
         },
 
+        paymentPurpose(row) {
+          const purpose = String(row?.payment_purpose || row?.purpose || '').trim().toLowerCase();
+          if (purpose) return purpose;
+          return row?.rent_period_start ? 'rent' : 'other';
+        },
+
+        paymentLikeAmount(row) {
+          return Number(row?.amount_paid ?? row?.amount_claimed ?? row?.amount ?? 0);
+        },
+
+        isRentPayment(row) {
+          const label = String(row?.rent_period_label || row?.period || '').trim();
+          return this.paymentPurpose(row) === 'rent' && !/^other(?::|$)/i.test(label) && !/^deposit\b/i.test(label);
+        },
+
+        isDepositPayment(row) {
+          const label = String(row?.rent_period_label || row?.period || '').trim();
+          return this.paymentPurpose(row) === 'deposit' || /^deposit\b/i.test(label);
+        },
+
+        isRevenuePayment(row) {
+          return this.isRentPayment(row);
+        },
+
+        leaseDepositDue(lease, payments = [], submissions = []) {
+          if (!lease || Boolean(lease.deposit_paid)) return 0;
+          const depositAmount = Number(lease.deposit_amount || 0);
+          if (depositAmount <= 0) return 0;
+
+          const paidDeposit = (payments || [])
+            .filter(payment => payment.lease_id === lease.id && this.isDepositPayment(payment))
+            .reduce((sum, payment) => sum + this.paymentLikeAmount(payment), 0);
+          const pendingDeposit = (submissions || [])
+            .filter(submission => submission.lease_id === lease.id && submission.status === 'pending' && this.isDepositPayment(submission))
+            .reduce((sum, submission) => sum + this.paymentLikeAmount(submission), 0);
+
+          return Math.max(depositAmount - paidDeposit - pendingDeposit, 0);
+        },
+
         paymentPeriodLabel(row) {
           if (row?.rent_period_label) return row.rent_period_label;
+          if (this.isDepositPayment(row)) return 'Deposit';
           if (row?.rent_period_start) return `${this.rentPeriodBaseLabel(row.rent_period_start)} rent`;
           if (row?.payment_date) return `${this.rentPeriodBaseLabel(row.payment_date)} rent`;
           return '-';
@@ -12151,6 +12195,7 @@
           payments
             .filter(payment => payment.lease_id === lease.id)
             .forEach(payment => {
+              if (!this.isRentPayment(payment)) return;
               if (!payment.rent_period_start && /^other:/i.test(String(payment.rent_period_label || ''))) return;
               const key = this.monthKey(payment.rent_period_start || payment.payment_date);
               if (!key) return;
@@ -12160,6 +12205,7 @@
           submissions
             .filter(submission => submission.lease_id === lease.id && submission.status === 'pending')
             .forEach(submission => {
+              if (!this.isRentPayment(submission)) return;
               if (!submission.rent_period_start && /^other:/i.test(String(submission.rent_period_label || ''))) return;
               const key = this.monthKey(submission.rent_period_start || submission.payment_date);
               if (!key) return;
@@ -12199,6 +12245,20 @@
               saveLabel: baseLabel,
               amount: monthlyRent,
               status: 'advance'
+            });
+          }
+
+          const depositDue = this.leaseDepositDue(lease, payments, submissions);
+          if (depositDue > 0) {
+            options.push({
+              key: 'deposit',
+              start: null,
+              end: null,
+              label: 'Deposit',
+              saveLabel: 'Deposit',
+              amount: depositDue,
+              status: 'deposit',
+              isDeposit: true
             });
           }
 
@@ -12264,6 +12324,17 @@
           const selectedPeriod = this.selectedPaymentPeriod(scope);
           if (!selectedPeriod) return { error: 'Select what this payment is for.' };
 
+          if (selectedPeriod.isDeposit) {
+            return {
+              start: null,
+              end: null,
+              label: 'Deposit',
+              purpose: 'deposit',
+              purposeDescription: 'Refundable lease deposit',
+              isHistorical: false
+            };
+          }
+
           if (selectedPeriod.isOther) {
             const description = String(this.paymentPeriodForm(scope)?.otherDescription || '').trim();
             if (!description) return { error: 'Enter what this payment is for.' };
@@ -12314,6 +12385,11 @@
           if (scope === 'unitPayment') this.propertyUnit.paymentForm.amount = selected.amount;
           if (scope === 'manualPayment') this.payments.manualForm.amount = selected.amount;
           if (scope === 'tenantPayment') this.tenant.paymentForm.amount = selected.amount;
+        },
+
+        paymentAmountLabel(scope) {
+          const selected = this.selectedPaymentPeriod(scope);
+          return selected?.isOther || selected?.isDeposit ? 'Amount' : 'Rent amount';
         },
 
         defaultRentPeriodKey(scope) {
