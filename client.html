@@ -4897,7 +4897,7 @@
                 <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                   <p class="text-sm font-medium text-slate-500">Current Balance</p>
                   <p class="mt-2 text-3xl font-bold text-slate-900" x-text="formatCurrency(tenantCurrentBalance())"></p>
-                  <p class="mt-1 text-xs text-slate-500">Based on this month's rent and verified rent payments only.</p>
+                  <p class="mt-1 text-xs text-slate-500">Based on outstanding rent periods and verified rent payments only.</p>
                 </article>
                 <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                   <p class="text-sm font-medium text-slate-500">Monthly Rent</p>
@@ -12224,6 +12224,37 @@
           return Math.max(depositAmount - paidDeposit - pendingDeposit, 0);
         },
 
+        rentOutstandingBalance(lease, payments = [], throughDate = new Date()) {
+          if (!lease?.id || !lease?.start_date) return 0;
+
+          const leaseStart = this.monthStart(lease.start_date);
+          const currentMonth = this.monthStart(throughDate);
+          const leaseEnd = lease.end_date ? this.monthStart(lease.end_date) : null;
+          if (!leaseStart || !currentMonth || leaseStart > currentMonth) return 0;
+
+          const lastDueMonth = leaseEnd && leaseEnd < currentMonth ? leaseEnd : currentMonth;
+          const monthlyRent = Number(lease.monthly_rent || 0);
+          if (monthlyRent <= 0) return 0;
+
+          const paidByMonth = new Map();
+          (payments || [])
+            .filter(payment => payment.lease_id === lease.id && this.isRentPayment(payment))
+            .forEach(payment => {
+              const key = this.monthKey(payment.rent_period_start || payment.payment_date);
+              if (!key) return;
+              paidByMonth.set(key, (paidByMonth.get(key) || 0) + Number(payment.amount_paid || 0));
+            });
+
+          let outstanding = 0;
+          for (let cursor = leaseStart; cursor <= lastDueMonth; cursor = this.addMonths(cursor, 1)) {
+            const key = this.monthKey(cursor);
+            const paid = paidByMonth.get(key) || 0;
+            outstanding += Math.max(monthlyRent - paid, 0);
+          }
+
+          return outstanding;
+        },
+
         paymentPeriodLabel(row) {
           if (row?.rent_period_label) return row.rent_period_label;
           if (this.isDepositPayment(row)) return 'Deposit';
@@ -14164,17 +14195,7 @@
           const activeLease = this.tenant.activeLease;
           if (!activeLease) return 0;
 
-          const currentRentMonth = this.monthKey(new Date());
-          const paidThisMonth = this.tenant.payments
-            .filter(payment => (
-              payment.lease_id === activeLease.id
-              && Boolean(payment.rent_period_start)
-              && this.monthKey(payment.rent_period_start) === currentRentMonth
-              && (payment.payment_purpose || 'rent') === 'rent'
-              && !/^other(?::|$)/i.test(String(payment.rent_period_label || '').trim())
-            ))
-            .reduce((sum, payment) => sum + Number(payment.amount_paid || 0), 0);
-          return Math.max(Number(activeLease.monthly_rent || 0) - paidThisMonth, 0);
+          return this.rentOutstandingBalance(activeLease, this.tenant.payments);
         },
 
         async submitTenantPayment() {
