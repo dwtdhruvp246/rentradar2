@@ -140,6 +140,38 @@
       width: max-content;
       min-width: 100%;
     }
+    #super-admin-shell,
+    #landlord-staff-shell,
+    #tenant-shell {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-x: hidden;
+    }
+    #super-admin-shell section[id],
+    #landlord-staff-page-content,
+    #tenant-shell > section {
+      width: 100%;
+      max-width: min(100%, 100vw);
+      min-width: 0;
+    }
+    #super-admin-shell .grid,
+    #landlord-staff-shell .grid,
+    #tenant-shell .grid,
+    #super-admin-shell .flex,
+    #landlord-staff-shell .flex,
+    #tenant-shell .flex {
+      min-width: 0;
+    }
+    section.rounded-xl.border:has(.overflow-x-auto > table),
+    article.rounded-xl.border:has(.overflow-x-auto > table),
+    div.rounded-xl.border:has(.overflow-x-auto > table) {
+      min-height: 11rem;
+    }
+    .overflow-x-auto:has(> table) {
+      max-width: min(100%, calc(100vw - 2rem));
+      min-height: 9.5rem;
+    }
     td, th { vertical-align: top; }
     table thead th {
       cursor: pointer;
@@ -279,6 +311,16 @@
       .overflow-x-auto {
         margin-inline: -0.25rem;
         padding-inline: 0.25rem;
+      }
+      .overflow-x-auto:has(> table) {
+        max-width: calc(100vw - 2rem);
+        min-height: 11.5rem;
+      }
+      #landlord-staff-page-content,
+      #tenant-shell > section,
+      #super-admin-shell section[id] {
+        max-width: 100vw;
+        overflow-x: hidden;
       }
       .fixed.inset-0 {
         padding-inline: 0.75rem !important;
@@ -5198,6 +5240,7 @@
       return {
         booting: true,
         authLoading: false,
+        loadedDataSections: {},
         authError: '',
         successMessage: '',
         currentShell: 'login',
@@ -6935,7 +6978,7 @@
         },
 
         async loadSuperAdminData() {
-          this.admin.loading = true;
+          this.beginDataLoad('admin', this.admin);
           this.admin.error = '';
           this.enforceAdminCountryScope();
 
@@ -7048,7 +7091,7 @@
           const firstError = countriesResult.error || profilesResult.error || invitesResult.error || subscriptionsResult.error || internalNotesResult.error || adminTeamProfilesResult.error || adminTeamInvitesResult.error || adminTeamCountriesResult.error || staffProfilesResult.error || staffInvitesResult.error || staffPermissionsResult.error || tenantsResult.error || tenantLeasesResult.error || propertiesResult.error || platformPaymentsResult.error || managementCompaniesResult.error || managementInvitesResult.error || managementPermissionsResult.error || managementStaffResult.error;
           if (firstError) {
             this.admin.error = firstError.message;
-            this.admin.loading = false;
+            this.finishDataLoad('admin', this.admin);
             return;
           }
 
@@ -7404,7 +7447,7 @@
             activeLandlords: this.admin.stats.active
           };
 
-          this.admin.loading = false;
+          this.finishDataLoad('admin', this.admin);
         },
 
         adminPaymentPayerName(payment) {
@@ -10428,6 +10471,17 @@
           return this.profile?.role === 'landlord';
         },
 
+        beginDataLoad(sectionKey, bucket) {
+          const initialLoad = !this.loadedDataSections[sectionKey];
+          if (bucket) bucket.loading = initialLoad;
+          return initialLoad;
+        },
+
+        finishDataLoad(sectionKey, bucket) {
+          this.loadedDataSections[sectionKey] = true;
+          if (bucket) bucket.loading = false;
+        },
+
         navIcon(icon) {
           const icons = {
             dashboard: '<svg viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M4 13h7V4H4v9Zm9 7h7V4h-7v16ZM4 20h7v-5H4v5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
@@ -10448,7 +10502,7 @@
         },
 
         async loadDashboardData() {
-          this.dashboard.loading = true;
+          this.beginDataLoad('dashboard', this.dashboard);
           this.dashboard.error = '';
 
           const paymentAccess = this.profile?.role === 'landlord' || this.permissions.can_view_payments || this.permissions.can_verify_payments;
@@ -10534,7 +10588,7 @@
             raw: lease
           }));
 
-          this.dashboard.loading = false;
+          this.finishDataLoad('dashboard', this.dashboard);
         },
 
         parseDateOnly(dateValue) {
@@ -11059,7 +11113,7 @@
         },
 
         async loadPropertyUnitData() {
-          this.propertyUnit.loading = true;
+          this.beginDataLoad('propertyUnit', this.propertyUnit);
           this.propertyUnit.error = '';
 
           const canLoadProperties = this.canViewProperties();
@@ -11115,7 +11169,7 @@
             if (refreshedUnit) await this.loadUnitDetail(refreshedUnit);
           }
 
-          this.propertyUnit.loading = false;
+          this.finishDataLoad('propertyUnit', this.propertyUnit);
         },
 
         async submitPropertyForm() {
@@ -11881,7 +11935,7 @@
         async loadPaymentsData() {
           if (!this.canViewPayments()) return;
 
-          this.payments.loading = true;
+          this.beginDataLoad('payments', this.payments);
           this.payments.error = '';
 
           const [pendingResult, verifiedResult, leasesResult] = await Promise.all([
@@ -11904,7 +11958,7 @@
           const firstError = pendingResult.error || verifiedResult.error || leasesResult.error;
           if (firstError) {
             this.payments.error = firstError.message;
-            this.payments.loading = false;
+            this.finishDataLoad('payments', this.payments);
             return;
           }
 
@@ -11922,13 +11976,13 @@
           this.payments.pendingSubmissions = (pendingResult.data || []).map(submission => this.normalizeSubmission(submission));
           this.payments.verifiedPayments = (verifiedResult.data || []).map(payment => this.normalizePayment(payment, recordedByMap));
           this.payments.leases = (leasesResult.data || []).map(lease => this.normalizeLease(lease));
-          this.payments.loading = false;
+          this.finishDataLoad('payments', this.payments);
         },
 
         async loadLandlordFinanceData() {
           if (!this.canViewFinancials()) return;
 
-          this.finance.loading = true;
+          this.beginDataLoad('finance', this.finance);
           this.finance.error = '';
 
           const { data, error } = await supabaseClient
@@ -11938,7 +11992,7 @@
 
           if (error) {
             this.finance.error = error.message;
-            this.finance.loading = false;
+            this.finishDataLoad('finance', this.finance);
             return;
           }
 
@@ -11985,7 +12039,7 @@
             yearRevenue: revenuePayments.filter(payment => String(payment.date || '').slice(0, 4) === yearKey).reduce((sum, payment) => sum + payment.amount, 0),
             averagePayment: revenuePayments.length ? totalRevenue / revenuePayments.length : 0
           };
-          this.finance.loading = false;
+          this.finishDataLoad('finance', this.finance);
         },
 
         financePropertyOptions() {
@@ -12737,7 +12791,7 @@
         async loadMaintenanceData() {
           if (!this.canViewMaintenance()) return;
 
-          this.maintenance.loading = true;
+          this.beginDataLoad('maintenance', this.maintenance);
           this.maintenance.error = '';
 
           const [requestsResult, propertiesResult, unitsResult, leasesResult, staffResult, assignableUnitsResult] = await Promise.all([
@@ -12771,7 +12825,7 @@
           const firstError = requestsResult.error || propertiesResult.error || unitsResult.error || leasesResult.error || staffResult.error || assignableUnitsResult.error;
           if (firstError) {
             this.maintenance.error = firstError.message;
-            this.maintenance.loading = false;
+            this.finishDataLoad('maintenance', this.maintenance);
             return;
           }
 
@@ -12781,7 +12835,7 @@
           this.maintenance.staff = staffResult.data || [];
           this.maintenance.assignableUnitIds = (assignableUnitsResult.data || []).map(row => row.unit_id);
           this.maintenance.requests = requestsResult.data || [];
-          this.maintenance.loading = false;
+          this.finishDataLoad('maintenance', this.maintenance);
         },
 
         maintenanceStaffOptions() {
@@ -13252,7 +13306,7 @@
           }
           if (this.profile?.role !== 'landlord') return;
 
-          this.staff.loading = true;
+          this.beginDataLoad('staff', this.staff);
           this.staff.error = '';
 
           const permissionSelect = 'id, landlord_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!staff_permissions_staff_profile_id_fkey(id, full_name, phone, email, role, staff_type, staff_max_properties_per_landlord, created_at)';
@@ -13269,7 +13323,7 @@
           const firstError = propertiesResult.error || permissionsResult.error || requestsResult.error || inviteTokensResult.error || managementPermissionsResult.error || managementRequestsResult.error;
           if (firstError) {
             this.staff.error = firstError.message;
-            this.staff.loading = false;
+            this.finishDataLoad('staff', this.staff);
             return;
           }
 
@@ -13372,11 +13426,11 @@
           this.staff.members = [...pendingMembers, ...pendingInviteMembers, ...acceptedMembers].sort((a, b) => new Date(b.invited_at || b.created_at).getTime() - new Date(a.invited_at || a.created_at).getTime());
           this.staff.managementPartners = managementPermissionsResult.data || [];
           this.staff.managementRequests = managementRequestsResult.data || [];
-          this.staff.loading = false;
+          this.finishDataLoad('staff', this.staff);
         },
 
         async loadManagementPageData() {
-          this.managementContext.loading = true;
+          this.beginDataLoad('managementContext', this.managementContext);
           this.managementContext.error = '';
           await this.loadManagementPermissions(this.profile.id);
 
@@ -13466,7 +13520,7 @@
               this.staff.members = [...pendingInviteMembers, ...acceptedMembers].sort((a, b) => new Date(b.invited_at || b.created_at).getTime() - new Date(a.invited_at || a.created_at).getTime());
             }
           }
-          this.managementContext.loading = false;
+          this.finishDataLoad('managementContext', this.managementContext);
         },
 
         openStaffInviteModal() {
@@ -13941,14 +13995,14 @@
         async loadTenantData() {
           if (this.profile?.role !== 'tenant') return;
 
-          this.tenant.loading = true;
+          this.beginDataLoad('tenant', this.tenant);
           this.tenant.error = '';
 
           const { error: linkError } = await supabaseClient.rpc('link_current_tenant_account');
 
           if (linkError) {
             this.tenant.error = linkError.message;
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -13961,7 +14015,7 @@
 
           if (tenantError) {
             this.tenant.error = tenantError.message;
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -13977,7 +14031,7 @@
             this.tenant.maintenanceRequests = [];
             this.tenant.contacts = [];
             this.tenant.error = 'No tenant record is linked to this account yet.';
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -13990,7 +14044,7 @@
 
           if (leaseError) {
             this.tenant.error = leaseError.message;
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -14017,7 +14071,7 @@
             this.tenant.maintenanceRequests = [];
             this.tenant.contacts = [];
             this.tenant.landlord = null;
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -14043,7 +14097,7 @@
           const firstError = paymentsResult.error || submissionsResult.error || maintenanceResult.error;
           if (firstError) {
             this.tenant.error = firstError.message;
-            this.tenant.loading = false;
+            this.finishDataLoad('tenant', this.tenant);
             return;
           }
 
@@ -14051,7 +14105,7 @@
           this.tenant.paymentSubmissions = submissionsResult.data || [];
           this.tenant.maintenanceRequests = maintenanceResult.data || [];
           this.resetTenantForms();
-          this.tenant.loading = false;
+          this.finishDataLoad('tenant', this.tenant);
         },
 
         resetTenantForms() {
@@ -14236,7 +14290,7 @@
         },
 
         async loadTenantLeaseData() {
-          this.tenantLease.loading = true;
+          this.beginDataLoad('tenantLease', this.tenantLease);
           this.tenantLease.error = '';
 
           const canLoadProperties = this.canViewProperties();
@@ -14284,7 +14338,7 @@
             if (refreshedLease) await this.viewLease(refreshedLease);
           }
 
-          this.tenantLease.loading = false;
+          this.finishDataLoad('tenantLease', this.tenantLease);
         },
 
         async addTenantInvite() {
@@ -15135,7 +15189,7 @@
         async loadMyAccountData() {
           if (!['landlord', 'management_leader'].includes(this.profile?.role) && !(this.profile?.role === 'staff' && this.profile?.staff_type === 'freelancer')) return;
 
-          this.account.loading = true;
+          this.beginDataLoad('account', this.account);
           this.account.error = '';
 
           let data = null;
@@ -15194,7 +15248,7 @@
           }
 
           this.account.subscription = data || null;
-          this.account.loading = false;
+          this.finishDataLoad('account', this.account);
         },
 
         accountDaysRemaining() {
@@ -15328,7 +15382,7 @@
         async loadNotifications() {
           if (!this.profile?.id) return;
 
-          this.notifications.loading = true;
+          this.beginDataLoad('notifications', this.notifications);
           this.notifications.error = '';
 
           const { data, error } = await supabaseClient
@@ -15340,12 +15394,12 @@
 
           if (error) {
             this.notifications.error = error.message;
-            this.notifications.loading = false;
+            this.finishDataLoad('notifications', this.notifications);
             return;
           }
 
           this.notifications.items = data || [];
-          this.notifications.loading = false;
+          this.finishDataLoad('notifications', this.notifications);
         },
 
         async markAllNotificationsRead() {
@@ -16016,6 +16070,7 @@
           this.booting = true;
           this.stopRealtimeSync();
           this.user = authUser;
+          this.loadedDataSections = {};
           this.authError = '';
           this.clearSubscriptionPause();
 
@@ -16641,6 +16696,7 @@
           this.user = null;
           this.profile = null;
           this.subscription = null;
+          this.loadedDataSections = {};
           this.permissions = {
             all_properties: false,
             property_ids: [],
