@@ -3099,12 +3099,13 @@
                           <template x-if="propertyUnit.assignForm.tenantLookup">
                             <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
                               <p class="text-sm font-semibold text-emerald-900" x-text="propertyUnit.assignForm.tenantLookup.account_found ? 'Tenant account found on Mushavo.' : 'No tenant account found.'"></p>
-                              <p class="mt-1 text-sm text-emerald-800" x-text="propertyUnit.assignForm.tenantLookup.account_found ? `${propertyUnit.assignForm.tenantLookup.full_name || 'Tenant'} - ${propertyUnit.assignForm.tenantLookup.email}` : 'Create an invite link and send it to the tenant so they can create their Mushavo tenant account.'"></p>
+                              <p class="mt-1 text-sm text-emerald-800" x-text="propertyUnit.assignForm.tenantLookup.account_found ? `${propertyUnit.assignForm.tenantLookup.full_name || 'Tenant'} - ${propertyUnit.assignForm.tenantLookup.email}. Send a request; they must accept before you can assign them.` : 'Create an invite link and send it to the tenant so they can create their Mushavo tenant account.'"></p>
                               <div class="mt-3 flex flex-wrap gap-2">
-                                <button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="createUnitTenantInvite" :disabled="propertyUnit.saving" x-text="propertyUnit.assignForm.tenantLookup.account_found ? 'Send Link Request' : 'Create Invite Link'"></button>
+                                <button class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="createUnitTenantInvite" :disabled="propertyUnit.saving" x-text="propertyUnit.assignForm.tenantLookup.account_found ? 'Send Request' : 'Create Invite Link'"></button>
                                 <button x-show="propertyUnit.assignForm.tenantInviteLink" class="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(propertyUnit.assignForm.tenantInviteLink)">Copy Link</button>
                               </div>
                               <p x-show="propertyUnit.assignForm.tenantInviteLink" class="mt-3 break-all rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800" x-text="propertyUnit.assignForm.tenantInviteLink"></p>
+                              <p x-show="propertyUnit.assignForm.tenantLookup.account_found && !propertyUnit.assignForm.tenantInviteLink" class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">No link is needed. The tenant will receive a notification to accept or reject this request.</p>
                             </div>
                           </template>
                         </section>
@@ -3316,7 +3317,7 @@
                         <div class="mt-4 rounded-lg border border-emerald-200 bg-white p-4">
                           <p class="text-sm font-semibold text-emerald-900" x-text="tenantLease.lookup.result.account_found ? 'Tenant account found on Mushavo.' : 'No tenant account found.'"></p>
                           <p class="mt-1 text-sm text-emerald-800" x-text="tenantLease.lookup.result.account_found ? `${tenantLease.lookup.result.full_name || 'Tenant'} - ${tenantLease.lookup.result.email}` : 'Click Add New Tenant to enter their details and send a new invite link.'"></p>
-                          <button x-show="tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="inviteFoundTenant" :disabled="tenantLease.saving">Invite Existing Tenant</button>
+                          <button x-show="tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="inviteFoundTenant" :disabled="tenantLease.saving">Send Request</button>
                           <button x-show="!tenantLease.lookup.result.account_found" class="mt-3 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-60" type="button" @click="prepareNewTenantInvite" :disabled="tenantLease.saving">Add New Tenant</button>
                         </div>
                       </template>
@@ -3351,6 +3352,40 @@
                       </div>
                     </template>
 
+                    <section x-show="pendingTenantRequests().length > 0" class="mt-5 overflow-hidden rounded-xl border border-amber-200 bg-amber-50/60">
+                      <div class="border-b border-amber-200 px-4 py-3">
+                        <h2 class="text-sm font-semibold text-amber-900">Requests Sent</h2>
+                        <p class="mt-1 text-xs text-amber-800">These tenants must accept before they appear in the accepted tenants list or can be assigned to a unit.</p>
+                      </div>
+                      <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-amber-200 text-left text-[13px]">
+                          <thead class="bg-amber-50 text-xs uppercase tracking-wide text-amber-700">
+                            <tr>
+                              <th class="px-4 py-3 font-semibold">Tenant</th>
+                              <th class="px-4 py-3 font-semibold">Email</th>
+                              <th class="px-4 py-3 font-semibold">Status</th>
+                              <th class="px-4 py-3 font-semibold">Requested</th>
+                              <th class="px-4 py-3 font-semibold">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody class="divide-y divide-amber-200 bg-white/70">
+                            <template x-for="tenant in pendingTenantRequests()" :key="tenant.id">
+                              <tr>
+                                <td class="px-4 py-3 font-semibold text-slate-900" x-text="tenant.full_name || '-'"></td>
+                                <td class="px-4 py-3 text-slate-700" x-text="tenant.email"></td>
+                                <td class="px-4 py-3"><span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700" x-text="tenant.profile_id ? 'Waiting for tenant' : 'Invite not accepted'"></span></td>
+                                <td class="px-4 py-3 text-slate-700" x-text="formatDate(tenant.created_at)"></td>
+                                <td class="px-4 py-3">
+                                  <button x-show="!tenant.profile_id && tenant.invite_token" class="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-50" type="button" @click="copyText(buildInviteLink(tenant.invite_token))">Copy Invite Link</button>
+                                  <span x-show="tenant.profile_id || !tenant.invite_token" class="text-xs text-slate-500">No link needed</span>
+                                </td>
+                              </tr>
+                            </template>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+
                     <div class="mt-5">
                       <label class="block">
                         <span class="mb-2 block text-sm font-medium text-slate-700">Search tenants</span>
@@ -3360,6 +3395,10 @@
                   </section>
 
                   <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-soft">
+                    <div class="border-b border-slate-200 px-4 py-3">
+                      <h2 class="text-sm font-semibold text-slate-900">Accepted Tenants</h2>
+                      <p class="mt-1 text-xs text-slate-500">Only tenants who accepted your request are shown here.</p>
+                    </div>
                     <div class="overflow-x-auto">
                       <table class="min-w-full divide-y divide-slate-200 text-left text-[13px]">
                         <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
@@ -3370,13 +3409,12 @@
                             <th x-show="profile?.role === 'management_leader' || profile?.role === 'management_staff'" class="px-4 py-3 font-semibold">Landlord</th>
                             <th x-show="canViewUnits()" class="px-4 py-3 font-semibold">Linked Unit</th>
                             <th x-show="canViewProperties()" class="px-4 py-3 font-semibold">Property</th>
-                            <th class="px-4 py-3 font-semibold">Invite</th>
                             <th class="px-4 py-3 font-semibold">Actions</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-200">
                           <template x-if="!tenantLease.loading && filteredTenants().length === 0">
-                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="8">No tenants yet.</td></tr>
+                            <tr><td class="px-4 py-8 text-center text-sm text-slate-500" colspan="7">No accepted tenants yet.</td></tr>
                           </template>
                           <template x-for="tenant in filteredTenants()" :key="tenant.id">
                             <tr class="odd:bg-white even:bg-slate-50/60">
@@ -3386,9 +3424,6 @@
                               <td x-show="profile?.role === 'management_leader' || profile?.role === 'management_staff'" class="px-4 py-3 text-slate-700" x-text="landlordNameForId(tenant.landlord_id)"></td>
                               <td x-show="canViewUnits()" class="px-4 py-3 text-slate-700" x-text="tenantUnitLabel(tenant.id)"></td>
                               <td x-show="canViewProperties()" class="px-4 py-3 text-slate-700" x-text="tenantPropertyLabelFromId(tenant.id)"></td>
-                              <td class="px-4 py-3">
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold" :class="tenant.invite_accepted ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-amber-700'" x-text="tenant.invite_accepted ? 'Accepted' : 'Pending'"></span>
-                              </td>
                               <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-2">
                                   <button class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="viewTenant(tenant)">View</button>
@@ -4569,6 +4604,42 @@
                     </template>
                   </section>
 
+                  <section x-show="profile?.role === 'tenant'" class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
+                    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h2 class="text-lg font-bold text-slate-900">Accepted Landlords</h2>
+                        <p class="mt-1 text-sm text-slate-500">Landlords you have accepted on Mushavo. You can drop them only after your unit is marked vacant.</p>
+                      </div>
+                      <button class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50" type="button" @click="loadTenantSettingsLandlords">Refresh</button>
+                    </div>
+                    <template x-if="settings.tenantLandlords.length === 0">
+                      <p class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">No accepted landlords yet.</p>
+                    </template>
+                    <div class="grid gap-3 md:grid-cols-2">
+                      <template x-for="relationship in settings.tenantLandlords" :key="relationship.tenant_id">
+                        <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                              <h3 class="truncate text-sm font-bold text-slate-900" x-text="relationship.landlord_name || 'Landlord'"></h3>
+                              <p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord_email || '-'"></p>
+                              <p class="mt-1 text-xs text-slate-500" x-text="relationship.landlord_phone || '-'"></p>
+                            </div>
+                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold" :class="relationship.can_drop ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'" x-text="relationship.can_drop ? 'Vacant' : 'Active lease'"></span>
+                          </div>
+                          <dl class="mt-4 space-y-2 text-sm">
+                            <div class="flex justify-between gap-3"><dt class="text-slate-500">Property</dt><dd class="text-right font-medium text-slate-900" x-text="relationship.property_name || '-'"></dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-slate-500">Unit</dt><dd class="text-right font-medium text-slate-900" x-text="relationship.unit_number || '-'"></dd></div>
+                            <div class="flex justify-between gap-3"><dt class="text-slate-500">Lease Status</dt><dd class="text-right font-medium text-slate-900" x-text="titleCase(relationship.lease_status || 'none')"></dd></div>
+                          </dl>
+                          <div class="mt-4">
+                            <button x-show="relationship.can_drop" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" type="button" @click="dropTenantLandlord(relationship)">Drop Landlord</button>
+                            <p x-show="!relationship.can_drop" class="text-xs text-slate-500">Drop becomes available after the landlord marks the unit vacant.</p>
+                          </div>
+                        </article>
+                      </template>
+                    </div>
+                  </section>
+
                   <section>
                     <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-soft">
                       <h2 class="text-lg font-bold text-slate-900">Profile</h2>
@@ -5654,6 +5725,7 @@
           savingPassword: false,
           error: '',
           message: '',
+          tenantLandlords: [],
           profileForm: {
             fullName: '',
             phone: '',
@@ -7191,7 +7263,7 @@
               property_name: property?.name || '-',
               unit_number: unit?.unit_number || '',
               lease_status: lease?.status || '',
-              invite_accepted: Boolean(tenant.invite_accepted || tenant.profile_id)
+              invite_accepted: Boolean(tenant.invite_accepted)
             };
           });
 
@@ -9573,7 +9645,7 @@
             .update({
               archived_at: null,
               archived_by: null,
-              invite_accepted: Boolean(tenantRow.profile_id)
+              invite_accepted: Boolean(tenantRow.invite_accepted)
             })
             .eq('id', tenantRow.id);
 
@@ -10991,7 +11063,10 @@
             ...unit,
             property: unit.properties || null
           }));
-          this.propertyUnit.tenants = tenantsResult.data || [];
+          this.propertyUnit.tenants = (tenantsResult.data || []).map(tenant => ({
+            ...tenant,
+            invite_accepted: Boolean(tenant.invite_accepted)
+          }));
           this.propertyUnit.leases = (leasesResult.data || []).map(lease => ({
             ...lease,
             tenant: lease.tenants || null
@@ -11598,9 +11673,9 @@
           }
 
           const inviteRow = Array.isArray(data) ? data[0] : data;
-          this.propertyUnit.assignForm.tenantInviteLink = this.buildInviteLink(inviteRow?.invite_token || '');
+          this.propertyUnit.assignForm.tenantInviteLink = lookup?.account_found ? '' : this.buildInviteLink(inviteRow?.invite_token || '');
           this.successMessage = lookup?.account_found
-            ? 'Tenant link request created. Copy the link and send it to the tenant to accept.'
+            ? 'Tenant link request sent. The tenant must accept before they can be assigned to a unit.'
             : 'Tenant invite link created. Copy and send it to the tenant to create their account.';
 
           await this.loadTenantLeaseData();
@@ -11609,7 +11684,7 @@
 
         unassignedTenants() {
           const activeTenantIds = new Set(this.propertyUnit.leases.filter(lease => lease.status === 'active').map(lease => lease.tenant_id));
-          return this.propertyUnit.tenants.filter(tenant => !activeTenantIds.has(tenant.id));
+          return this.propertyUnit.tenants.filter(tenant => tenant.invite_accepted && !activeTenantIds.has(tenant.id));
         },
 
         async assignTenantToSelectedUnit() {
@@ -11617,6 +11692,11 @@
           if (!unit) return;
           if (!this.canAssignTenantToUnit()) {
             this.propertyUnit.error = 'You do not have permission to assign tenants to units.';
+            return;
+          }
+          const selectedTenant = this.propertyUnit.tenants.find(tenant => tenant.id === this.propertyUnit.assignForm.tenantId);
+          if (!selectedTenant?.invite_accepted) {
+            this.propertyUnit.error = 'The tenant must accept your request before you can assign them to a unit.';
             return;
           }
 
@@ -14073,7 +14153,7 @@
           this.tenantLease.units = (unitsResult.data || []).map(unit => ({ ...unit, property: unit.properties || null }));
           this.tenantLease.tenants = (tenantsResult.data || []).map(tenant => ({
             ...tenant,
-            invite_accepted: Boolean(tenant.invite_accepted || tenant.profile_id)
+            invite_accepted: Boolean(tenant.invite_accepted)
           }));
           this.tenantLease.leases = (leasesResult.data || []).map(lease => ({
             ...lease,
@@ -14121,13 +14201,19 @@
           });
 
           if (tenantError) {
-            this.tenantLease.error = tenantError.message;
+            this.tenantLease.error = this.friendlyDatabaseError(tenantError, 'Tenant request could not be sent.');
             this.tenantLease.saving = false;
             return;
           }
 
           const inviteRow = Array.isArray(inviteData) ? inviteData[0] : inviteData;
-          this.tenantLease.generatedInviteLink = this.buildInviteLink(inviteRow.invite_token);
+          if (canInviteExistingTenant) {
+            this.tenantLease.generatedInviteLink = '';
+            this.successMessage = 'Tenant link request sent. The tenant must accept before they appear in your accepted tenants list.';
+          } else {
+            this.tenantLease.generatedInviteLink = this.buildInviteLink(inviteRow.invite_token);
+            this.successMessage = 'Tenant invite link created. Copy and send it to the tenant to create their account.';
+          }
           this.tenantLease.tenantForm = { fullName: '', phone: '', email: '', idNumber: '' };
           this.tenantLease.showNewTenantForm = false;
           this.tenantLease.saving = false;
@@ -14359,7 +14445,7 @@
 
         filteredTenants() {
           const search = this.tenantLease.filters.search;
-          return this.tenantLease.tenants.filter(tenant => this.includesSearch([
+          return this.acceptedTenants().filter(tenant => this.includesSearch([
             tenant.full_name,
             tenant.phone,
             tenant.email,
@@ -14370,12 +14456,20 @@
           ], search));
         },
 
+        acceptedTenants() {
+          return this.tenantLease.tenants.filter(tenant => tenant.invite_accepted);
+        },
+
+        pendingTenantRequests() {
+          return this.tenantLease.tenants.filter(tenant => !tenant.invite_accepted);
+        },
+
         managementLandlordProperties(landlordId) {
           return this.propertyUnit.properties.filter(property => property.landlord_id === landlordId);
         },
 
         managementLandlordTenants(landlordId) {
-          return this.tenantLease.tenants.filter(tenant => tenant.landlord_id === landlordId);
+          return this.tenantLease.tenants.filter(tenant => tenant.landlord_id === landlordId && tenant.invite_accepted);
         },
 
         managementLandlordPropertyNames(landlordId) {
@@ -15006,6 +15100,50 @@
             password: '',
             confirmPassword: ''
           };
+          if (this.profile?.role === 'tenant') {
+            this.loadTenantSettingsLandlords();
+          } else {
+            this.settings.tenantLandlords = [];
+          }
+        },
+
+        async loadTenantSettingsLandlords() {
+          this.settings.error = '';
+          const { data, error } = await supabaseClient.rpc('tenant_landlord_relationships');
+          if (error) {
+            this.settings.error = this.friendlyDatabaseError(error, 'Accepted landlords could not be loaded.');
+            this.settings.tenantLandlords = [];
+            return;
+          }
+          this.settings.tenantLandlords = data || [];
+        },
+
+        async dropTenantLandlord(relationship) {
+          if (!relationship?.tenant_id) return;
+          if (!relationship.can_drop) {
+            this.settings.error = 'You can drop this landlord after the unit is marked vacant.';
+            return;
+          }
+          const confirmed = await this.requestConfirm({
+            title: 'Drop landlord',
+            message: `Drop ${relationship.landlord_name || 'this landlord'}? They will no longer see you in their accepted tenants list. Your old lease and payment records stay safely stored with them.`,
+            confirmText: 'Drop Landlord',
+            tone: 'danger'
+          });
+          if (!confirmed) return;
+
+          this.settings.error = '';
+          this.settings.message = '';
+          const { error } = await supabaseClient.rpc('drop_tenant_landlord', {
+            p_tenant_id: relationship.tenant_id
+          });
+          if (error) {
+            this.settings.error = this.friendlyDatabaseError(error, 'Landlord could not be dropped yet.');
+            return;
+          }
+          this.settings.message = 'Landlord dropped.';
+          await this.loadTenantSettingsLandlords();
+          await this.loadTenantData();
         },
 
         async saveProfileSettings() {
