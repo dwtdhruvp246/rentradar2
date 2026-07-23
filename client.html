@@ -400,6 +400,15 @@
               <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" autocomplete="name" x-model.trim="landlordSignupForm.fullName" required>
             </label>
             <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+              <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="landlordSignupForm.countryId" required x-effect='$nextTick(() => { $el.value = landlordSignupForm.countryId ?? "" })'>
+                <option value="">Select country</option>
+                <template x-for="country in publicCountries" :key="country.id">
+                  <option :value="country.id" x-text="country.name"></option>
+                </template>
+              </select>
+            </label>
+            <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Phone</span>
               <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="tel" x-model.trim="landlordSignupForm.phone" required>
             </label>
@@ -431,6 +440,15 @@
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Full name</span>
               <input class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" type="text" autocomplete="name" x-model.trim="tenantSignupForm.fullName" required>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
+              <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="tenantSignupForm.countryId" required x-effect='$nextTick(() => { $el.value = tenantSignupForm.countryId ?? "" })'>
+                <option value="">Select country</option>
+                <template x-for="country in publicCountries" :key="country.id">
+                  <option :value="country.id" x-text="country.name"></option>
+                </template>
+              </select>
             </label>
             <label class="block">
               <span class="mb-2 block text-sm font-medium text-slate-700">Email</span>
@@ -5333,12 +5351,14 @@
         },
         unreadCount: 0,
         sidebarOpen: false,
+        publicCountries: [],
         loginForm: {
           email: '',
           password: ''
         },
         landlordSignupForm: {
           fullName: '',
+          countryId: '',
           phone: '',
           email: '',
           password: '',
@@ -5346,6 +5366,7 @@
         },
         tenantSignupForm: {
           fullName: '',
+          countryId: '',
           email: '',
           phone: '',
           idNumber: '',
@@ -5900,6 +5921,7 @@
             this.enableTableSorting();
             this.successMessage = sessionStorage.getItem('mushavo_success') || '';
             sessionStorage.removeItem('mushavo_success');
+            await this.loadPublicCountries();
 
             if (this.hasInviteHash()) {
               this.currentShell = 'invite';
@@ -5964,6 +5986,16 @@
             this.currentShell = 'login';
             this.booting = false;
           }
+        },
+
+        async loadPublicCountries() {
+          const { data, error } = await supabaseClient
+            .from('countries')
+            .select('id, name, code, currency_code')
+            .is('archived_at', null)
+            .order('name', { ascending: true });
+
+          this.publicCountries = error ? [] : (data || []);
         },
 
         withTimeout(promise, milliseconds, message) {
@@ -11135,7 +11167,7 @@
               ? supabaseClient.from('units').select(unitSelect).is('archived_at', null).order('created_at', { ascending: false })
               : Promise.resolve({ data: [], error: null }),
             canLoadTenants
-              ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true })
+              ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, country_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true })
               : Promise.resolve({ data: [], error: null }),
             canLoadLeases
               ? supabaseClient.from('leases').select(leaseSelect).order('end_date', { ascending: true })
@@ -13469,7 +13501,7 @@
             const staffSelect = 'id, management_company_id, staff_profile_id, all_properties, property_ids, can_view_properties, can_add_properties, can_edit_properties, can_archive_properties, can_view_units, can_add_units, can_edit_units, can_archive_units, can_mark_units_vacant, can_view_tenants, can_add_tenants, can_edit_tenants, can_archive_tenants, can_view_leases, can_create_leases, can_edit_leases, can_terminate_leases, can_view_lease_documents, can_upload_lease_documents, can_manage_maintenance, can_create_maintenance, can_assign_maintenance, can_add_resolution_notes, can_view_payments, can_log_payments, can_reject_payments, can_view_payment_proofs, can_verify_payments, can_manage_leases, can_manage_staff, can_view_finance, invited_at, accepted_at, status, staff_profile:profiles!management_staff_permissions_staff_profile_id_fkey(id, landlord_id, full_name, phone, email, role, created_at)';
             const [propertiesResult, tenantsResult, leasesResult, staffResult, inviteTokensResult] = await Promise.all([
               supabaseClient.from('properties').select('id, landlord_id, name, address, city, created_at').is('archived_at', null).order('name', { ascending: true }),
-              supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true }),
+              supabaseClient.from('tenants').select('id, landlord_id, profile_id, country_id, full_name, phone, email, id_number, invite_accepted, created_at').is('archived_at', null).order('full_name', { ascending: true }),
               supabaseClient.from('leases').select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))').order('end_date', { ascending: true }),
               supabaseClient.from('management_staff_permissions').select(staffSelect).eq('management_company_id', this.managementContext.company.id).eq('status', 'approved').order('accepted_at', { ascending: false }),
               supabaseClient.from('invite_tokens').select('id, token, email, role, metadata, landlord_id, created_at, expires_at').eq('role', 'management_staff').eq('used', false).eq('metadata->>management_company_id', this.managementContext.company.id).order('created_at', { ascending: false })
@@ -14326,7 +14358,7 @@
               ? supabaseClient.from('units').select('id, property_id, unit_number, bedrooms, bathrooms, monthly_rent, status, properties(id, name, address, city)').is('archived_at', null).order('unit_number', { ascending: true })
               : Promise.resolve({ data: [], error: null }),
             canLoadTenants
-              ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, full_name, phone, email, id_number, invite_token, invite_accepted, created_at').is('archived_at', null).order('created_at', { ascending: false })
+              ? supabaseClient.from('tenants').select('id, landlord_id, profile_id, country_id, full_name, phone, email, id_number, invite_token, invite_accepted, created_at').is('archived_at', null).order('created_at', { ascending: false })
               : Promise.resolve({ data: [], error: null }),
             canLoadLeases
               ? supabaseClient.from('leases').select('id, unit_id, tenant_id, landlord_id, start_date, end_date, monthly_rent, deposit_amount, deposit_paid, lease_document_url, lease_document_path, lease_document_name, lease_document_size, lease_document_uploaded_by, lease_document_uploaded_at, status, created_at, tenants(id, full_name, email, phone), units(id, unit_number, property_id, properties(id, name, address, city))').order('created_at', { ascending: false })
@@ -15826,7 +15858,7 @@
           this.authError = '';
           this.successMessage = '';
 
-          if (!this.landlordSignupForm.fullName || !this.landlordSignupForm.phone || !this.landlordSignupForm.email || !this.landlordSignupForm.password || !this.landlordSignupForm.confirmPassword) {
+          if (!this.landlordSignupForm.fullName || !this.landlordSignupForm.countryId || !this.landlordSignupForm.phone || !this.landlordSignupForm.email || !this.landlordSignupForm.password || !this.landlordSignupForm.confirmPassword) {
             this.authError = 'All landlord signup details are required.';
             return;
           }
@@ -15857,7 +15889,8 @@
               data: {
                 mushavo_signup: 'landlord_free',
                 full_name: this.landlordSignupForm.fullName,
-                phone: this.landlordSignupForm.phone || ''
+                phone: this.landlordSignupForm.phone || '',
+                country_id: this.landlordSignupForm.countryId
               }
             }
           });
@@ -15879,7 +15912,8 @@
 
           const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
             p_full_name: this.landlordSignupForm.fullName,
-            p_phone: this.landlordSignupForm.phone || ''
+            p_phone: this.landlordSignupForm.phone || '',
+            p_country_id: this.landlordSignupForm.countryId
           });
 
           if (registerError) {
@@ -15894,6 +15928,7 @@
           this.loginForm.email = this.landlordSignupForm.email;
           this.landlordSignupForm = {
             fullName: '',
+            countryId: '',
             phone: '',
             email: '',
             password: '',
@@ -15908,7 +15943,7 @@
           this.authError = '';
           this.successMessage = '';
 
-          if (!this.tenantSignupForm.fullName || !this.tenantSignupForm.email || !this.tenantSignupForm.phone || !this.tenantSignupForm.idNumber || !this.tenantSignupForm.password || !this.tenantSignupForm.confirmPassword) {
+          if (!this.tenantSignupForm.fullName || !this.tenantSignupForm.countryId || !this.tenantSignupForm.email || !this.tenantSignupForm.phone || !this.tenantSignupForm.idNumber || !this.tenantSignupForm.password || !this.tenantSignupForm.confirmPassword) {
             this.authError = 'All tenant signup details are required.';
             return;
           }
@@ -15946,7 +15981,8 @@
                 mushavo_signup: 'tenant_direct',
                 full_name: this.tenantSignupForm.fullName,
                 phone: this.tenantSignupForm.phone,
-                id_number: this.tenantSignupForm.idNumber
+                id_number: this.tenantSignupForm.idNumber,
+                country_id: this.tenantSignupForm.countryId
               }
             }
           });
@@ -15969,7 +16005,8 @@
           const { error: registerError } = await supabaseClient.rpc('register_tenant_account', {
             p_full_name: this.tenantSignupForm.fullName,
             p_phone: this.tenantSignupForm.phone,
-            p_id_number: this.tenantSignupForm.idNumber
+            p_id_number: this.tenantSignupForm.idNumber,
+            p_country_id: this.tenantSignupForm.countryId
           });
 
           if (registerError) {
@@ -15984,6 +16021,7 @@
           this.loginForm.email = this.tenantSignupForm.email;
           this.tenantSignupForm = {
             fullName: '',
+            countryId: '',
             email: '',
             phone: '',
             idNumber: '',
@@ -16109,7 +16147,8 @@
             if (authUser.user_metadata?.mushavo_signup === 'landlord_free') {
               const { error: registerError } = await supabaseClient.rpc('register_free_landlord', {
                 p_full_name: authUser.user_metadata?.full_name || authUser.email || 'Landlord',
-                p_phone: authUser.user_metadata?.phone || ''
+                p_phone: authUser.user_metadata?.phone || '',
+                p_country_id: authUser.user_metadata?.country_id || null
               });
               if (!registerError) {
                 const retry = await supabaseClient
@@ -16126,7 +16165,8 @@
               const { error: registerError } = await supabaseClient.rpc('register_tenant_account', {
                 p_full_name: authUser.user_metadata?.full_name || authUser.email || 'Tenant',
                 p_phone: authUser.user_metadata?.phone || '',
-                p_id_number: authUser.user_metadata?.id_number || ''
+                p_id_number: authUser.user_metadata?.id_number || '',
+                p_country_id: authUser.user_metadata?.country_id || null
               });
               if (!registerError) {
                 const retry = await supabaseClient
