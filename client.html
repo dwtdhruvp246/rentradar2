@@ -1108,7 +1108,7 @@
                 <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingFilters.countryId" x-effect='$nextTick(() => { $el.value = admin.pricingFilters.countryId ?? "" })'>
                   <option value="">All countries</option>
-                  <template x-for="country in admin.countries" :key="`pricing-country-filter-${country.id}`">
+                  <template x-for="country in adminSelectableCountries()" :key="`pricing-country-filter-${country.id}`">
                     <option :value="country.id" x-text="country.name"></option>
                   </template>
                 </select>
@@ -1443,7 +1443,7 @@
                     <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                     <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.pricingForm.countryId" @change="syncPricingFormCountry()" required x-effect='$nextTick(() => { $el.value = admin.pricingForm.countryId ?? "" })'>
                       <option value="">Select country</option>
-                      <template x-for="country in admin.countries" :key="`pricing-country-${country.id}`">
+                      <template x-for="country in adminSelectableCountries()" :key="`pricing-country-${country.id}`">
                         <option :value="country.id" x-text="country.name"></option>
                       </template>
                     </select>
@@ -1642,7 +1642,7 @@
                     <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                     <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.managementAddForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.managementAddForm.countryId ?? "" })'>
                       <option value="">Select country</option>
-                      <template x-for="country in admin.countries" :key="`mgmt-country-${country.id}`">
+                      <template x-for="country in adminSelectableCountries()" :key="`mgmt-country-${country.id}`">
                         <option :value="country.id" x-text="country.name"></option>
                       </template>
                     </select>
@@ -1981,7 +1981,7 @@
                 <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.selectedCountryId" x-effect='$nextTick(() => { $el.value = admin.selectedCountryId ?? "" })'>
                   <option value="all">All countries</option>
                   <option value="unassigned">Unassigned</option>
-                  <template x-for="country in admin.countries" :key="`enquiry-filter-${country.id}`">
+                  <template x-for="country in adminSelectableCountries()" :key="`enquiry-filter-${country.id}`">
                     <option :value="country.id" x-text="country.name"></option>
                   </template>
                 </select>
@@ -2225,7 +2225,7 @@
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.freelancerForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.freelancerForm.countryId ?? "" })'>
                     <option value="">Select country</option>
-                    <template x-for="country in admin.countries" :key="`freelancer-country-${country.id}`">
+                    <template x-for="country in adminSelectableCountries()" :key="`freelancer-country-${country.id}`">
                       <option :value="country.id" x-text="country.name"></option>
                     </template>
                   </select>
@@ -2410,7 +2410,7 @@
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.addForm.countryId" required x-effect='$nextTick(() => { $el.value = admin.addForm.countryId ?? "" })'>
                     <option value="">Select country</option>
-                    <template x-for="country in admin.countries" :key="`add-${country.id}`">
+                    <template x-for="country in adminSelectableCountries()" :key="`add-${country.id}`">
                       <option :value="country.id" x-text="country.name"></option>
                     </template>
                   </select>
@@ -2480,7 +2480,7 @@
                   <span class="mb-2 block text-sm font-medium text-slate-700">Country</span>
                   <select class="w-full rounded-lg border border-slate-200 bg-slate-100 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" x-model="admin.editForm.countryId" x-effect='$nextTick(() => { $el.value = admin.editForm.countryId ?? "" })'>
                     <option value="">Unassigned</option>
-                    <template x-for="country in admin.countries" :key="`edit-${country.id}`">
+                    <template x-for="country in adminSelectableCountries()" :key="`edit-${country.id}`">
                       <option :value="country.id" :selected="admin.editForm.countryId === country.id" x-text="country.name"></option>
                     </template>
                   </select>
@@ -6592,10 +6592,35 @@
           return this.normalizeCountryIds(this.profile?.country_ids || (this.profile?.country_id ? [this.profile.country_id] : []));
         },
 
+        adminSelectableCountries() {
+          const countries = this.admin?.countries || [];
+          if (this.profile?.role !== 'admin_staff') return countries;
+          const allowed = new Set(this.adminStaffCountryIds());
+          return countries.filter(country => allowed.has(country.id));
+        },
+
+        defaultAdminCountryId() {
+          const selected = this.admin?.selectedCountryId;
+          if (this.profile?.role === 'admin_staff') {
+            const assigned = this.adminStaffCountryIds();
+            if (selected && selected !== 'all' && selected !== 'unassigned' && assigned.includes(selected)) return selected;
+            return assigned[0] || '';
+          }
+          return selected && selected !== 'all' && selected !== 'unassigned' ? selected : '';
+        },
+
         adminCanAccessCountry(countryId) {
           if (this.profile?.role !== 'admin_staff') return true;
           if (!countryId) return false;
           return this.adminStaffCountryIds().includes(countryId);
+        },
+
+        blockUnassignedAdminStaffCountry(countryId, label = 'country') {
+          if (this.profile?.role !== 'admin_staff') return false;
+          if (this.adminCanAccessCountry(countryId)) return false;
+          this.admin.formError = `You can only use countries assigned to your admin staff account for this ${label}.`;
+          this.admin.saving = false;
+          return true;
         },
 
         restrictRowsToAdminStaffCountries(rows, countryGetter = row => row.country_id) {
@@ -7756,14 +7781,15 @@
           this.admin.modal = modalName;
 
           if (modalName === 'add') {
-            if (this.admin.selectedCountryId === 'all' || this.admin.selectedCountryId === 'unassigned') {
+            const countryId = this.defaultAdminCountryId();
+            if (!countryId) {
               this.admin.formError = 'Select a country before adding a landlord.';
             }
             this.admin.addForm = {
               fullName: '',
               email: '',
               phone: '',
-              countryId: this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : ''
+              countryId
             };
           }
 
@@ -7776,7 +7802,7 @@
           }
 
           if (modalName === 'management-add') {
-            const countryId = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '';
+            const countryId = this.defaultAdminCountryId();
             const defaults = this.subscriptionPlanDefaults('pmc', 'starter', countryId);
             this.admin.managementAddForm = {
               companyName: '',
@@ -7794,9 +7820,8 @@
           }
 
           if (modalName === 'admin-team-add') {
-            const defaultCountryIds = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned'
-              ? [this.admin.selectedCountryId]
-              : [];
+            const defaultCountry = this.defaultAdminCountryId();
+            const defaultCountryIds = defaultCountry ? [defaultCountry] : [];
             this.admin.adminTeamForm = {
               fullName: '',
               email: '',
@@ -7807,7 +7832,7 @@
           }
 
           if (modalName === 'freelancer-add') {
-            const countryId = this.admin.selectedCountryId !== 'all' && this.admin.selectedCountryId !== 'unassigned' ? this.admin.selectedCountryId : '';
+            const countryId = this.defaultAdminCountryId();
             const defaults = this.subscriptionPlanDefaults('ipm', 'pro', countryId);
             this.admin.freelancerForm = {
               fullName: '',
@@ -7824,7 +7849,8 @@
         },
 
         resetPricingForm() {
-          const country = this.countryById(this.admin.pricingFilters.countryId) || this.admin.countries[0] || null;
+          const countries = this.adminSelectableCountries();
+          const country = this.countryById(this.admin.pricingFilters.countryId) || countries[0] || null;
           this.admin.pricingForm = {
             id: '',
             countryId: country?.id || '',
@@ -8205,6 +8231,7 @@
           this.admin.saving = true;
 
           const countryId = this.admin.freelancerForm.countryId || null;
+          if (this.blockUnassignedAdminStaffCountry(countryId, 'IPM')) return;
           const payload = {
             full_name: this.admin.freelancerForm.fullName,
             email: this.admin.freelancerForm.email,
@@ -8567,20 +8594,33 @@
           return (this.admin?.countries || []).find(country => country.id === countryId) || null;
         },
 
+        countryByCode(countryCode) {
+          const normalized = String(countryCode || '').toUpperCase();
+          if (!normalized) return null;
+          return (this.admin?.countries || []).find(country => String(country.code || '').toUpperCase() === normalized) || null;
+        },
+
         pricingPlanCountryLabel(plan) {
           return plan?.country?.name || plan?.country_name || this.adminCountryName(plan?.country_id) || plan?.country_code || '-';
         },
 
         pricingPlanRows(accountType = '', countryId = '') {
           const rows = this.admin?.pricingPlans?.length ? this.admin.pricingPlans : this.defaultPricingPlans();
-          const country = this.countryById(countryId);
+          const scopedCountryId = ['all', 'unassigned'].includes(String(countryId || '')) ? '' : countryId;
+          const country = this.countryById(scopedCountryId);
           const countryCode = String(country?.code || '').toUpperCase();
+          const allowedCountryIds = this.profile?.role === 'admin_staff' ? new Set(this.adminStaffCountryIds()) : null;
           return rows
             .filter(row => !accountType || row.account_type === accountType)
             .filter(row => row.public_active !== false || this.profile?.role === 'super_admin')
             .filter(row => {
-              if (!countryId) return true;
-              return row.country_id === countryId || (countryCode && String(row.country_code || '').toUpperCase() === countryCode);
+              if (!allowedCountryIds) return true;
+              const rowCountryId = row.country_id || this.countryByCode(row.country_code)?.id || '';
+              return allowedCountryIds.has(rowCountryId);
+            })
+            .filter(row => {
+              if (!scopedCountryId) return true;
+              return row.country_id === scopedCountryId || (countryCode && String(row.country_code || '').toUpperCase() === countryCode);
             })
             .sort((a, b) => Number(a.display_order || 100) - Number(b.display_order || 100));
         },
@@ -8906,6 +8946,7 @@
             this.admin.saving = false;
             return;
           }
+          if (this.blockUnassignedAdminStaffCountry(countryId, 'landlord')) return;
 
           const token = this.generateSecureToken();
           const metadata = {
@@ -9003,6 +9044,7 @@
             this.admin.saving = false;
             return;
           }
+          if (this.blockUnassignedAdminStaffCountry(form.countryId, 'pricing plan')) return;
 
           const payload = {
             country_id: form.countryId,
@@ -9068,6 +9110,7 @@
             this.admin.saving = false;
             return;
           }
+          if (this.blockUnassignedAdminStaffCountry(countryId, 'IPM')) return;
 
           const token = this.generateSecureToken();
           const metadata = {
@@ -9117,6 +9160,7 @@
             this.admin.saving = false;
             return;
           }
+          if (this.blockUnassignedAdminStaffCountry(countryId, 'PMC')) return;
 
           const token = this.generateSecureToken();
           const metadata = {
@@ -9164,6 +9208,7 @@
           this.admin.saving = true;
 
           const countryId = this.admin.managementAddForm.countryId || row.country_id || null;
+          if (this.blockUnassignedAdminStaffCountry(countryId, 'PMC')) return;
           const metadata = {
             company_name: this.admin.managementAddForm.companyName,
             full_name: this.admin.managementAddForm.leaderName,
@@ -9821,6 +9866,7 @@
           this.admin.formError = '';
           this.admin.saving = true;
           const selectedCountryId = this.resolveAdminCountryId(this.admin.editForm.countryId);
+          if (this.blockUnassignedAdminStaffCountry(selectedCountryId, 'landlord')) return;
 
           if (this.admin.selectedRow.accepted) {
             const { error } = await supabaseClient
@@ -15562,7 +15608,9 @@
             maintenance_new: 'maintenance',
             maintenance_updated: 'maintenance',
             lease_expiring: 'leases',
-            rent_due: 'leases'
+            rent_due: 'leases',
+            staff_landlord_request: 'staff',
+            management_landlord_request: 'staff'
           };
           const target = appTargets[type] || '';
           if (!target) return '';
@@ -15581,7 +15629,9 @@
             maintenance_new: 'Maintenance Request',
             maintenance_updated: 'Maintenance Updated',
             rent_due: 'Rent Due',
-            tenant_link_request: 'Tenant Link Request'
+            tenant_link_request: 'Tenant Link Request',
+            staff_landlord_request: 'IPM Access Request',
+            management_landlord_request: 'PMC Access Request'
           };
           return labels[type] || this.titleCase(type);
         },
@@ -15589,6 +15639,7 @@
         notificationIcon(type) {
           if (type?.startsWith('payment')) return 'card';
           if (type?.startsWith('maintenance')) return 'wrench';
+          if (type === 'staff_landlord_request' || type === 'management_landlord_request') return 'user';
           if (type === 'lease_expiring' || type === 'rent_due') return 'file';
           return 'bell';
         },
