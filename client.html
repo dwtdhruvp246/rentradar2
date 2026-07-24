@@ -10560,6 +10560,72 @@
           if (bucket) bucket.loading = false;
         },
 
+        scopedStateKey(key) {
+          const profileId = this.profile?.id || this.user?.id || 'guest';
+          const role = this.profile?.role || this.currentShell || 'guest';
+          return `mushavo_${key}_${role}_${profileId}`;
+        },
+
+        selectedManagementLandlordKey() {
+          return this.scopedStateKey('management_landlord_id');
+        },
+
+        readScopedState(key, fallback = '') {
+          try {
+            return window.localStorage.getItem(this.scopedStateKey(key)) || fallback;
+          } catch (error) {
+            return fallback;
+          }
+        },
+
+        writeScopedState(key, value) {
+          try {
+            if (value === null || value === undefined || value === '') {
+              window.localStorage.removeItem(this.scopedStateKey(key));
+            } else {
+              window.localStorage.setItem(this.scopedStateKey(key), value);
+            }
+          } catch (error) {
+          }
+        },
+
+        captureViewState() {
+          return {
+            currentShell: this.currentShell,
+            currentPage: this.currentPage,
+            pageTitle: this.pageTitle,
+            sidebarOpen: this.sidebarOpen,
+            propertyUnit: {
+              selectedPropertyId: this.propertyUnit?.selectedPropertyId || '',
+              selectedUnitId: this.propertyUnit?.selectedUnit?.id || '',
+              detailMode: this.propertyUnit?.detailMode || ''
+            }
+          };
+        },
+
+        restoreViewState(snapshot) {
+          if (!snapshot) return;
+          this.currentShell = snapshot.currentShell;
+          this.currentPage = this.isPageAllowed(snapshot.currentPage) ? snapshot.currentPage : this.currentPage;
+          this.pageTitle = this.titleForPage(this.currentPage);
+          this.sidebarOpen = snapshot.sidebarOpen;
+
+          if (snapshot.propertyUnit && this.propertyUnit) {
+            this.propertyUnit.selectedPropertyId = snapshot.propertyUnit.selectedPropertyId;
+            this.propertyUnit.detailMode = snapshot.propertyUnit.detailMode;
+            if (snapshot.propertyUnit.selectedUnitId) {
+              const refreshedUnit = this.propertyUnit.units.find(unit => unit.id === snapshot.propertyUnit.selectedUnitId);
+              if (refreshedUnit) this.propertyUnit.selectedUnit = refreshedUnit;
+            }
+          }
+        },
+
+        async refreshCurrentPagePreservingView() {
+          const snapshot = this.captureViewState();
+          await this.refreshCurrentPage();
+          this.restoreViewState(snapshot);
+        },
+
         navIcon(icon) {
           const icons = {
             dashboard: '<svg viewBox="0 0 24 24" fill="none" class="h-5 w-5"><path d="M4 13h7V4H4v9Zm9 7h7V4h-7v16ZM4 20h7v-5H4v5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
@@ -10819,7 +10885,7 @@
           this.staffContext.activeLandlordId = landlordId;
           const active = this.staffContext.relationships.find(row => row.landlord_id === landlordId);
           this.permissions = this.permissionStateFromRow(active);
-          await this.refreshCurrentPage();
+          await this.refreshCurrentPagePreservingView();
         },
 
         async requestAdditionalStaffLandlord() {
@@ -10905,10 +10971,10 @@
           if (!landlordId || landlordId === this.currentLandlordId()) return;
           this.managementContext.error = '';
           this.managementContext.activeLandlordId = landlordId;
-          localStorage.setItem('mushavo_management_landlord_id', landlordId);
+          this.writeScopedState('management_landlord_id', landlordId);
           const active = this.managementContext.relationships.find(row => row.landlord_id === landlordId);
           this.permissions = this.permissionStateFromRow(active);
-          await this.refreshCurrentPage();
+          await this.refreshCurrentPagePreservingView();
         },
 
         async openManagementLandlord(landlordId) {
@@ -15718,6 +15784,104 @@
           ]);
         },
 
+        pageRealtimeTables(page = this.currentPage, shell = this.currentShell) {
+          if (shell === 'super_admin') {
+            const sharedAdminTables = ['profiles', 'countries', 'landlord_subscriptions', 'properties', 'units', 'tenants', 'staff_permissions', 'management_companies', 'management_landlord_permissions', 'management_staff_permissions'];
+            const adminMap = {
+              'admin-dashboard': ['*'],
+              'landlord-management': sharedAdminTables,
+              'admin-finance': ['platform_payments', 'partner_payments', 'profiles', 'countries', 'pricing_plans'],
+              'admin-pricing': ['pricing_plans', 'countries'],
+              'admin-tenants': ['tenants', 'profiles', 'countries'],
+              'admin-enquiries': ['enquiries', 'countries', 'admin_staff_country_assignments'],
+              'admin-notes': ['admin_notes', 'profiles'],
+              'admin-team': ['profiles', 'admin_staff_country_assignments', 'countries'],
+              'admin-staff': ['profiles', 'staff_permissions', 'staff_landlord_requests', 'platform_payments', 'countries'],
+              'admin-management': ['management_companies', 'management_landlord_permissions', 'management_staff_permissions', 'profiles', 'platform_payments', 'countries']
+            };
+            return new Set(adminMap[page] || []);
+          }
+
+          if (shell === 'tenant') {
+            const tenantMap = {
+              'tenant-home': ['tenants', 'leases', 'units', 'properties', 'payments', 'maintenance_requests', 'notifications'],
+              'tenant-payments': ['tenants', 'leases', 'payments', 'payment_submissions'],
+              'tenant-maintenance': ['tenants', 'maintenance_requests'],
+              'tenant-notifications': ['notifications'],
+              'tenant-settings': ['tenants', 'profiles', 'notifications']
+            };
+            return new Set(tenantMap[page] || []);
+          }
+
+          const appMap = {
+            dashboard: ['properties', 'units', 'leases', 'payments', 'payment_submissions', 'maintenance_requests'],
+            properties: ['properties', 'units', 'tenants', 'leases', 'maintenance_requests', 'staff_permissions', 'management_landlord_permissions', 'notifications'],
+            leases: ['leases', 'tenants', 'units', 'properties', 'notifications'],
+            payments: ['payments', 'payment_submissions', 'leases', 'tenants', 'units', 'properties'],
+            finance: ['payments', 'leases', 'tenants', 'units', 'properties', 'partner_payments'],
+            maintenance: ['maintenance_requests', 'properties', 'units', 'staff_permissions', 'management_staff_permissions'],
+            staff: ['staff_permissions', 'staff_landlord_requests', 'management_landlord_permissions', 'management_landlord_requests', 'invite_tokens', 'profiles'],
+            'management-landlords': ['staff_landlord_requests', 'staff_permissions', 'management_landlord_requests', 'management_landlord_permissions', 'profiles', 'properties', 'tenants'],
+            notifications: ['notifications', 'staff_landlord_requests', 'management_landlord_requests'],
+            settings: ['profiles'],
+            'my-account': ['profiles', 'landlord_subscriptions', 'management_companies', 'staff_permissions', 'management_landlord_permissions']
+          };
+          return new Set(appMap[page] || []);
+        },
+
+        shouldRefreshCurrentPageForTable(table) {
+          const tables = this.pageRealtimeTables();
+          return tables.has('*') || tables.has(table);
+        },
+
+        realtimeRow(payload) {
+          return payload?.new || payload?.old || {};
+        },
+
+        realtimeValueMatches(row, keys, values) {
+          const allowedValues = values.filter(Boolean).map(value => String(value));
+          if (!allowedValues.length) return false;
+          return keys.some(key => row?.[key] && allowedValues.includes(String(row[key])));
+        },
+
+        realtimeChangeAffectsCurrentAccount(table, payload) {
+          const row = this.realtimeRow(payload);
+          const profileId = this.profile?.id || this.user?.id || '';
+          const activeLandlordId = this.currentLandlordId?.() || this.profile?.landlord_id || '';
+
+          if (this.currentShell === 'super_admin') return false;
+
+          if (table === 'profiles') {
+            return this.realtimeValueMatches(row, ['id'], [profileId]);
+          }
+
+          if (table === 'landlord_subscriptions') {
+            return this.realtimeValueMatches(row, ['landlord_id', 'profile_id'], [profileId, activeLandlordId]);
+          }
+
+          if (table === 'staff_permissions' || table === 'staff_landlord_requests') {
+            return this.realtimeValueMatches(row, ['staff_profile_id', 'profile_id', 'staff_id'], [profileId]);
+          }
+
+          if (table === 'management_companies') {
+            return this.realtimeValueMatches(row, ['leader_profile_id', 'profile_id', 'owner_profile_id'], [profileId]);
+          }
+
+          if (table === 'management_landlord_permissions' || table === 'management_landlord_requests') {
+            return this.realtimeValueMatches(row, ['management_company_id', 'leader_profile_id', 'profile_id', 'landlord_id'], [this.profile?.management_company_id, profileId, activeLandlordId]);
+          }
+
+          if (table === 'management_staff_permissions') {
+            return this.realtimeValueMatches(row, ['staff_profile_id', 'profile_id', 'management_company_id'], [profileId, this.profile?.management_company_id]);
+          }
+
+          if (table === 'admin_staff_country_assignments') {
+            return this.realtimeValueMatches(row, ['staff_profile_id', 'profile_id'], [profileId]);
+          }
+
+          return false;
+        },
+
         startRealtimeSync() {
           this.stopRealtimeSync();
           if (!this.user?.id || ['login', 'invite', 'suspended'].includes(this.currentShell)) return;
@@ -15769,11 +15933,17 @@
           }
 
           if (this.accountRealtimeTables().has(table)) {
-            this.scheduleRealtimeProfileRefresh();
+            if (this.realtimeChangeAffectsCurrentAccount(table, payload)) {
+              this.scheduleRealtimeProfileRefresh(table);
+            } else if (this.shouldRefreshCurrentPageForTable(table)) {
+              this.scheduleRealtimeRefresh();
+            }
             return;
           }
 
-          this.scheduleRealtimeRefresh();
+          if (this.shouldRefreshCurrentPageForTable(table)) {
+            this.scheduleRealtimeRefresh();
+          }
         },
 
         scheduleUnreadRealtimeRefresh() {
@@ -15793,7 +15963,7 @@
             if (!this.user || this.realtimeRefreshInProgress || ['login', 'invite', 'suspended'].includes(this.currentShell)) return;
             this.realtimeRefreshInProgress = true;
             try {
-              await this.refreshCurrentPage();
+              await this.refreshCurrentPagePreservingView();
               if (this.profile?.id) await this.loadUnreadCount(this.profile.id);
             } finally {
               this.realtimeRefreshInProgress = false;
@@ -15801,12 +15971,54 @@
           }, 700);
         },
 
-        scheduleRealtimeProfileRefresh() {
+        async refreshAccountContextFromRealtime() {
+          if (!this.user?.id || ['login', 'invite'].includes(this.currentShell)) return false;
+          const snapshot = this.captureViewState();
+
+          let { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', this.user.id)
+            .maybeSingle();
+
+          if (error || !profile || profile.archived_at) return false;
+          if (profile.role === 'admin_staff') profile = await this.attachAdminStaffCountries(profile);
+
+          this.profile = profile;
+          this.clearSubscriptionPause();
+
+          let hasAccess = true;
+          if (profile.role === 'landlord') {
+            hasAccess = await this.checkLandlordSubscription(profile.id);
+          } else if (profile.role === 'staff') {
+            hasAccess = await this.loadStaffPermissions(profile.id);
+          } else if (profile.role === 'management_leader') {
+            hasAccess = await this.loadManagementPermissions(profile.id);
+          } else if (profile.role === 'management_staff') {
+            hasAccess = await this.loadManagementStaffPermissions(profile.id);
+          } else if (profile.role === 'admin_staff') {
+            hasAccess = profile.staff_subscription_status !== 'suspended'
+              && Boolean(this.normalizeCountryIds(profile.country_ids || (profile.country_id ? [profile.country_id] : [])).length);
+          }
+
+          if (!hasAccess) {
+            this.currentShell = this.accessPaused ? 'suspended' : this.currentShell;
+            return false;
+          }
+
+          this.restoreViewState(snapshot);
+          if (this.profile?.id) await this.loadUnreadCount(this.profile.id);
+          return true;
+        },
+
+        scheduleRealtimeProfileRefresh(table = 'profiles') {
           if (this.realtimeProfileTimer) window.clearTimeout(this.realtimeProfileTimer);
           this.realtimeProfileTimer = window.setTimeout(async () => {
             if (!this.user || ['login', 'invite'].includes(this.currentShell)) return;
-            const activeUser = this.user;
-            await this.loadAuthenticatedUser(activeUser);
+            const refreshed = await this.refreshAccountContextFromRealtime();
+            if (refreshed && this.shouldRefreshCurrentPageForTable(table)) {
+              await this.refreshCurrentPagePreservingView();
+            }
           }, 900);
         },
 
@@ -16572,13 +16784,13 @@
             return true;
           }
 
-          let activeLandlordId = this.managementContext.activeLandlordId || localStorage.getItem('mushavo_management_landlord_id') || '';
+          let activeLandlordId = this.managementContext.activeLandlordId || this.readScopedState('management_landlord_id') || '';
           if (!this.managementContext.relationships.some(row => row.landlord_id === activeLandlordId)) {
             activeLandlordId = this.managementContext.relationships[0].landlord_id;
           }
 
           this.managementContext.activeLandlordId = activeLandlordId;
-          localStorage.setItem('mushavo_management_landlord_id', activeLandlordId);
+          this.writeScopedState('management_landlord_id', activeLandlordId);
           const active = this.managementContext.relationships.find(row => row.landlord_id === activeLandlordId) || this.managementContext.relationships[0];
           this.permissions = this.permissionStateFromRow(active);
           return true;
