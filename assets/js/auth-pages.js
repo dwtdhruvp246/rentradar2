@@ -2,6 +2,7 @@ import { getCurrentIdentity, routeForRole, sendPasswordReset, signIn, signUp, up
 import { friendlyError } from "./errors.js";
 import { hydrateIcons } from "./ui.js";
 import { supabase } from "./supabaseClient.js";
+import { sitePath } from "./config.js";
 
 hydrateIcons();
 const form = document.querySelector("[data-auth-form]");
@@ -11,6 +12,15 @@ function setMessage(text, kind = "error") {
   if (!message) return;
   message.textContent = text;
   message.dataset.kind = kind;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 async function loadCountries() {
@@ -23,7 +33,13 @@ async function loadCountries() {
     setMessage(friendlyError(error, "Countries could not be loaded. Please try again shortly."));
     return;
   }
-  select.innerHTML = '<option value="">Choose a country</option>' + data.map((country) => `<option value="${country.id}">${country.name} (${country.code})</option>`).join("");
+  if (!data?.length) {
+    select.innerHTML = '<option value="">Countries have not been added yet</option>';
+    select.disabled = true;
+    setMessage("Countries need to be added in Supabase before signup can continue.");
+    return;
+  }
+  select.innerHTML = '<option value="">Choose a country</option>' + data.map((country) => `<option value="${escapeHtml(country.id)}">${escapeHtml(country.name)} (${escapeHtml(country.code)})</option>`).join("");
 }
 
 document.querySelectorAll("[data-password-toggle]").forEach((button) => button.addEventListener("click", () => {
@@ -61,7 +77,7 @@ form?.addEventListener("submit", async (event) => {
       if (values.password !== values.confirmPassword) throw new Error("Passwords do not match.");
       await updatePassword(values.password);
       setMessage("Password updated. You can now sign in.", "success");
-      setTimeout(() => window.location.replace("/login.html"), 1200);
+      setTimeout(() => window.location.replace(sitePath("login.html")), 1200);
     }
   } catch (error) {
     setMessage(friendlyError(error, error.message));

@@ -1,6 +1,7 @@
 import { friendlyError } from "./errors.js";
 import { supabase } from "./supabaseClient.js";
 import { hydrateIcons } from "./ui.js";
+import { sitePath } from "./config.js";
 
 const menuButton = document.querySelector("[data-public-menu]");
 const navigationPanel = document.querySelector("[data-public-links]");
@@ -70,11 +71,11 @@ function describePlan(accountType, planName) {
   return `${descriptions[accountType] || "For organised property operations."} ${planName ? `${planName} defines the published capacity for this market.` : ""}`;
 }
 
-function formatPlanPrice(value, country) {
+function formatPlanPrice(value, plan, country) {
   if (Number(value) === 0) return "Free";
   return new Intl.NumberFormat(country.locale || "en", {
     style: "currency",
-    currency: country.currency_code,
+    currency: plan.currency_code || country.currency_code,
     maximumFractionDigits: 2,
   }).format(Number(value));
 }
@@ -98,7 +99,7 @@ async function initPricing() {
 
     if (!country || !filtered.length) {
       status.textContent = country ? `No ${accountType.toUpperCase()} plans are currently published for ${country.name}.` : "Choose a country to view published plans.";
-      grid.innerHTML = `<div class="pricing-empty"><div><i data-lucide="map-pinned" class="icon"></i><h2>Plan details are not published for this selection.</h2><p>Contact Mushavo with your country, account type, and portfolio needs so the team can help.</p><a class="public-button public-button-primary" href="/contact.html">Contact Mushavo</a></div></div>`;
+      grid.innerHTML = `<div class="pricing-empty"><div><i data-lucide="map-pinned" class="icon"></i><h2>Plan details are not published for this selection.</h2><p>Contact Mushavo with your country, account type, and portfolio needs so the team can help.</p><a class="public-button public-button-primary" href="${sitePath("contact.html")}">Contact Mushavo</a></div></div>`;
       hydrateIcons(grid);
       return;
     }
@@ -110,7 +111,7 @@ async function initPricing() {
       const limitItems = limits.length
         ? limits.map(([key, value]) => `<li><i data-lucide="check"></i><span>${escapeHtml(labelFromKey(key))}: <strong>${escapeHtml(value === true ? "Included" : value)}</strong></span></li>`).join("")
         : `<li><i data-lucide="check"></i><span>Core Mushavo property operations</span></li>`;
-      return `<article class="live-price-card"><h2>${escapeHtml(plan.name)}</h2><div class="price-value">${escapeHtml(formatPlanPrice(price, country))}</div><div class="price-period">${Number(price) === 0 ? "No subscription charge" : `per ${billing === "yearly" ? "year" : "month"}`}</div><p class="price-description">${escapeHtml(describePlan(accountType, plan.name))}</p><ul class="price-features">${limitItems}</ul><a class="public-button ${Number(price) === 0 ? "public-button-light" : "public-button-primary"}" href="/signup.html">Choose ${escapeHtml(plan.name)}</a></article>`;
+      return `<article class="live-price-card"><h2>${escapeHtml(plan.name)}</h2><div class="price-value">${escapeHtml(formatPlanPrice(price, plan, country))}</div><div class="price-period">${Number(price) === 0 ? "No subscription charge" : `per ${billing === "yearly" ? "year" : "month"}`}</div><p class="price-description">${escapeHtml(describePlan(accountType, plan.name))}</p><ul class="price-features">${limitItems}</ul><a class="public-button ${Number(price) === 0 ? "public-button-light" : "public-button-primary"}" href="${sitePath("signup.html")}">Choose ${escapeHtml(plan.name)}</a></article>`;
     }).join("");
     hydrateIcons(grid);
   }
@@ -133,7 +134,7 @@ async function initPricing() {
     countrySelect.innerHTML = '<option value="">Pricing unavailable</option>';
     countrySelect.disabled = true;
     document.querySelectorAll("[data-account-type], [data-billing]").forEach((button) => { button.disabled = true; });
-    grid.innerHTML = `<div class="pricing-empty"><div><i data-lucide="circle-alert" class="icon"></i><h2>Pricing is temporarily unavailable.</h2><p>Contact Mushavo for current plan information in your country.</p><a class="public-button public-button-primary" href="/contact.html">Ask about pricing</a></div></div>`;
+    grid.innerHTML = `<div class="pricing-empty"><div><i data-lucide="circle-alert" class="icon"></i><h2>Pricing is temporarily unavailable.</h2><p>Contact Mushavo for current plan information in your country.</p><a class="public-button public-button-primary" href="${sitePath("contact.html")}">Ask about pricing</a></div></div>`;
     hydrateIcons(grid);
     return;
   }

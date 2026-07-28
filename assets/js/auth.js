@@ -1,4 +1,4 @@
-import { APP_CONFIG } from "./config.js";
+import { APP_CONFIG, sitePath } from "./config.js";
 import { friendlyError } from "./errors.js";
 import { setStateIdentity } from "./state.js";
 import { supabase } from "./supabaseClient.js";
@@ -38,12 +38,12 @@ export async function requireAuth({ admin = false } = {}) {
 
     const status = identity.profile?.account_status;
     if (identity.profile?.suspended_at || status === "suspended") {
-      window.location.replace("/account-suspended.html");
+      window.location.replace(sitePath("account-suspended.html"));
       return null;
     }
 
     if (hasExpiredSubscription(identity) && !["tenant", "staff", "super_admin", "admin_staff"].includes(identity.profile?.role)) {
-      window.location.replace("/subscription-expired.html");
+      window.location.replace(sitePath("subscription-expired.html"));
       return null;
     }
 
@@ -98,7 +98,7 @@ export function planStatusLabel(identity) {
 }
 
 export async function sendPasswordReset(email) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset-password.html` });
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}${sitePath("reset-password.html")}` });
   if (error) throw error;
 }
 

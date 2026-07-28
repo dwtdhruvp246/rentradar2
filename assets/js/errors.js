@@ -1,4 +1,5 @@
 const ERROR_RULES = [
+  [/invalid api key/i, "Mushavo is not connected to Supabase correctly. Check the public anon key in the site configuration."],
   [/invalid login credentials|invalid password/i, "Email or password is incorrect."],
   [/email.*already|user already registered|duplicate key.*email/i, "Your account already exists. Please contact Mushavo support if you cannot sign in."],
   [/row-level security|violates row-level security/i, "You do not have permission to complete this action."],

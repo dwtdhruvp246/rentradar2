@@ -2,6 +2,7 @@ import { planStatusLabel, signOut } from "./auth.js";
 import { getLocale, setLocale, translatePage } from "./i18n.js";
 import { escapeHtml, formatDate, hydrateIcons, icon, setupDialogTriggers, showError } from "./ui.js";
 import { supabase } from "./supabaseClient.js";
+import { sitePath } from "./config.js";
 
 const appNav = [
   ["dashboard", "layout-dashboard", "Dashboard", "dashboard.view"],
@@ -20,18 +21,18 @@ const appNav = [
 ];
 
 const adminNav = [
-  ["/admin/index.html", "layout-dashboard", "Dashboard"],
-  ["/admin/users.html", "users", "Users"],
-  ["/admin/countries.html", "globe-2", "Countries"],
-  ["/admin/pricing.html", "badge-dollar-sign", "Pricing"],
-  ["/admin/subscriptions.html", "receipt-text", "Subscriptions"],
-  ["/admin/enquiries.html", "inbox", "Enquiries"],
-  ["/admin/platform-finance.html", "chart-no-axes-combined", "Platform finance"],
-  ["/admin/settings.html", "settings", "Settings"],
+  [sitePath("admin/index.html"), "layout-dashboard", "Dashboard"],
+  [sitePath("admin/users.html"), "users", "Users"],
+  [sitePath("admin/countries.html"), "globe-2", "Countries"],
+  [sitePath("admin/pricing.html"), "badge-dollar-sign", "Pricing"],
+  [sitePath("admin/subscriptions.html"), "receipt-text", "Subscriptions"],
+  [sitePath("admin/enquiries.html"), "inbox", "Enquiries"],
+  [sitePath("admin/platform-finance.html"), "chart-no-axes-combined", "Platform finance"],
+  [sitePath("admin/settings.html"), "settings", "Settings"],
 ];
 
 function brand() {
-  return `<a class="brand" href="/index.html" aria-label="Mushavo home"><img src="/assets/img/mushavo-mark.png" alt="" style="width:38px;height:38px;object-fit:contain"><span>Mushavo</span></a>`;
+  return `<a class="brand" href="${sitePath("index.html")}" aria-label="Mushavo home"><img src="${sitePath("assets/img/mushavo-mark.png")}" alt="" style="width:38px;height:38px;object-fit:contain"><span>Mushavo</span></a>`;
 }
 
 function shell(sideLinks, identity, title) {
@@ -45,8 +46,8 @@ function shell(sideLinks, identity, title) {
       <nav class="sidebar-nav">${sideLinks}</nav>
       <div class="sidebar-foot">
         <div class="mobile-plan-status"><span class="status-chip"><span class="status-dot"></span>${planStatusLabel(identity)}</span></div>
-        <a class="side-link" href="/app/account.html">${icon("circle-user-round")}<span data-i18n="account">Account</span></a>
-        <a class="side-link" href="/app/settings.html">${icon("settings")}<span data-i18n="settings">Settings</span></a>
+        <a class="side-link" href="${sitePath("app/account.html")}">${icon("circle-user-round")}<span data-i18n="account">Account</span></a>
+        <a class="side-link" href="${sitePath("app/settings.html")}">${icon("settings")}<span data-i18n="settings">Settings</span></a>
         <button class="side-link" type="button" data-sign-out style="width:100%;border:0;background:transparent;text-align:left">${icon("log-out")}<span data-i18n="signOut">Sign out</span></button>
       </div>
     </aside>
@@ -70,8 +71,8 @@ function shell(sideLinks, identity, title) {
 }
 
 export function renderAppLayout(identity) {
-  const links = appNav.map(([view, iconName, label, permission]) => `<a class="side-link" href="/app/index.html#${view}" data-view-link="${view}" data-permission="${permission}">${icon(iconName)}<span>${label}</span></a>`).join("");
-  document.body.innerHTML = `<div class="app-layout">${shell(`<p class="nav-group-label">Workspace</p>${links}<p class="nav-group-label">Analysis</p><a class="side-link" href="/app/reports.html">${icon("chart-column")}<span data-i18n="reports">Reports</span></a>`, identity, "Workspace")}</div>`;
+  const links = appNav.map(([view, iconName, label, permission]) => `<a class="side-link" href="${sitePath(`app/index.html#${view}`)}" data-view-link="${view}" data-permission="${permission}">${icon(iconName)}<span>${label}</span></a>`).join("");
+  document.body.innerHTML = `<div class="app-layout">${shell(`<p class="nav-group-label">Workspace</p>${links}<p class="nav-group-label">Analysis</p><a class="side-link" href="${sitePath("app/reports.html")}">${icon("chart-column")}<span data-i18n="reports">Reports</span></a>`, identity, "Workspace")}</div>`;
   setupShell();
 }
 
@@ -112,5 +113,5 @@ async function openNotifications() {
   if (!dialog.open) dialog.showModal();
   const { data, error } = await supabase.from("notifications").select("id,title,body,action_url,read_at,created_at").order("created_at", { ascending: false }).limit(30);
   if (error) { list.innerHTML = '<div class="empty-state"><div><strong>Notifications unavailable</strong>Please try again.</div></div>'; showError(error); return; }
-  list.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<a class="record-row" href="${escapeHtml(item.action_url || "#")}"><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body || "")} · ${formatDate(item.created_at)}</span></div>${item.read_at ? "" : '<span class="unread-dot" aria-label="Unread"></span>'}</a>`).join("")}</div>` : '<div class="empty-state"><div><strong>You are up to date</strong>Relevant requests and changes will appear here.</div></div>';
+  list.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<a class="record-row" href="${escapeHtml(item.action_url ? sitePath(item.action_url) : "#")}"><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body || "")} · ${formatDate(item.created_at)}</span></div>${item.read_at ? "" : '<span class="unread-dot" aria-label="Unread"></span>'}</a>`).join("")}</div>` : '<div class="empty-state"><div><strong>You are up to date</strong>Relevant requests and changes will appear here.</div></div>';
 }

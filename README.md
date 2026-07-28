@@ -32,8 +32,9 @@ The separate migration files remain available for CLI and source-controlled depl
 1. `supabase/migrations/202607280001_foundation.sql`
 2. `supabase/migrations/202607280002_apply_canonical_rules.sql`
 3. `supabase/migrations/202607280003_bootstrap_super_admin.sql`
+4. `supabase/migrations/202607280004_seed_world_countries.sql`
 
-Do not seed countries or pricing. The bootstrap super admin creates those records from the admin workspace. `supabase/seed.sql` is intentionally a no-op.
+Countries are bootstrapped by migration 004 so signup has valid market records. Pricing plans, subscriptions, and users are still created from the admin workspace.
 
 After migration 003, create the bootstrap email as a Supabase Auth user. The database trigger consumes the one-time bootstrap record and creates its authoritative `super_admin` profile.
 
