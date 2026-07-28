@@ -1,5 +1,6 @@
 import { planStatusLabel, signOut } from "./auth.js";
 import { getLocale, setLocale, translatePage } from "./i18n.js";
+import { adminPagesForRole, appViewsForRole } from "./role-state.js";
 import { escapeHtml, formatDate, hydrateIcons, icon, setupDialogTriggers, showError } from "./ui.js";
 import { supabase } from "./supabaseClient.js";
 import { sitePath } from "./config.js";
@@ -54,7 +55,7 @@ function shell(sideLinks, identity, title) {
     <header class="app-header">
       <div style="display:flex;align-items:center;gap:10px;min-width:0">
         <button class="icon-button mobile-nav-toggle" type="button" aria-label="Open navigation" aria-controls="app-sidebar" aria-expanded="false" data-nav-toggle>${icon("menu")}</button>
-        <div class="header-context"><strong>${title}</strong><span>${name} · ${role.replaceAll("_", " ")}</span></div>
+        <div class="header-context"><strong>${title}</strong><span>${name} - ${role.replaceAll("_", " ")}</span></div>
       </div>
       <div class="header-actions">
         <span class="status-chip"><span class="status-dot"></span>${planStatusLabel(identity)}</span>
@@ -71,13 +72,19 @@ function shell(sideLinks, identity, title) {
 }
 
 export function renderAppLayout(identity) {
-  const links = appNav.map(([view, iconName, label, permission]) => `<a class="side-link" href="${sitePath(`app/index.html#${view}`)}" data-view-link="${view}" data-permission="${permission}">${icon(iconName)}<span>${label}</span></a>`).join("");
+  const allowed = new Set(appViewsForRole(identity.profile?.role));
+  const links = appNav.filter(([view]) => allowed.has(view)).map(([view, iconName, label, permission]) => `<a class="side-link" href="${sitePath(`app/index.html#${view}`)}" data-view-link="${view}" data-permission="${permission}">${icon(iconName)}<span>${label}</span></a>`).join("");
   document.body.innerHTML = `<div class="app-layout">${shell(`<p class="nav-group-label">Workspace</p>${links}<p class="nav-group-label">Analysis</p><a class="side-link" href="${sitePath("app/reports.html")}">${icon("chart-column")}<span data-i18n="reports">Reports</span></a>`, identity, "Workspace")}</div>`;
   setupShell();
 }
 
 export function renderAdminLayout(identity, pageKey = "dashboard") {
-  const links = adminNav.map(([href, iconName, label]) => `<a class="side-link" href="${href}"${href.endsWith(pageKey === "dashboard" ? "index.html" : `${pageKey}.html`) ? " aria-current=\"page\"" : ""}>${icon(iconName)}<span>${label}</span></a>`).join("");
+  const allowed = new Set(adminPagesForRole(identity.profile?.role));
+  const links = adminNav.filter(([href]) => {
+    const file = href.split("/").pop();
+    const key = file === "index.html" ? "dashboard" : file.replace(".html", "");
+    return allowed.has(key);
+  }).map(([href, iconName, label]) => `<a class="side-link" href="${href}"${href.endsWith(pageKey === "dashboard" ? "index.html" : `${pageKey}.html`) ? " aria-current=\"page\"" : ""}>${icon(iconName)}<span>${label}</span></a>`).join("");
   document.body.innerHTML = `<div class="app-layout">${shell(`<p class="nav-group-label">Administration</p>${links}`, identity, "Administration")}</div>`;
   setupShell();
 }
@@ -113,5 +120,5 @@ async function openNotifications() {
   if (!dialog.open) dialog.showModal();
   const { data, error } = await supabase.from("notifications").select("id,title,body,action_url,read_at,created_at").order("created_at", { ascending: false }).limit(30);
   if (error) { list.innerHTML = '<div class="empty-state"><div><strong>Notifications unavailable</strong>Please try again.</div></div>'; showError(error); return; }
-  list.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<a class="record-row" href="${escapeHtml(item.action_url ? sitePath(item.action_url) : "#")}"><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body || "")} · ${formatDate(item.created_at)}</span></div>${item.read_at ? "" : '<span class="unread-dot" aria-label="Unread"></span>'}</a>`).join("")}</div>` : '<div class="empty-state"><div><strong>You are up to date</strong>Relevant requests and changes will appear here.</div></div>';
+  list.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<a class="record-row" href="${escapeHtml(item.action_url ? sitePath(item.action_url) : "#")}"><div><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body || "")} - ${formatDate(item.created_at)}</span></div>${item.read_at ? "" : '<span class="unread-dot" aria-label="Unread"></span>'}</a>`).join("")}</div>` : '<div class="empty-state"><div><strong>You are up to date</strong>Relevant requests and changes will appear here.</div></div>';
 }

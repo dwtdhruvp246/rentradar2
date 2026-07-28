@@ -1,70 +1,377 @@
 import { requireAuth } from "./auth.js";
 import { renderAdminLayout } from "./layout.js";
+import { adminCanAccessCountry, adminCountryIds, isAdminPageAllowed, restrictRowsToAdminCountries } from "./role-state.js";
 import { supabase } from "./supabaseClient.js";
-import { escapeHtml, formatCurrency, formatDate, hydrateIcons, icon, showError, showToast, skeletonLines } from "./ui.js";
-
-const pages = {
-  users: { title: "Users", description: "Invite managed roles, or suspend, restore, and archive identities without deleting history.", table: "profiles", columns: ["full_name","role","account_status","created_at"], fields: [["email","Email address","email",true],["role","Invited role","select",true,["admin_staff","ipm","pmc"]],["country_id","Country","country",true]] },
-  countries: { title: "Countries", description: "Control market availability, currency, and default locale.", table: "countries", columns: ["name","code","currency_code","locale","is_active"], fields: [["name","Country name","text",true],["code","ISO code","text",true],["currency_code","Currency code","text",true],["locale","Default locale","select",true,["en","ms","zh"]]] },
-  pricing: { title: "Pricing", description: "Manage public plans and enforce the same limits used by account workflows.", table: "pricing_plans", columns: ["name","account_type","monthly_price","yearly_price","currency_code","is_public"], fields: [["country_id","Country","country",true],["account_type","Account type","select",true,["landlord","ipm","pmc"]],["name","Plan name","text",true],["monthly_price","Monthly price","number",true],["yearly_price","Yearly price","number",true],["currency_code","Currency code","text",true],["properties_limit","Property limit","number"],["units_limit","Unit limit","number"],["staff_limit","Staff limit","number"]] },
-  subscriptions: { title: "Subscriptions", description: "Review plans, trials, expiry, and account state without mixing in suspension.", table: "subscriptions", columns: ["profile_id","status","trial_ends_at","current_period_ends_at","created_at"] },
-  enquiries: { title: "Enquiries", description: "Route public enquiries by assigned country and resolve them cleanly.", table: "enquiries", columns: ["name","email","enquiry_type","account_type","status","created_at"] },
-  "platform-finance": { title: "Platform finance", description: "Record subscription receipts and review platform income by market.", table: "platform_payments", columns: ["profile_id","amount","currency","paid_at","provider_reference"], fields: [["profile_id","Subscriber profile ID","text",true],["subscription_id","Subscription ID","text"],["country_id","Country","country",true],["amount","Amount","number",true],["currency","Currency","select",true,["USD","ZAR","MYR"]],["paid_at","Paid at","datetime-local",true],["provider_reference","Provider reference","text"]] },
-};
+import { enableTableSorting, escapeHtml, formatCurrency, formatDate, hydrateIcons, icon, showError, showToast, skeletonLines } from "./ui.js";
 
 let identity;
 let countries = [];
+let selectedAdminCountry = "all";
+
+const pageMeta = {
+  dashboard: ["Admin dashboard", "Landlords, markets, enquiries, subscriptions, platform finance, and internal notes."],
+  users: ["Users", "Invite managed roles and review active, pending, suspended, and archived accounts."],
+  countries: ["Countries", "Control market availability, currency, and default language."],
+  pricing: ["Pricing", "Publish country-specific plans and enforce the same limits used by account workflows."],
+  subscriptions: ["Subscriptions", "Separate plan state, trial, expiry, and suspension from the underlying account."],
+  enquiries: ["Enquiries", "Route public enquiries by country and keep follow-up status visible."],
+  "platform-finance": ["Platform finance", "Record subscription payments and review platform revenue by market."],
+  settings: ["Admin settings", "Operational controls that protect country scope, history, documents, and permissions."],
+};
 
 async function init() {
-  identity = await requireAuth({ admin: true }); if (!identity) return;
-  const page = document.body.dataset.page || "dashboard"; renderAdminLayout(identity, page);
-  const { data } = await supabase.from("countries").select("id,name,currency_code").order("name"); countries = data || [];
+  identity = await requireAuth({ admin: true });
+  if (!identity) return;
+  const page = document.body.dataset.page || "dashboard";
+  const safePage = isAdminPageAllowed(page, identity) ? page : "dashboard";
+  renderAdminLayout(identity, safePage);
   const root = document.querySelector("[data-page-root]");
-  if (page === "dashboard") await renderDashboard(root);
-  else if (page === "settings") renderSettings(root);
-  else await renderDataPage(root, page);
+  root.innerHTML = skeletonPage(safePage);
+  await loadCountries();
+  await renderPage(root, safePage);
   hydrateIcons(root);
+  enableTableSorting(root);
 }
 
-function header(title, description, actions = "") { return `<header class="page-header"><div><h1>${title}</h1><p>${description}</p></div><div class="toolbar">${actions}</div></header>`; }
+async function loadCountries() {
+  const { data, error } = await supabase.from("countries").select("id,name,code,currency_code,locale,is_active").order("name");
+  if (error) {
+    countries = [];
+    showError(error, "Countries could not be loaded.");
+    return;
+  }
+  countries = identity.profile.role === "admin_staff" ? restrictRowsToAdminCountries(data || [], identity) : (data || []);
+}
+
+async function renderPage(root, page) {
+  if (page === "dashboard") return renderDashboard(root);
+  if (page === "users") return renderUsers(root);
+  if (page === "countries") return renderCountries(root);
+  if (page === "pricing") return renderPricing(root);
+  if (page === "subscriptions") return renderSubscriptions(root);
+  if (page === "enquiries") return renderEnquiries(root);
+  if (page === "platform-finance") return renderPlatformFinance(root);
+  return renderSettings(root);
+}
+
+function pageHeader(page, actions = "") {
+  const [title, description] = pageMeta[page] || pageMeta.dashboard;
+  const countryFilter = countries.length ? `<label class="context-select"><span>Country</span><select data-country-filter><option value="all"${selectedAdminCountry === "all" ? " selected" : ""}>All assigned</option>${countries.map((country) => `<option value="${country.id}"${selectedAdminCountry === country.id ? " selected" : ""}>${escapeHtml(country.name)}</option>`).join("")}</select></label>` : "";
+  return `<header class="page-header"><div><h1>${title}</h1><p>${description}</p></div><div class="toolbar">${countryFilter}${actions}</div></header>`;
+}
+
+function skeletonPage(page) {
+  return `${pageHeader(page)}<section class="panel"><div class="panel-body">${skeletonLines(8)}</div></section>`;
+}
+
+function selectedCountryId(root) {
+  return root.querySelector("[data-country-filter]")?.value || selectedAdminCountry || "all";
+}
+
+function countryName(id) {
+  return countries.find((country) => country.id === id)?.name || "Unassigned";
+}
+
+function countryCurrency(id) {
+  return countries.find((country) => country.id === id)?.currency_code || "USD";
+}
+
+function scopeBySelectedCountry(rows, root, getCountryId = (row) => row.country_id) {
+  const selected = selectedCountryId(root);
+  if (selected === "all") return rows;
+  return rows.filter((row) => getCountryId(row) === selected);
+}
+
+function wireCountryFilter(root, page) {
+  root.querySelector("[data-country-filter]")?.addEventListener("change", (event) => {
+    selectedAdminCountry = event.target.value;
+    renderPage(root, page);
+  });
+}
 
 async function renderDashboard(root) {
-  root.innerHTML = `${header("Admin dashboard", "Platform operations across users, finance, enquiries, and internal notes.", `<button class="btn btn-primary" data-dialog-open="note-dialog">${icon("plus")}Add note</button>`)}<section class="dashboard-grid">${["Landlords","Active markets","Open enquiries","Platform revenue"].map((label) => `<article class="panel kpi"><span class="kpi-label">${label}</span><div class="kpi-value skeleton" style="height:36px;width:50%;margin-top:12px"></div></article>`).join("")}<article class="panel panel-span-4"><div class="panel-header"><h2>Internal notes and tasks</h2></div><div class="panel-body">${skeletonLines(6)}</div></article></section>${noteDialog()}`;
-  const [landlords, markets, enquiries, payments, notes] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "landlord").is("archived_at", null),
-    supabase.from("countries").select("id", { count: "exact", head: true }).eq("is_active", true),
-    supabase.from("enquiries").select("id", { count: "exact", head: true }).in("status", ["new","assigned"]),
-    supabase.from("platform_payments").select("amount,currency"),
-    supabase.from("admin_notes").select("id,title,body,due_at,completed_at,assignee_id").order("created_at", { ascending: false }).limit(20),
-  ]); const failed = [landlords,markets,enquiries,payments,notes].find((item) => item.error); if (failed) return showError(failed.error);
-  const revenue = (payments.data || []).reduce((sum,row) => sum + Number(row.amount), 0); [landlords.count || 0,markets.count || 0,enquiries.count || 0,formatCurrency(revenue,payments.data?.[0]?.currency || "USD")].forEach((value,index) => { const node = root.querySelectorAll(".kpi-value")[index]; node.className = "kpi-value"; node.textContent = value; });
-  const body = root.querySelector(".panel-span-4 .panel-body"); body.innerHTML = notes.data?.length ? `<div class="record-list">${notes.data.map((note) => `<article class="record-row"><div><strong>${escapeHtml(note.title)}</strong><span>${escapeHtml(note.body || "No details")}${note.due_at ? ` · Due ${formatDate(note.due_at)}` : ""}</span></div><button class="btn ${note.completed_at ? "btn-secondary" : "btn-primary"}" data-note-id="${note.id}" data-note-complete="${note.completed_at ? "false" : "true"}">${note.completed_at ? "Reopen" : "Mark done"}</button></article>`).join("")}</div>` : empty("No internal notes", "Create a personal or assigned operating note.");
-  body.querySelectorAll("[data-note-id]").forEach((button) => button.addEventListener("click", async () => { const completed_at = button.dataset.noteComplete === "true" ? new Date().toISOString() : null; const { error } = await supabase.from("admin_notes").update({ completed_at }).eq("id", button.dataset.noteId); if (error) return showError(error); renderDashboard(root); }));
-  root.querySelector("[data-note-form]").addEventListener("submit", async (event) => { event.preventDefault(); const values = Object.fromEntries(new FormData(event.currentTarget)); Object.assign(values, { author_id: identity.profile.id, assignee_id: values.assignee_id || identity.profile.id, country_id: values.country_id || null, due_at: values.due_at || null }); try { const { error } = await supabase.from("admin_notes").insert(values); if (error) throw error; showToast("Note created.", "success"); renderDashboard(root); } catch (error) { showError(error); } });
+  root.innerHTML = `${pageHeader("dashboard", `<button class="btn btn-primary" data-dialog-open="note-dialog">${icon("plus")}Add note</button>`)}<section class="dashboard-grid">${["Landlords","Managed markets","Open enquiries","Platform revenue"].map((label) => `<article class="panel kpi"><span class="kpi-label">${label}</span><div class="kpi-value skeleton" style="height:36px;width:55%;margin-top:12px"></div></article>`).join("")}<article class="panel panel-span-2"><div class="panel-header"><h2>Internal notes</h2></div><div class="panel-body">${skeletonLines(6)}</div></article><article class="panel panel-span-2"><div class="panel-header"><h2>Recent enquiries</h2></div><div class="panel-body">${skeletonLines(6)}</div></article></section>${noteDialog()}`;
+  hydrateIcons(root);
+  wireCountryFilter(root, "dashboard");
+  const [profiles, enquiries, payments, notes] = await Promise.all([
+    supabase.from("profiles").select("id,role,country_id,account_status,archived_at"),
+    supabase.from("enquiries").select("id,name,email,country_id,enquiry_type,status,created_at").order("created_at", { ascending: false }).limit(8),
+    supabase.from("platform_payments").select("amount,currency,country_id"),
+    supabase.from("admin_notes").select("id,title,body,country_id,due_at,completed_at").order("created_at", { ascending: false }).limit(8),
+  ]);
+  const failed = [profiles, enquiries, payments, notes].find((result) => result.error);
+  if (failed) return showError(failed.error);
+  const scopedProfiles = scopeBySelectedCountry(restrictRowsToAdminCountries(profiles.data || [], identity), root);
+  const scopedEnquiries = scopeBySelectedCountry(restrictRowsToAdminCountries(enquiries.data || [], identity), root);
+  const scopedPayments = scopeBySelectedCountry(restrictRowsToAdminCountries(payments.data || [], identity), root);
+  const revenue = scopedPayments.reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  [scopedProfiles.filter((row) => row.role === "landlord" && !row.archived_at).length, countries.filter((row) => row.is_active).length, scopedEnquiries.filter((row) => ["new","assigned"].includes(row.status)).length, formatCurrency(revenue, scopedPayments[0]?.currency || "USD")].forEach((value, index) => {
+    const node = root.querySelectorAll(".kpi-value")[index];
+    node.className = "kpi-value";
+    node.textContent = value;
+  });
+  root.querySelector(".panel-span-2 .panel-body").innerHTML = notes.data?.length ? recordList(notes.data, (note) => `<article class="record-row"><div><strong>${escapeHtml(note.title)}</strong><span>${escapeHtml(note.body || "No details")}${note.due_at ? ` - Due ${formatDate(note.due_at)}` : ""}</span></div><button class="btn ${note.completed_at ? "btn-secondary" : "btn-primary"}" data-note-id="${note.id}" data-note-complete="${note.completed_at ? "false" : "true"}">${note.completed_at ? "Reopen" : "Mark done"}</button></article>`) : empty("No internal notes", "Create personal or assigned notes for operating follow-up.");
+  root.querySelectorAll("[data-note-id]").forEach((button) => button.addEventListener("click", async () => {
+    const completed_at = button.dataset.noteComplete === "true" ? new Date().toISOString() : null;
+    const { error } = await supabase.from("admin_notes").update({ completed_at }).eq("id", button.dataset.noteId);
+    if (error) return showError(error);
+    renderDashboard(root);
+  }));
+  root.querySelectorAll(".panel-span-2")[1].querySelector(".panel-body").innerHTML = scopedEnquiries.length ? recordList(scopedEnquiries, (enquiry) => `<article class="record-row"><div><strong>${escapeHtml(enquiry.name)}</strong><span>${escapeHtml(enquiry.enquiry_type)} - ${escapeHtml(countryName(enquiry.country_id))} - ${formatDate(enquiry.created_at)}</span></div><span class="status-chip">${escapeHtml(enquiry.status)}</span></article>`) : empty("No open enquiries", "New public enquiries will appear here.");
+  wireNoteForm(root);
 }
 
-function noteDialog() { return `<dialog class="dialog" id="note-dialog"><form class="dialog-layout" data-note-form><div class="dialog-header"><h2>Add internal note</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label for="note-title">Title</label><input id="note-title" name="title" required></div><div class="field"><label for="note-assignee">Assignee profile ID</label><input id="note-assignee" name="assignee_id" placeholder="Defaults to you"></div><div class="field"><label for="note-country">Country</label><select id="note-country" name="country_id"><option value="">All / personal</option>${countries.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("")}</select></div><div class="field"><label for="note-due">Due</label><input id="note-due" name="due_at" type="datetime-local"></div><div class="field"><label for="note-body">Details</label><textarea id="note-body" name="body"></textarea></div></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Create note</button></div></form></dialog>`; }
-
-async function renderDataPage(root, key) {
-  const config = pages[key]; const canAdd = Boolean(config.fields); const actions = `<button class="btn btn-secondary" data-export>${icon("download")}Export CSV</button>${canAdd ? `<button class="btn btn-primary" data-dialog-open="admin-record-dialog">${icon("plus")}Add record</button>` : ""}`;
-  root.innerHTML = `${header(config.title, config.description, actions)}<section class="panel"><div class="panel-header"><h2>All ${config.title.toLowerCase()}</h2><span class="status-chip">Country scoped</span></div><div class="panel-body">${skeletonLines(6)}</div></section>${canAdd ? recordDialog(config) : ""}`; hydrateIcons(root);
-  let query = supabase.from(config.table).select("*").limit(100); if (["created_at","paid_at"].includes(config.columns.at(-1))) query = query.order(config.columns.at(-1), { ascending: false }); const { data, error } = await query; const body = root.querySelector(".panel-body"); if (error) { showError(error); body.innerHTML = empty("Could not load data", "Check the migration and country access assignment."); return; }
-  body.innerHTML = data?.length ? dataTable(data, config.columns, key) : empty("No records yet", `New ${config.title.toLowerCase()} will appear here.`); hydrateIcons(body);
-  root.querySelector("[data-export]").addEventListener("click", () => exportCsv(data || [], config.columns, key));
-  root.querySelector("[data-admin-record-form]")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const values = Object.fromEntries(form); Object.keys(values).forEach((k) => { if (values[k] === "") values[k] = null; }); if (key === "pricing") { values.limits = { properties: Number(values.properties_limit || 0), units: Number(values.units_limit || 0), staff: Number(values.staff_limit || 0) }; delete values.properties_limit; delete values.units_limit; delete values.staff_limit; values.is_public = true; values.is_active = true; } try { if (key === "users") { const { data: inviteData, error: inviteError } = await supabase.functions.invoke("invite-user", { body: { email: values.email, role: values.role, countryId: values.country_id } }); if (inviteError || inviteData?.error) throw inviteError || new Error(inviteData.error); showToast(inviteData.message, "success"); } else { const { error: insertError } = await supabase.from(config.table).insert(values); if (insertError) throw insertError; showToast("Record created.", "success"); } event.currentTarget.closest("dialog")?.close(); renderDataPage(root, key); } catch (insertError) { showError(insertError); } });
-  body.querySelectorAll("[data-user-action]").forEach((button) => button.addEventListener("click", async () => { const action = button.dataset.userAction; const updates = action === "suspend" ? { account_status: "suspended", suspended_at: new Date().toISOString() } : action === "restore" ? { account_status: "active", suspended_at: null, suspension_reason: null } : { account_status: "archived", archived_at: new Date().toISOString(), suspended_at: null, suspension_reason: null }; try { const { error: updateError } = await supabase.from("profiles").update(updates).eq("id", button.dataset.id); if (updateError) throw updateError; showToast("Account status updated.", "success"); renderDataPage(root, key); } catch (updateError) { showError(updateError); } }));
-  body.querySelectorAll("[data-enquiry-status]").forEach((select) => select.addEventListener("change", async () => { const { error: updateError } = await supabase.from("enquiries").update({ status: select.value }).eq("id", select.dataset.id); if (updateError) showError(updateError); else showToast("Enquiry updated.", "success"); }));
+function noteDialog() {
+  return `<dialog class="dialog" id="note-dialog"><form class="dialog-layout" data-note-form><div class="dialog-header"><h2>Add internal note</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label for="note-title">Title</label><input id="note-title" name="title" required></div><div class="field"><label for="note-assignee">Assignee profile ID</label><input id="note-assignee" name="assignee_id" placeholder="Defaults to you"></div><div class="field"><label for="note-country">Country</label><select id="note-country" name="country_id"><option value="">All / personal</option>${countries.map((country) => `<option value="${country.id}">${escapeHtml(country.name)}</option>`).join("")}</select></div><div class="field"><label for="note-due">Due</label><input id="note-due" name="due_at" type="datetime-local"></div><div class="field"><label for="note-body">Details</label><textarea id="note-body" name="body"></textarea></div></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Create note</button></div></form></dialog>`;
 }
 
-function recordDialog(config) { return `<dialog class="dialog" id="admin-record-dialog"><form class="dialog-layout" data-admin-record-form><div class="dialog-header"><h2>Add ${config.title.replace(/s$/, "")}</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid">${config.fields.map(fieldMarkup).join("")}</div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Create record</button></div></form></dialog>`; }
-function fieldMarkup([name,label,type,required,options]) { const req = required ? " required" : ""; if (type === "country") return `<div class="field"><label for="admin-${name}">${label}</label><select id="admin-${name}" name="${name}"${req}><option value="">Choose country</option>${countries.map((c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("")}</select></div>`; if (type === "select") return `<div class="field"><label for="admin-${name}">${label}</label><select id="admin-${name}" name="${name}"${req}>${options.map((o) => `<option value="${o}">${escapeHtml(o.replaceAll("_"," "))}</option>`).join("")}</select></div>`; return `<div class="field"><label for="admin-${name}">${label}</label><input id="admin-${name}" name="${name}" type="${type}"${type === "number" ? ' min="0" step="0.01"' : ""}${req}></div>`; }
+function wireNoteForm(root) {
+  root.querySelector("[data-note-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (values.country_id && !adminCanAccessCountry(identity, values.country_id)) return showError(new Error("Country not assigned."), "You can only create notes for assigned countries.");
+    Object.assign(values, { author_id: identity.profile.id, assignee_id: values.assignee_id || identity.profile.id, country_id: values.country_id || null, due_at: values.due_at || null });
+    const { error } = await supabase.from("admin_notes").insert(values);
+    if (error) return showError(error);
+    showToast("Note created.", "success");
+    event.currentTarget.closest("dialog")?.close();
+    renderDashboard(root);
+  });
+}
 
-function dataTable(rows, columns, key) { return `<div class="table-wrap"><table class="data-table"><thead><tr>${columns.map((c) => `<th>${escapeHtml(c.replaceAll("_"," "))}</th>`).join("")}<th>Actions</th></tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((c) => `<td>${formatCell(row[c], c)}</td>`).join("")}<td>${actionsFor(row,key)}</td></tr>`).join("")}</tbody></table></div>`; }
-function formatCell(value, key) { if (value == null) return "-"; if (key.endsWith("_at") || key.endsWith("_on")) return formatDate(value); if (typeof value === "boolean") return value ? "Yes" : "No"; if (typeof value === "object") return escapeHtml(JSON.stringify(value)); return escapeHtml(value); }
-function actionsFor(row,key) { if (key === "users") return `<div class="table-actions">${row.account_status === "suspended" ? `<button class="btn btn-secondary" data-user-action="restore" data-id="${row.id}">Restore</button>` : `<button class="btn btn-secondary" data-user-action="suspend" data-id="${row.id}">Suspend</button>`}<button class="icon-button" aria-label="Archive user" title="Archive user" data-user-action="archive" data-id="${row.id}">${icon("archive")}</button></div>`; if (key === "enquiries") return `<select data-enquiry-status data-id="${row.id}" aria-label="Enquiry status">${["new","assigned","resolved","closed"].map((s) => `<option${s === row.status ? " selected" : ""}>${s}</option>`).join("")}</select>`; return '<span class="field-hint">Managed record</span>'; }
+async function renderUsers(root) {
+  root.innerHTML = `${pageHeader("users", `<label class="context-select"><span>Role</span><select data-role-filter><option value="all">All roles</option><option value="landlord">Landlords</option><option value="tenant">Tenants</option><option value="ipm">IPM</option><option value="pmc">PMC</option><option value="staff">Staff</option><option value="admin_staff">Admin staff</option></select></label><input class="toolbar-search" data-user-search placeholder="Search users"><button class="btn btn-primary" data-dialog-open="user-dialog">${icon("plus")}Invite managed user</button>`)}<section class="panel"><div class="panel-header"><h2>Accepted accounts</h2><span class="status-chip">History preserved</span></div><div class="panel-body">${skeletonLines(8)}</div></section>${userDialog()}`;
+  hydrateIcons(root);
+  wireCountryFilter(root, "users");
+  const { data, error } = await supabase.from("profiles").select("id,full_name,role,country_id,account_status,suspended_at,archived_at,created_at").order("created_at", { ascending: false }).limit(200);
+  if (error) return showError(error);
+  const render = () => {
+    let rows = scopeBySelectedCountry(restrictRowsToAdminCountries(data || [], identity), root);
+    const role = root.querySelector("[data-role-filter]").value;
+    const search = root.querySelector("[data-user-search]").value.toLowerCase();
+    if (role !== "all") rows = rows.filter((row) => row.role === role);
+    if (search) rows = rows.filter((row) => [row.full_name, row.role, row.account_status, countryName(row.country_id)].some((value) => String(value || "").toLowerCase().includes(search)));
+    root.querySelector(".panel-body").innerHTML = rows.length ? dataTable(rows, ["full_name","role","country","plan_status","created_at"], userActions) : empty("No matching users", "Change the filters or invite a managed role.");
+    hydrateIcons(root);
+    enableTableSorting(root);
+    wireUserActions(root);
+  };
+  root.querySelector("[data-role-filter]").addEventListener("change", render);
+  root.querySelector("[data-user-search]").addEventListener("input", render);
+  wireInviteUser(root);
+  render();
+}
 
-function renderSettings(root) { root.innerHTML = `${header("Admin settings", "Platform safeguards and operational defaults.")}<section class="panel"><div class="panel-header"><h2>Enforced controls</h2></div><div class="panel-body"><div class="record-list"><div class="record-row"><div><strong>Country access</strong><span>Admin staff visibility is limited by profile_country_access.</span></div><span class="status-chip">Enforced</span></div><div class="record-row"><div><strong>Historical retention</strong><span>Archive and relationship-ending flows retain payments, leases, and finance records.</span></div><span class="status-chip">Enforced</span></div><div class="record-row"><div><strong>Private documents</strong><span>Storage is private and downloads use short-lived signed URLs.</span></div><span class="status-chip">Enforced</span></div></div></div></section>`; }
-function exportCsv(rows,columns,name) { const csv = [columns.join(","),...rows.map((row) => columns.map((c) => `"${String(row[c] ?? "").replaceAll('"','""')}"`).join(","))].join("\n"); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"})); link.download = `mushavo-${name}-${new Date().toISOString().slice(0,10)}.csv`; link.click(); URL.revokeObjectURL(link.href); }
-function empty(title,text) { return `<div class="empty-state"><div><strong>${escapeHtml(title)}</strong>${escapeHtml(text)}</div></div>`; }
+function userDialog() {
+  return `<dialog class="dialog" id="user-dialog"><form class="dialog-layout" data-user-invite-form><div class="dialog-header"><h2>Invite managed user</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label for="invite-email">Email address</label><input id="invite-email" name="email" type="email" required></div><div class="field"><label for="invite-role">Role</label><select id="invite-role" name="role" required><option value="admin_staff">Admin staff</option><option value="ipm">IPM</option><option value="pmc">PMC</option></select></div><div class="field"><label for="invite-country">Country</label><select id="invite-country" name="country_id" required>${countries.map((country) => `<option value="${country.id}">${escapeHtml(country.name)}</option>`).join("")}</select></div></div><p class="field-hint">Landlords and tenants can sign up directly. Managed roles join through secure invitations.</p></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Send invite</button></div></form></dialog>`;
+}
+
+function wireInviteUser(root) {
+  root.querySelector("[data-user-invite-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (!adminCanAccessCountry(identity, values.country_id)) return showError(new Error("Country not assigned."), "You can only invite users for assigned countries.");
+    const { data, error } = await supabase.functions.invoke("invite-user", { body: { email: values.email, role: values.role, countryId: values.country_id } });
+    if (error || data?.error) return showError(error || new Error(data.error));
+    showToast(data.message || "Invitation created.", "success");
+    event.currentTarget.closest("dialog")?.close();
+  });
+}
+
+function wireUserActions(root) {
+  root.querySelectorAll("[data-user-action]").forEach((button) => button.addEventListener("click", async () => {
+    const action = button.dataset.userAction;
+    const updates = action === "suspend"
+      ? { account_status: "suspended", suspended_at: new Date().toISOString(), suspension_reason: "Suspended by admin" }
+      : action === "restore"
+        ? { account_status: "active", suspended_at: null, suspension_reason: null }
+        : { account_status: "archived", archived_at: new Date().toISOString(), suspended_at: null, suspension_reason: null };
+    const { error } = await supabase.from("profiles").update(updates).eq("id", button.dataset.id);
+    if (error) return showError(error);
+    showToast("Account status updated.", "success");
+    renderUsers(root);
+  }));
+}
+
+function userActions(row) {
+  return `<div class="table-actions">${row.account_status === "suspended" ? `<button class="btn btn-secondary" data-user-action="restore" data-id="${row.id}">Restore</button>` : `<button class="btn btn-secondary" data-user-action="suspend" data-id="${row.id}">Suspend</button>`}<button class="icon-button" type="button" aria-label="Archive user" title="Archive user" data-user-action="archive" data-id="${row.id}">${icon("archive")}</button></div>`;
+}
+
+async function renderCountries(root) {
+  root.innerHTML = `${pageHeader("countries", identity.profile.role === "super_admin" ? `<button class="btn btn-primary" data-dialog-open="country-dialog">${icon("plus")}Add country</button>` : "")}<section class="panel"><div class="panel-header"><h2>Markets</h2><span class="status-chip">${countries.length} available</span></div><div class="panel-body">${dataTable(countries, ["name","code","currency_code","locale","is_active"])}</div></section>${countryDialog()}`;
+  hydrateIcons(root);
+  enableTableSorting(root);
+  root.querySelector("[data-country-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    values.code = values.code.toUpperCase();
+    values.currency_code = values.currency_code.toUpperCase();
+    values.is_active = true;
+    const { error } = await supabase.from("countries").insert(values);
+    if (error) return showError(error);
+    showToast("Country added.", "success");
+    event.currentTarget.closest("dialog")?.close();
+    await loadCountries();
+    renderCountries(root);
+  });
+}
+
+function countryDialog() {
+  return `<dialog class="dialog" id="country-dialog"><form class="dialog-layout" data-country-form><div class="dialog-header"><h2>Add country</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label>Name</label><input name="name" required></div><div class="field"><label>ISO code</label><input name="code" maxlength="2" required></div><div class="field"><label>Currency code</label><input name="currency_code" maxlength="3" required></div><div class="field"><label>Default language</label><select name="locale"><option value="en">English</option><option value="ms">Bahasa Melayu</option><option value="zh">Chinese</option></select></div></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Add country</button></div></form></dialog>`;
+}
+
+async function renderPricing(root) {
+  root.innerHTML = `${pageHeader("pricing", `<label class="context-select"><span>Type</span><select data-account-type-filter><option value="all">All types</option><option value="landlord">Landlord</option><option value="ipm">IPM</option><option value="pmc">PMC</option></select></label><button class="btn btn-primary" data-dialog-open="pricing-dialog">${icon("plus")}Add plan</button>`)}<section class="panel"><div class="panel-header"><h2>Published plans</h2><span class="status-chip">Admin controlled</span></div><div class="panel-body">${skeletonLines(8)}</div></section>${pricingDialog()}`;
+  hydrateIcons(root);
+  wireCountryFilter(root, "pricing");
+  const { data, error } = await supabase.from("pricing_plans").select("*").order("created_at", { ascending: false }).limit(200);
+  if (error) return showError(error);
+  const render = () => {
+    let rows = scopeBySelectedCountry(restrictRowsToAdminCountries(data || [], identity), root);
+    const type = root.querySelector("[data-account-type-filter]").value;
+    if (type !== "all") rows = rows.filter((row) => row.account_type === type);
+    root.querySelector(".panel-body").innerHTML = rows.length ? dataTable(rows, ["name","account_type","country","monthly_price","yearly_price","currency_code","limits","is_public"]) : empty("No plans published", "Create country-specific landlord, IPM, and PMC plans.");
+    enableTableSorting(root);
+  };
+  root.querySelector("[data-account-type-filter]").addEventListener("change", render);
+  root.querySelector("[data-pricing-form]").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    if (!adminCanAccessCountry(identity, values.country_id)) return showError(new Error("Country not assigned."), "You can only create plans for assigned countries.");
+    const limits = {
+      properties: Number(values.properties_limit || 0),
+      units: Number(values.units_limit || 0),
+      staff: Number(values.staff_limit || 0),
+      landlords: Number(values.landlord_limit || 0),
+    };
+    const payload = {
+      country_id: values.country_id,
+      account_type: values.account_type,
+      name: values.name,
+      monthly_price: Number(values.monthly_price || 0),
+      yearly_price: Number(values.yearly_price || 0),
+      currency_code: values.currency_code.toUpperCase(),
+      limits,
+      is_public: values.is_public === "on",
+      is_active: true,
+    };
+    const { error: insertError } = await supabase.from("pricing_plans").insert(payload);
+    if (insertError) return showError(insertError);
+    showToast("Plan created.", "success");
+    event.currentTarget.closest("dialog")?.close();
+    renderPricing(root);
+  });
+  render();
+}
+
+function pricingDialog() {
+  return `<dialog class="dialog" id="pricing-dialog"><form class="dialog-layout" data-pricing-form><div class="dialog-header"><h2>Add pricing plan</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label>Country</label><select name="country_id" required>${countries.map((country) => `<option value="${country.id}">${escapeHtml(country.name)}</option>`).join("")}</select></div><div class="field"><label>Account type</label><select name="account_type"><option value="landlord">Landlord</option><option value="ipm">IPM</option><option value="pmc">PMC</option></select></div><div class="field"><label>Plan name</label><input name="name" required></div><div class="field"><label>Currency code</label><input name="currency_code" maxlength="3" value="${escapeHtml(countries[0]?.currency_code || "USD")}" required></div><div class="field"><label>Monthly price</label><input name="monthly_price" type="number" min="0" step="0.01" required></div><div class="field"><label>Yearly price</label><input name="yearly_price" type="number" min="0" step="0.01" required></div><div class="field"><label>Property limit</label><input name="properties_limit" type="number" min="0"></div><div class="field"><label>Unit limit</label><input name="units_limit" type="number" min="0"></div><div class="field"><label>Staff limit</label><input name="staff_limit" type="number" min="0"></div><div class="field"><label>Landlord connection limit</label><input name="landlord_limit" type="number" min="0"></div><label class="toggle-row"><span><strong>Show publicly</strong><small>Published plans appear on the pricing page.</small></span><input name="is_public" type="checkbox" checked></label></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Create plan</button></div></form></dialog>`;
+}
+
+async function renderSubscriptions(root) {
+  root.innerHTML = `${pageHeader("subscriptions", `<input class="toolbar-search" data-subscription-search placeholder="Search profile or status">`)}<section class="panel"><div class="panel-header"><h2>Plan / status</h2><span class="status-chip">Expiry separate from suspension</span></div><div class="panel-body">${skeletonLines(8)}</div></section>`;
+  wireCountryFilter(root, "subscriptions");
+  const { data, error } = await supabase.from("subscriptions").select("id,status,trial_ends_at,current_period_ends_at,created_at,profiles!subscriptions_profile_id_fkey(id,full_name,role,country_id,account_status),pricing_plans(name,currency_code)").order("created_at", { ascending: false }).limit(200);
+  if (error) return showError(error);
+  const render = () => {
+    let rows = restrictRowsToAdminCountries(data || [], identity, (row) => row.profiles?.country_id);
+    rows = scopeBySelectedCountry(rows, root, (row) => row.profiles?.country_id);
+    const search = root.querySelector("[data-subscription-search]").value.toLowerCase();
+    if (search) rows = rows.filter((row) => [row.profiles?.full_name, row.status, row.pricing_plans?.name, row.profiles?.account_status].some((value) => String(value || "").toLowerCase().includes(search)));
+    root.querySelector(".panel-body").innerHTML = rows.length ? dataTable(rows.map((row) => ({ ...row, profile: row.profiles?.full_name, role: row.profiles?.role, country: countryName(row.profiles?.country_id), plan_status: `${row.pricing_plans?.name || "Free"} - ${expired(row) ? "Expired" : row.status}` })), ["profile","role","country","plan_status","trial_ends_at","current_period_ends_at"]) : empty("No subscriptions", "Landlord, IPM, and PMC plan records will appear here.");
+    enableTableSorting(root);
+  };
+  root.querySelector("[data-subscription-search]").addEventListener("input", render);
+  render();
+}
+
+async function renderEnquiries(root) {
+  root.innerHTML = `${pageHeader("enquiries", `<label class="context-select"><span>Status</span><select data-status-filter><option value="all">All statuses</option><option value="new">New</option><option value="assigned">Assigned</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></label><input class="toolbar-search" data-enquiry-search placeholder="Search enquiries">`)}<section class="panel"><div class="panel-header"><h2>Public enquiries</h2><span class="status-chip">Country routed</span></div><div class="panel-body">${skeletonLines(8)}</div></section>`;
+  hydrateIcons(root);
+  wireCountryFilter(root, "enquiries");
+  const { data, error } = await supabase.from("enquiries").select("*").order("created_at", { ascending: false }).limit(200);
+  if (error) return showError(error);
+  const render = () => {
+    let rows = scopeBySelectedCountry(restrictRowsToAdminCountries(data || [], identity), root);
+    const status = root.querySelector("[data-status-filter]").value;
+    const search = root.querySelector("[data-enquiry-search]").value.toLowerCase();
+    if (status !== "all") rows = rows.filter((row) => row.status === status);
+    if (search) rows = rows.filter((row) => [row.name, row.email, row.message, row.enquiry_type, row.account_type, countryName(row.country_id)].some((value) => String(value || "").toLowerCase().includes(search)));
+    root.querySelector(".panel-body").innerHTML = rows.length ? dataTable(rows, ["name","email","country","enquiry_type","account_type","status","created_at"], enquiryActions) : empty("No enquiries", "Contact page submissions will appear here.");
+    hydrateIcons(root);
+    enableTableSorting(root);
+    root.querySelectorAll("[data-enquiry-status]").forEach((select) => select.addEventListener("change", async () => {
+      const { error: updateError } = await supabase.from("enquiries").update({ status: select.value }).eq("id", select.dataset.id);
+      if (updateError) return showError(updateError);
+      showToast("Enquiry updated.", "success");
+    }));
+  };
+  root.querySelector("[data-status-filter]").addEventListener("change", render);
+  root.querySelector("[data-enquiry-search]").addEventListener("input", render);
+  render();
+}
+
+function enquiryActions(row) {
+  return `<select data-enquiry-status data-id="${row.id}" aria-label="Enquiry status">${["new","assigned","resolved","closed"].map((status) => `<option value="${status}"${status === row.status ? " selected" : ""}>${status}</option>`).join("")}</select>`;
+}
+
+async function renderPlatformFinance(root) {
+  root.innerHTML = `${pageHeader("platform-finance", `<button class="btn btn-primary" data-dialog-open="finance-dialog">${icon("plus")}Record payment</button>`)}<section class="dashboard-grid"><article class="panel kpi"><span class="kpi-label">Revenue</span><div class="kpi-value" data-revenue>...</div></article><article class="panel kpi"><span class="kpi-label">Payments</span><div class="kpi-value" data-count>...</div></article><article class="panel panel-span-4"><div class="panel-header"><h2>Payment records</h2></div><div class="panel-body">${skeletonLines(8)}</div></article></section>${financeDialog()}`;
+  hydrateIcons(root);
+  wireCountryFilter(root, "platform-finance");
+  const { data, error } = await supabase.from("platform_payments").select("*").order("paid_at", { ascending: false }).limit(200);
+  if (error) return showError(error);
+  const rows = scopeBySelectedCountry(restrictRowsToAdminCountries(data || [], identity), root);
+  const currency = rows[0]?.currency || countryCurrency(selectedCountryId(root));
+  root.querySelector("[data-revenue]").textContent = formatCurrency(rows.reduce((sum, row) => sum + Number(row.amount || 0), 0), currency);
+  root.querySelector("[data-count]").textContent = rows.length;
+  root.querySelector(".panel-span-4 .panel-body").innerHTML = rows.length ? dataTable(rows, ["paid_at","country","amount","currency","provider_reference","notes"]) : empty("No platform payments", "Record subscription payments by market.");
+  enableTableSorting(root);
+}
+
+function financeDialog() {
+  return `<dialog class="dialog" id="finance-dialog"><form class="dialog-layout"><div class="dialog-header"><h2>Record payment</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><p class="field-hint">Detailed payment recording needs the subscriber profile ID from the user page. This keeps historical records attached to the correct account.</p></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Close</button></div></form></dialog>`;
+}
+
+function renderSettings(root) {
+  root.innerHTML = `${pageHeader("settings")}<section class="panel"><div class="panel-header"><h2>Enforced controls</h2></div><div class="panel-body"><div class="record-list">${[
+    ["Country access", identity.profile.role === "admin_staff" ? `Assigned countries: ${adminCountryIds(identity).map(countryName).join(", ") || "none"}` : "Super admin can operate every market."],
+    ["Historical retention", "Archive and relationship-ending flows remove visibility without deleting finance, lease, receipt, or maintenance history."],
+    ["Separate status", "Suspended accounts and expired subscriptions remain different business states."],
+    ["Pricing source", "Public pricing comes from admin-managed pricing_plans, not hard-coded page values."],
+  ].map(([title, text]) => `<article class="record-row"><div><strong>${title}</strong><span>${escapeHtml(text)}</span></div><span class="status-chip">Active</span></article>`).join("")}</div></div></section>`;
+}
+
+function dataTable(rows, columns, actions) {
+  return `<div class="table-wrap"><table class="data-table"><thead><tr>${columns.map((column) => `<th>${escapeHtml(column.replaceAll("_", " "))}</th>`).join("")}${actions ? "<th>Actions</th>" : ""}</tr></thead><tbody>${rows.map((row) => `<tr>${columns.map((column) => `<td>${formatCell(row, column)}</td>`).join("")}${actions ? `<td>${actions(row)}</td>` : ""}</tr>`).join("")}</tbody></table></div>`;
+}
+
+function formatCell(row, key) {
+  const value = key === "country" ? countryName(row.country_id) : key === "plan_status" ? planStatus(row) : row[key];
+  if (value == null || value === "") return "-";
+  if (key.endsWith("_at") || key.endsWith("_on")) return formatDate(value);
+  if (key.includes("price") || key === "amount") return escapeHtml(formatCurrency(value, row.currency_code || row.currency || countryCurrency(row.country_id)));
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return escapeHtml(Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(", "));
+  return escapeHtml(value);
+}
+
+function planStatus(row) {
+  const status = row.account_status || row.status || "active";
+  return `${row.name || row.pricing_plans?.name || "Free"} - ${String(status).replaceAll("_", " ")}`;
+}
+
+function expired(row) {
+  const end = row.status === "trial" ? row.trial_ends_at : row.current_period_ends_at;
+  return Boolean(end && new Date(end).getTime() < Date.now());
+}
+
+function recordList(rows, render) {
+  return `<div class="record-list">${rows.map(render).join("")}</div>`;
+}
+
+function empty(title, text) {
+  return `<div class="empty-state"><div><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div></div>`;
+}
 
 init();

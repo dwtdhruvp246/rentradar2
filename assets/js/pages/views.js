@@ -1,7 +1,8 @@
 import { supabase } from "../supabaseClient.js";
-import { escapeHtml, formatCurrency, formatDate, hydrateIcons, icon, setBusy, showError, showToast, skeletonLines } from "../ui.js";
+import { enableTableSorting, escapeHtml, formatCurrency, formatDate, hydrateIcons, icon, setBusy, showError, showToast, skeletonLines } from "../ui.js";
 import { getWorkspaceContext, setActiveLandlord } from "../workspace.js";
 import { downloadPaymentReceipt } from "../receipts.js";
+import { getState, setState } from "../state.js";
 
 const viewMeta = {
   dashboard: ["Dashboard", "A live view of your property operations."],
@@ -70,7 +71,7 @@ function inputField(field, options) {
   const [name, label, type, required, source] = field;
   const req = required ? " required" : "";
   if (type === "textarea") return `<div class="field"><label for="field-${name}">${label}</label><textarea id="field-${name}" name="${name}"${req}></textarea></div>`;
-  const list = type === "select" ? source : type === "relation" ? options[source]?.map((item) => [item.id, item.name]) : type === "tenant" ? options.tenants?.map((item) => [item.id, item.name]) : type === "lease" ? options.leases?.map((item) => [item.id, `${item.status} lease · ${item.id.slice(0,8)}`]) : null;
+  const list = type === "select" ? source : type === "relation" ? options[source]?.map((item) => [item.id, item.name]) : type === "tenant" ? options.tenants?.map((item) => [item.id, item.name]) : type === "lease" ? options.leases?.map((item) => [item.id, `${item.status} lease - ${item.id.slice(0,8)}`]) : null;
   if (list) return `<div class="field"><label for="field-${name}">${label}</label><select id="field-${name}" name="${name}"${req}><option value="">Choose ${label.toLowerCase()}</option>${list.map((item) => { const pair = Array.isArray(item) ? item : [item, String(item).replaceAll("_", " ")]; return `<option value="${escapeHtml(pair[0])}">${escapeHtml(pair[1])}</option>`; }).join("")}</select></div>`;
   return `<div class="field"><label for="field-${name}">${label}</label><input id="field-${name}" name="${name}" type="${type}"${type === "number" ? ' min="0" step="0.01"' : ""}${req}></div>`;
 }
@@ -84,6 +85,7 @@ export async function renderView(view, root, { quiet = false, identity } = {}) {
   if (!viewMeta[view]) view = "dashboard";
   const context = await getWorkspaceContext(identity);
   if (view === "dashboard") return renderDashboard(root, quiet, context, identity);
+  if (view === "properties" || view === "units") return renderPropertyWorkspace(root, quiet, context, identity);
   if (view === "tenants") return renderTenants(root, context, identity);
   if (view === "finance") return renderFinance(root, context, identity);
   if (view === "documents") return renderDocuments(root, context, identity);
@@ -123,6 +125,85 @@ async function renderDashboard(root, quiet, context) {
   } catch (error) { showError(error, "Dashboard data could not be loaded."); } finally { setBusy(root, false); }
 }
 
+async function renderPropertyWorkspace(root, quiet, context, identity) {
+  const canAddProperty = identity.profile.role === "landlord" || context.permissions?.["properties.create"] === true;
+  const canAddUnit = identity.profile.role === "landlord" || context.permissions?.["units.create"] === true;
+  if (!quiet || !root.querySelector("[data-property-workspace]")) {
+    root.innerHTML = `${pageHeader("properties", false, context)}<section class="dashboard-grid" data-property-workspace><article class="panel kpi"><span class="kpi-label">Properties</span><div class="kpi-value" data-property-count>...</div><div class="kpi-note">Current landlord scope</div></article><article class="panel kpi"><span class="kpi-label">Units</span><div class="kpi-value" data-unit-count>...</div><div class="kpi-note">Across selected portfolio</div></article><article class="panel kpi"><span class="kpi-label">Occupied</span><div class="kpi-value" data-occupied-count>...</div><div class="kpi-note">Active occupancy</div></article><article class="panel kpi"><span class="kpi-label">Vacant</span><div class="kpi-value" data-vacant-count>...</div><div class="kpi-note">Ready to assign</div></article><article class="panel panel-span-2"><div class="panel-header"><h2>Properties</h2><div class="toolbar"><input class="toolbar-search" data-property-search placeholder="Search portfolio">${canAddProperty ? `<button class="btn btn-primary" data-dialog-open="property-dialog">${icon("plus")}Add property</button>` : ""}</div></div><div class="panel-body">${skeletonLines(7)}</div></article><article class="panel panel-span-2"><div class="panel-header"><h2>Units in selected property</h2><div class="toolbar">${canAddUnit ? `<button class="btn btn-primary" data-dialog-open="unit-dialog">${icon("plus")}Add unit</button>` : ""}</div></div><div class="panel-body" data-unit-panel>${skeletonLines(7)}</div></article></section>${canAddProperty ? propertyDialog() : ""}${canAddUnit ? unitDialog() : ""}`;
+  }
+  hydrateIcons(root);
+  wireContext(root);
+  const scope = (query) => context.landlordId ? query.eq("landlord_id", context.landlordId) : query;
+  const [propertiesResult, unitsResult] = await Promise.all([
+    scope(supabase.from("properties").select("id,name,address_line_1,city,property_type,country_id,created_at").is("archived_at", null).order("created_at", { ascending: false })),
+    scope(supabase.from("units").select("id,property_id,name,occupancy_status,monthly_rent,currency,created_at").is("archived_at", null).order("created_at", { ascending: false })),
+  ]);
+  if (propertiesResult.error || unitsResult.error) return showError(propertiesResult.error || unitsResult.error, "Portfolio data could not be loaded.");
+  const properties = propertiesResult.data || [];
+  const units = unitsResult.data || [];
+  const selectedKey = `selectedProperty:${context.landlordId || identity.profile.id}`;
+  let selectedPropertyId = getState(selectedKey, properties[0]?.id || "");
+  if (!properties.some((property) => property.id === selectedPropertyId)) selectedPropertyId = properties[0]?.id || "";
+  setState(selectedKey, selectedPropertyId);
+  root.querySelector("[data-property-count]").textContent = properties.length;
+  root.querySelector("[data-unit-count]").textContent = units.length;
+  root.querySelector("[data-occupied-count]").textContent = units.filter((unit) => unit.occupancy_status === "occupied").length;
+  root.querySelector("[data-vacant-count]").textContent = units.filter((unit) => unit.occupancy_status === "vacant").length;
+
+  const renderLists = () => {
+    const search = root.querySelector("[data-property-search]")?.value.toLowerCase() || "";
+    const filtered = search ? properties.filter((property) => [property.name, property.address_line_1, property.city, property.property_type].some((value) => String(value || "").toLowerCase().includes(search))) : properties;
+    root.querySelector(".panel-span-2 .panel-body").innerHTML = filtered.length ? `<div class="record-list">${filtered.map((property) => {
+      const propertyUnits = units.filter((unit) => unit.property_id === property.id);
+      return `<button class="record-row record-button" type="button" data-property-id="${property.id}"><div><strong>${escapeHtml(property.name)}</strong><span>${escapeHtml(property.address_line_1)}, ${escapeHtml(property.city)} - ${propertyUnits.length} unit${propertyUnits.length === 1 ? "" : "s"}</span></div>${property.id === selectedPropertyId ? '<span class="status-chip">Selected</span>' : icon("chevron-right")}</button>`;
+    }).join("")}</div>` : empty("No matching properties", "Add a property or change the search.");
+    const selectedProperty = properties.find((property) => property.id === selectedPropertyId);
+    const selectedUnits = units.filter((unit) => unit.property_id === selectedPropertyId);
+    root.querySelector("[data-unit-panel]").innerHTML = selectedProperty ? `${selectedUnits.length ? tableMarkup(selectedUnits, ["name","occupancy_status","monthly_rent","currency","created_at"]) : empty("No units in this property", "Add units before linking tenants and leases.")}` : empty("No property selected", "Choose a property to see its units.");
+    root.querySelector("[data-unit-property-id]")?.setAttribute("value", selectedPropertyId || "");
+    root.querySelectorAll("[data-property-id]").forEach((button) => button.addEventListener("click", () => {
+      selectedPropertyId = button.dataset.propertyId;
+      setState(selectedKey, selectedPropertyId);
+      renderLists();
+    }));
+    enableTableSorting(root);
+    hydrateIcons(root);
+  };
+
+  root.querySelector("[data-property-search]")?.addEventListener("input", renderLists);
+  root.querySelector("[data-property-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    Object.assign(values, { landlord_id: context.landlordId || identity.profile.id, country_id: context.countryId || identity.profile.country_id });
+    const { error } = await supabase.from("properties").insert(values);
+    if (error) return showError(error);
+    showToast("Property added.", "success");
+    event.currentTarget.closest("dialog")?.close();
+    renderPropertyWorkspace(root, true, context, identity);
+  });
+  root.querySelector("[data-unit-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    values.property_id = values.property_id || selectedPropertyId;
+    if (!values.property_id) return showError(new Error("Choose a property first."), "Choose a property before adding a unit.");
+    Object.assign(values, { landlord_id: context.landlordId || identity.profile.id, monthly_rent: Number(values.monthly_rent || 0), currency: values.currency.toUpperCase() });
+    const { error } = await supabase.from("units").insert(values);
+    if (error) return showError(error);
+    showToast("Unit added.", "success");
+    event.currentTarget.closest("dialog")?.close();
+    renderPropertyWorkspace(root, true, context, identity);
+  });
+  renderLists();
+}
+
+function propertyDialog() {
+  return `<dialog class="dialog" id="property-dialog"><form class="dialog-layout" data-property-form><div class="dialog-header"><h2>Add property</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><div class="field"><label for="property-name">Property name</label><input id="property-name" name="name" required></div><div class="field"><label for="property-type">Property type</label><select id="property-type" name="property_type"><option>Apartment building</option><option>House</option><option>Commercial</option><option>Mixed use</option><option>Other</option></select></div><div class="field"><label for="property-address">Street address</label><input id="property-address" name="address_line_1" required></div><div class="field"><label for="property-city">City</label><input id="property-city" name="city" required></div><div class="field"><label for="property-postal">Postal code</label><input id="property-postal" name="postal_code"></div></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Save property</button></div></form></dialog>`;
+}
+
+function unitDialog() {
+  return `<dialog class="dialog" id="unit-dialog"><form class="dialog-layout" data-unit-form><div class="dialog-header"><h2>Add unit</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-grid"><input type="hidden" name="property_id" data-unit-property-id><div class="field"><label for="unit-name">Unit name</label><input id="unit-name" name="name" required></div><div class="field"><label for="unit-status">Occupancy</label><select id="unit-status" name="occupancy_status"><option value="vacant">Vacant</option><option value="occupied">Occupied</option><option value="unavailable">Unavailable</option></select></div><div class="field"><label for="unit-rent">Monthly rent</label><input id="unit-rent" name="monthly_rent" type="number" min="0" step="0.01" required></div><div class="field"><label for="unit-currency">Currency</label><input id="unit-currency" name="currency" maxlength="3" value="USD" required></div></div><p class="field-hint">Tenant assignment and lease creation stay separate so historical records remain clear.</p></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Save unit</button></div></form></dialog>`;
+}
+
 async function renderModule(view, root, quiet, context, identity) {
   const config = modules[view];
   if (!config) return;
@@ -152,7 +233,7 @@ async function renderTenants(root, context, identity) {
   root.querySelector("[data-tenant-request]")?.addEventListener("submit", async (event) => { event.preventDefault(); try { const email = new FormData(event.currentTarget).get("email"); const { error } = await supabase.rpc("request_tenant_link", { tenant_email: email, target_landlord: context.landlordId }); if (error) throw error; event.currentTarget.closest("dialog").close(); showToast("Tenant request sent.", "success"); renderTenants(root, context, identity); } catch (error) { showError(error); } });
   const filter = identity.profile.role === "tenant" ? supabase.from("tenant_links").select("id,status,requested_at,landlord_id,profiles!tenant_links_landlord_id_fkey(full_name)").eq("tenant_id", identity.profile.id) : supabase.from("tenant_links").select("id,status,requested_at,tenant_id,profiles!tenant_links_tenant_id_fkey(full_name)").eq("landlord_id", context.landlordId);
   const { data, error } = await filter.order("requested_at", { ascending: false }); const body = root.querySelector(".panel-body"); if (error) { showError(error); body.innerHTML = empty("Could not load tenant links", "Please try again."); return; }
-  body.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<article class="record-row"><div><strong>${escapeHtml(item.profiles?.full_name || "Mushavo user")}</strong><span>${formatDate(item.requested_at)} · ${escapeHtml(item.status)}</span></div>${identity.profile.role === "tenant" && item.status === "pending" ? `<div class="toolbar"><button class="btn btn-primary" data-link-decision="accepted" data-link-id="${item.id}">Accept</button><button class="btn btn-secondary" data-link-decision="rejected" data-link-id="${item.id}">Reject</button></div>` : `<span class="status-chip">${escapeHtml(item.status)}</span>`}</article>`).join("")}</div>` : empty("No tenant relationships", "Requests and accepted links will appear here.");
+  body.innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<article class="record-row"><div><strong>${escapeHtml(item.profiles?.full_name || "Mushavo user")}</strong><span>${formatDate(item.requested_at)} - ${escapeHtml(item.status)}</span></div>${identity.profile.role === "tenant" && item.status === "pending" ? `<div class="toolbar"><button class="btn btn-primary" data-link-decision="accepted" data-link-id="${item.id}">Accept</button><button class="btn btn-secondary" data-link-decision="rejected" data-link-id="${item.id}">Reject</button></div>` : `<span class="status-chip">${escapeHtml(item.status)}</span>`}</article>`).join("")}</div>` : empty("No tenant relationships", "Requests and accepted links will appear here.");
   body.querySelectorAll("[data-link-decision]").forEach((button) => button.addEventListener("click", async () => { try { const { error: rpcError } = await supabase.rpc("respond_tenant_link", { link_id: button.dataset.linkId, decision: button.dataset.linkDecision }); if (rpcError) throw rpcError; showToast(`Request ${button.dataset.linkDecision}.`, "success"); renderTenants(root, context, identity); } catch (rpcError) { showError(rpcError); } }));
 }
 
@@ -168,7 +249,7 @@ async function renderFinance(root, context, identity) {
 
 async function renderDocuments(root, context, identity) {
   root.innerHTML = `${pageHeader("documents", true, context)}<section class="panel"><div class="panel-header"><h2>Private documents</h2><span class="status-chip">Signed access only</span></div><div class="panel-body">${skeletonLines(5)}</div></section><dialog class="dialog" id="record-dialog"><form class="dialog-layout" data-document-form><div class="dialog-header"><h2>Upload document</h2><button class="icon-button" type="button" data-dialog-close aria-label="Close">${icon("x")}</button></div><div class="dialog-content"><div class="form-stack"><div class="field"><label for="document-category">Category</label><select id="document-category" name="category"><option>lease</option><option>receipt</option><option>inspection</option><option>identity</option><option>property</option><option>other</option></select></div><div class="field"><label for="document-file">File</label><input id="document-file" name="file" type="file" required></div></div></div><div class="dialog-actions"><button class="btn btn-secondary" type="button" data-dialog-close>Cancel</button><button class="btn btn-primary">Upload securely</button></div></form></dialog>`;
-  hydrateIcons(root); wireContext(root); const query = context.landlordId ? supabase.from("documents").select("*").eq("landlord_id", context.landlordId).is("archived_at", null) : supabase.from("documents").select("*").is("archived_at", null); const { data, error } = await query.order("created_at", { ascending: false }); const body = root.querySelector(".panel-body"); if (error) { showError(error); return; } body.innerHTML = data?.length ? `<div class="record-list">${data.map((doc) => `<article class="record-row"><div><strong>${escapeHtml(doc.name)}</strong><span>${escapeHtml(doc.category)} · ${formatDate(doc.created_at)}</span></div><button class="btn btn-secondary" data-document-path="${escapeHtml(doc.storage_path)}">${icon("download")}Download</button></article>`).join("")}</div>` : empty("No private documents", "Uploaded files remain private and use time-limited download links."); hydrateIcons(body);
+  hydrateIcons(root); wireContext(root); const query = context.landlordId ? supabase.from("documents").select("*").eq("landlord_id", context.landlordId).is("archived_at", null) : supabase.from("documents").select("*").is("archived_at", null); const { data, error } = await query.order("created_at", { ascending: false }); const body = root.querySelector(".panel-body"); if (error) { showError(error); return; } body.innerHTML = data?.length ? `<div class="record-list">${data.map((doc) => `<article class="record-row"><div><strong>${escapeHtml(doc.name)}</strong><span>${escapeHtml(doc.category)} - ${formatDate(doc.created_at)}</span></div><button class="btn btn-secondary" data-document-path="${escapeHtml(doc.storage_path)}">${icon("download")}Download</button></article>`).join("")}</div>` : empty("No private documents", "Uploaded files remain private and use time-limited download links."); hydrateIcons(body);
   body.querySelectorAll("[data-document-path]").forEach((button) => button.addEventListener("click", async () => { const { data: signed, error: signedError } = await supabase.storage.from("mushavo-private").createSignedUrl(button.dataset.documentPath, 60); if (signedError) return showError(signedError); window.open(signed.signedUrl, "_blank", "noopener"); }));
   root.querySelector("[data-document-form]").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const file = form.get("file"); const path = `${identity.profile.id}/${crypto.randomUUID()}/${file.name}`; try { const { error: uploadError } = await supabase.storage.from("mushavo-private").upload(path, file, { upsert: false }); if (uploadError) throw uploadError; const { error: rowError } = await supabase.from("documents").insert({ landlord_id: context.landlordId || identity.profile.id, category: form.get("category"), name: file.name, storage_path: path, mime_type: file.type, size_bytes: file.size, uploaded_by: identity.profile.id }); if (rowError) { await supabase.storage.from("mushavo-private").remove([path]); throw rowError; } showToast("Document uploaded securely.", "success"); renderDocuments(root, context, identity); } catch (uploadError) { showError(uploadError); } });
 }
@@ -179,7 +260,7 @@ async function renderStaff(root, context, identity) {
   hydrateIcons(root); wireContext(root);
   const { data, error } = await supabase.from("staff_relationships").select("status,permissions,staff_id,profiles!staff_relationships_staff_id_fkey(full_name)").eq("landlord_id", context.landlordId).eq("status", "active");
   if (error) return showError(error);
-  root.querySelector(".panel-body").innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<article class="record-row"><div><strong>${escapeHtml(item.profiles?.full_name || "Staff member")}</strong><span>Approved assignment · ${Object.keys(item.permissions || {}).length} permission settings</span></div><span class="status-chip">Active</span></article>`).join("")}</div>` : empty("No approved staff", "Staff invited and attached to this account will appear here.");
+  root.querySelector(".panel-body").innerHTML = data?.length ? `<div class="record-list">${data.map((item) => `<article class="record-row"><div><strong>${escapeHtml(item.profiles?.full_name || "Staff member")}</strong><span>Approved assignment - ${Object.keys(item.permissions || {}).length} permission settings</span></div><span class="status-chip">Active</span></article>`).join("")}</div>` : empty("No approved staff", "Staff invited and attached to this account will appear here.");
   root.querySelector("[data-staff-invite]")?.addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const permissions = Object.fromEntries(form.getAll("permission").map((key) => [key, true])); try { const { data: inviteData, error: inviteError } = await supabase.functions.invoke("invite-user", { body: { email: form.get("email"), role: "staff", countryId: identity.profile.country_id, permissions } }); if (inviteError || inviteData?.error) throw inviteError || new Error(inviteData.error); event.currentTarget.closest("dialog").close(); showToast(inviteData.message, "success"); } catch (inviteError) { showError(inviteError); } });
 }
 
